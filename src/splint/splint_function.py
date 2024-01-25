@@ -113,7 +113,8 @@ class SplintFunction:
             result = self.load_result(result,0,0,count)
             result.except_ = e
             result.traceback = traceback.format_exc()
-            result.msg = f"Exception '{e}' occurred while running {self.module}.{self.function.__name__}"
+            mod_msg = "" if not self.module else f"{self.module}"
+            result.msg = f"Exception '{e}' occurred while running {mod_msg}{self.function.__name__}"
             yield result
 
     def load_result(self,result:SplintResult,start_time,end_time,count=1):

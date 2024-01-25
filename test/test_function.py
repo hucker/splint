@@ -84,3 +84,20 @@ def test_info_warning_func_call():
         assert result.warn_msg == "Warning"
         assert result.info_msg == "Info"
         assert result.tag == "InfoWarning"
+
+def test_divide_by_zero():
+    @splint.attributes(tag="DivideByZero")
+    def func():
+        """Test Exception Function"""
+        return 1/0
+    sfunc = splint.SplintFunction(None, func)
+
+    for r in sfunc():
+        result:splint.SplintResult = r
+        assert result.func_name == "func"
+        assert result.status is False
+        assert result.msg == "Exception 'division by zero' occurred while running func"
+        assert result.doc == "Test Exception Function"
+        assert result.skipped is False
+        assert str(result.except_) == 'division by zero'
+        assert result.tag == "DivideByZero"

@@ -114,7 +114,7 @@ For me that is as deep as I want things to go.
 
 ## WTH does splint derive from?
 
-Splint is just a name that sounds cool.  When I started this I thought system-lint.  It has lint in the name
+Splint is just a name that sounds cool.  When I started this I thought system-lint.
 
 ## Command Line Demo App For `splintit`:
 
@@ -124,7 +124,6 @@ To run it against a folder
 
 `python -m splint_it.py -p path/to/package_folder``
 
-A streamlit app is in work now.
 
 ```text
 Usage: splint_it.py [OPTIONS]
@@ -140,3 +139,10 @@ Usage: splint_it.py [OPTIONS]
 │ --help                   Show this message and exit.                              │
 ╰───────────────────────────────────────────────────────────────────────────────────╯
 ```
+
+## TODO
+1. Add environment parameters
+2. Clean up exceptions in check functions
+3. Add fastapi example.
+4. Add streamlit example.
+5. Make pip installable.
