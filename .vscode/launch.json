@@ -1,0 +1,65 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+
+
+        {
+            "name": "Python: Typer Splint Repo",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/splint_it.py",
+            "console": "integratedTerminal",
+            "args": [ "-r", "./test/repo"]
+        },
+        {
+            "name": "Python: Typer Splint Package",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/splint_it.py",
+            "console": "integratedTerminal",
+            "args": [ "-p", "./src"]
+        },
+        {
+            "name": "Python: Typer Splint Module Verbose",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/splint_it.py",
+            "console": "integratedTerminal",
+            "args": [ "-m", "./src/check_1.py","-v"]
+        },        {
+            "name": "Python: Typer Splint Module",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/splint_it.py",
+            "console": "integratedTerminal",
+            "args": [ "-m", "./src/check_1.py"]
+        },
+        {
+            "name": "Python: Typer Splint Help",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/splint_it.py",
+            "console": "integratedTerminal",
+            "args": [ "--help"]
+        },
+        {
+            "name": "Python: CLI Splint",
+            "type": "python",
+            "request": "launch",
+            "program": "src/cli_splint.py",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Python: Decorator Check",
+            "type": "python",
+            "request": "launch",
+            "program": "src/decorator_check.py",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        }
+    ]
+}
