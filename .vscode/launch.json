@@ -18,30 +18,30 @@
             "name": "Python: Typer Splint Package",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/src/splint_it.py",
+            "program": "${workspaceFolder}/src/cli/splint_it.py",
             "console": "integratedTerminal",
-            "args": [ "-p", "./src"]
+            "args": [ "-p", "./src/cli","-j","./src/cli/result.json"]
         },
         {
             "name": "Python: Typer Splint Module Verbose",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/src/splint_it.py",
+            "program": "${workspaceFolder}/src/cli/splint_it.py",
             "console": "integratedTerminal",
-            "args": [ "-m", "./src/check_1.py","-v"]
+            "args": [ "-m", "./src/cli/check_1.py","-v","-j","./src/cli/result.json"]
         },        {
             "name": "Python: Typer Splint Module",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/src/splint_it.py",
+            "program": "${workspaceFolder}/src/cli/splint_it.py",
             "console": "integratedTerminal",
-            "args": [ "-m", "./src/check_1.py"]
+            "args": [ "-m", "./src/cli/check_1.py","-j","./src/cli/result.json"]
         },
         {
             "name": "Python: Typer Splint Help",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/src/splint_it.py",
+            "program": "${workspaceFolder}/src/cli/splint_it.py",
             "console": "integratedTerminal",
             "args": [ "--help"]
         },

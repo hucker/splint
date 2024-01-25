@@ -37,7 +37,7 @@ def test_basic_func_call():
     sfunc = splint.SplintFunction(None, func)
 
     for result in sfunc():
-        assert result.function_name == "func"
+        assert result.func_name == "func"
         assert result.status is True
         assert result.msg == "It works"
         assert result.doc == "Test Function"
@@ -56,7 +56,7 @@ def test_basic_func_call_timing():
     sfunc = splint.SplintFunction(None, func)
 
     for result in sfunc():
-        assert result.function_name == "func"
+        assert result.func_name == "func"
         assert result.status is True
         assert result.msg == "Timing works"
         assert result.doc == "Test Timing Function"
@@ -75,7 +75,7 @@ def test_info_warning_func_call():
     sfunc = splint.SplintFunction(None, func)
 
     for result in sfunc():
-        assert result.function_name == "func"
+        assert result.func_name == "func"
         assert result.status is True
         assert result.msg == "It still works"
         assert result.doc == "Test Complex Function"

@@ -47,7 +47,7 @@ class SplintFunction:
         self.weight = get_attribute(function, 'weight')
         self.skip = get_attribute(function, 'skip')
         logging.debug("Loaded function %s", self)
-        self.allowed_exceptions = allowed_exceptions or (Exception)
+        self.allowed_exceptions = allowed_exceptions or (Exception,)
 
     def __str__(self):
         return f"SplintFunction({self.function=},{self.parameters=})"
@@ -73,6 +73,9 @@ class SplintFunction:
         # Function returns a generator that needs to be iterated over
         args, kwds = self.get_parameter_values()
         try:
+            # It is possible for an exception to occur before the generator is created.
+            # so we need a value to be set for count.
+            count = 1
 
             # This allows for returning a single result using return or
             # multiple results returning a list of results.
@@ -86,7 +89,6 @@ class SplintFunction:
                 # TODO: This should be in a decorator
                 elif isinstance(results,bool):
                     results = [SplintResult(status=results)]
-
                 for count,r in enumerate(results,start=1):
                     r = self.load_result(r,start_time,end_time,count=1)
                     yield r
@@ -111,10 +113,10 @@ class SplintFunction:
             result = self.load_result(result,0,0,count)
             result.except_ = e
             result.traceback = traceback.format_exc()
-            result.msg = "Exception occurred while running {self.module}.{self.function.__name__}"
+            result.msg = f"Exception '{e}' occurred while running {self.module}.{self.function.__name__}"
             yield result
 
-    def load_result(self,result,start_time,end_time,count):
+    def load_result(self,result:SplintResult,start_time,end_time,count=1):
         """
         Provide a bunch of metadata about the function call.
 
@@ -125,9 +127,11 @@ class SplintFunction:
 
 
         """
-        result.module = self.module
-        result.function = self.function
-        result.function_name = self.function_name
+        #result.module = self.module
+        result.pkg_name = self.module.__package__ if self.module else ''
+        result.module_name = self.module.__name__ if self.module else ''
+        #result.function = self.function
+        result.func_name = self.function_name
         result.doc = self.doc
         result.tag = self.tag
         result.level = self.level
@@ -136,7 +140,7 @@ class SplintFunction:
         result.count = count        # If the result has no message, then create a default one.
         if result.msg == "":
             if self.doc.strip().count("\n") == 0 and self.doc.strip() != "":
-                result.msg = f"{result.function}{self.doc.strip()}"
+                result.msg = f"{result.func_name}{self.doc.strip()}"
             else:
                 tag_str = f" tag={self.tag}" if self.tag else ""
                 level_str = f" level={self.level}" if self.level else ""

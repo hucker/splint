@@ -41,7 +41,7 @@ def test_run_simple(simple1_pkg):
     assert results[0].status is True
     assert results[0].msg == "Result check_hello"
     assert results[0].doc == "DocString for check_hello"
-    assert results[0].function_name == "check_hello"
+    assert results[0].func_name == "check_hello"
     assert results[0].skipped is False
     assert results[0].except_ is None
     assert results[0].warn_msg == ""
@@ -66,7 +66,7 @@ def test_run_dec1(decorator1_pkg):
     assert results[0].status is True
     assert results[0].msg == "Result check_dec"
     assert results[0].doc == "DocString for check_dec"
-    assert results[0].function_name == "check_dec"
+    assert results[0].func_name == "check_dec"
     assert results[0].skipped is False
     assert results[0].except_ is None
     assert results[0].warn_msg == ""
@@ -199,7 +199,7 @@ def test_skip_pkg(skip_pkg):
     assert len(results) == 1
     assert sum(r.status for r in results) == 1
     assert results[0].skipped is False
-    assert results[0].function_name == "check_no_skip"
+    assert results[0].func_name == "check_no_skip"
 
 def test_pkg_name(skip_pkg,decorator1_pkg,decorator2_pkg,simple1_pkg):
     assert skip_pkg.name == "Skip"

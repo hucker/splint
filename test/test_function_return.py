@@ -12,7 +12,7 @@ def test_simple_return_function():
     sfunc = splint.SplintFunction(None, return_not_yield)
 
     for result in sfunc():
-        assert result.function_name == "return_not_yield"
+        assert result.func_name == "return_not_yield"
         assert result.status is True
         assert result.msg == "It works with return"
         assert result.doc == "Test Function With Return"
@@ -32,7 +32,7 @@ def test_multiple_return_function():
     sfunc = splint.SplintFunction(None, returns_not_yield)
 
     for count, result in enumerate(sfunc(),start=1):
-        assert result.function_name == "returns_not_yield"
+        assert result.func_name == "returns_not_yield"
         assert result.status is True
         assert result.msg == f"It works with return{count}"
         assert result.doc == "Test Function With Returns"
@@ -53,7 +53,7 @@ def test_boolean_only_return_function():
     sfunc = splint.SplintFunction(None, return_boolean_only)
 
     for result in sfunc():
-        assert result.function_name == "return_boolean_only"
+        assert result.func_name == "return_boolean_only"
         assert result.status is True
         assert result.doc ==  """Test Function that returns a boolean"""
         assert result.skipped is False
@@ -73,7 +73,7 @@ def test_boolean_only_yield_function():
     sfunc = splint.SplintFunction(None, yield_boolean_only)
 
     for result in sfunc():
-        assert result.function_name == "yield_boolean_only"
+        assert result.func_name == "yield_boolean_only"
         assert result.status is True
         assert result.doc ==  """Test Function that yields a boolean True"""
         assert result.skipped is False
@@ -92,7 +92,7 @@ def test_boolean_only_yield_function_fail():
     sfunc = splint.SplintFunction(None, yield_boolean_only_fail)
 
     for result in sfunc():
-        assert result.function_name == "yield_boolean_only_fail"
+        assert result.func_name == "yield_boolean_only_fail"
         assert result.status is False
         assert result.doc ==  """Test Function that yields a boolean False"""
         assert result.skipped is False

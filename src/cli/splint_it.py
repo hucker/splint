@@ -1,8 +1,15 @@
 """Trivial Typer App to run Splint checks on a given target."""
+import sys
+import pathlib
+s = pathlib.Path('./src').resolve()
+sys.path.insert(0,str(s))
+
 import typer
 import splint
 import pathlib
 import glob
+import json
+
 
 app = typer.Typer(add_completion=False)
 
@@ -46,6 +53,7 @@ def run_checks(
     module: str = typer.Option(None, '-m', help="The module to run checks on."),
     pkg: str = typer.Option(None, '-p', help="The package to run checks on."),
     repo: str = typer.Option(None,'-r', help="The repo to run checks on."),
+    json_file: str = typer.Option(None, '-j', help="The JSON file to write results to."),
     verbose: bool = typer.Option(False, '-v', '--verbose', help="Enable verbose output.")
 ):
     """Run Splint checks on a given using a typer command line app."""
@@ -73,6 +81,12 @@ def run_checks(
             dump_results(results)
         else:
             typer.echo(splint.overview(results))
+
+        if json_file:
+            d = splint.splint_result.results_as_dict(results)
+            with open(json_file, 'w',encoding='utf-8') as f:
+                json.dump(d, f, indent=2)
+
 
     except splint.SplintException as e:
         typer.echo(f"SplintException: {e}")

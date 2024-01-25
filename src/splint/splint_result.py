@@ -27,8 +27,10 @@ class SplintResult:
     """
 
     status: bool = False
-    module: str = ""
-    function: str = ""
+    module_name: str = ""
+    func_name: str = ""
+    pkg_name: str = ""
+    repo_name: str = ""
     msg: str = ""
     info_msg: str = ""
     warn_msg: str = ""
@@ -39,11 +41,14 @@ class SplintResult:
     skipped: bool = False
     tag: str = ""
     level: int = 1
+    phase: str = ""
     count:int = 0
 
     def as_dict(self):
+        d = asdict(self)
+        d['except_'] = str(d['except_'])
         """Convert the SplintResult instance to a dictionary."""
-        return asdict(self)
+        return d
 
 
 # Result transformers do one of three things, nothing and pass the result on, modify the result
@@ -89,7 +94,7 @@ def fix_blank_msg(sr:SplintResult):
         SplintResult: The result with its message set to the module and function name if it was blank.
     """
     if not sr.msg:
-        sr.msg = f"{sr.module}.{sr.function}"
+        sr.msg = f"{sr.module}.{sr.func_name}"
     return sr
 
 def yield_result_pipeline(transformers: List[Callable], results:List[SplintResult]):
