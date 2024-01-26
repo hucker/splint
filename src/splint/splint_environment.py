@@ -32,7 +32,7 @@ class SPlintEnvFunctions:
     """The this has a dictionary of name/function pairs for the session."""
 
     def __init__(self):
-        self.session = {}
+        self.session = {} 
         self.module = {}
         self.function = {}
 
