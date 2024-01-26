@@ -83,7 +83,7 @@ def test_info_warning_func_call():
         assert result.except_ is None
         assert result.warn_msg == "Warning"
         assert result.info_msg == "Info"
-        assert result.tag == "InfoWarning"
+        assert result.tag == "InfoWarning1"
 
 def test_divide_by_zero():
     @splint.attributes(tag="DivideByZero")
