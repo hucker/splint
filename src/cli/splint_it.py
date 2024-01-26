@@ -9,7 +9,7 @@ import splint
 import pathlib
 import glob
 import json
-
+import requests
 
 app = typer.Typer(add_completion=False)
 
@@ -68,6 +68,14 @@ def run_checks(
     if not selected_options:
         typer.echo("Please provide a module, package, or repo to run checks on.")
         return
+
+    response = requests.get(f'https://pypi.org/pypi/splint/json')
+
+    # Check if the 'splint' package exists
+    if response.status_code == 200:
+        print("The 'splint' package exists on PyPI.")
+    else:
+        print("The 'splint' package does not exist on PyPI.")
 
     try:
         if module:
