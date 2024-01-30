@@ -32,7 +32,8 @@ class SplintFunction:
         __str__(): Returns a string representation of the SplintFunction.
         __call__(*args, **kwds): Calls the stored function and collects information about the result.
     """
-    def __init__(self, module,function,allowed_exceptions=None):
+    def __init__(self, module,function,allowed_exceptions=None,env=None):
+        self.env = env or {}
         self.module = module
         self.function = function
         self.function_name = function.__name__
@@ -52,11 +53,18 @@ class SplintFunction:
     def __str__(self):
         return f"SplintFunction({self.function=},{self.parameters=})"
 
-    def get_parameter_values(self):
-       return [],{}
+    def _get_parameter_values(self):
+        args = []
+        for param in self.parameters.values():
+            if param.name in self.env:
+                args.append(self.env[param.name])
+            elif param.default != inspect.Parameter.empty:
+                args.append(param.default)
+            else:
+                print("???")
+        return args
 
-
-    def __call__(self, *args, **kwds) -> SplintResult:
+    def __call__(self) -> SplintResult:
         """Call the user provided function and collect information about the result.
 
         Raises:
@@ -71,7 +79,7 @@ class SplintFunction:
         # Call the stored functon and collect information about the result
         start_time = time.time()
         # Function returns a generator that needs to be iterated over
-        args, kwds = self.get_parameter_values()
+        args = self._get_parameter_values()
         try:
             # It is possible for an exception to occur before the generator is created.
             # so we need a value to be set for count.
@@ -81,7 +89,7 @@ class SplintFunction:
             # multiple results returning a list of results.
             if not self.is_generator:
                 # If the function is not a generator, then just call it
-                results = self.function(*args,**kwds)
+                results = self.function(*args)
                 end_time = time.time()
                 if isinstance(results,SplintResult):
                     results = [results]
@@ -96,7 +104,7 @@ class SplintFunction:
 
             # Since functions can return multiple results, we keep track of them
             # with a count attribute.  THis is helpful for reporting.
-            for count,result in enumerate(self.function(*args,**kwds),start=1):
+            for count,result in enumerate(self.function(*args),start=1):
                 end_time = time.time()
 
                 #TODO: This should be in a decorator
@@ -128,24 +136,34 @@ class SplintFunction:
 
 
         """
-        #result.module = self.module
-        result.pkg_name = self.module.__package__ if self.module else ''
-        result.module_name = self.module.__name__ if self.module else ''
-        #result.function = self.function
+    # Use getattr to avoid repeating the same pattern of checking if self.module exists
+        result.pkg_name = getattr(self.module, '__package__', '')
+        result.module_name = getattr(self.module, '__name__', '')
+
+        # Assign the rest of the attributes directly
         result.func_name = self.function_name
         result.doc = self.doc
         result.tag = self.tag
         result.level = self.level
         result.phase = self.phase
         result.runtime_sec = end_time - start_time
-        result.count = count        # If the result has no message, then create a default one.
-        if result.msg == "":
-            if self.doc.strip().count("\n") == 0 and self.doc.strip() != "":
+        result.count = count
+
+        # If the result has no message, then create a default one either
+        # from the doc string or from the function name/module/package/repo.
+        if not result.msg:
+            if self.doc.strip().count("\n") == 0 and self.doc.strip():
                 result.msg = f"{result.func_name}{self.doc.strip()}"
             else:
-                tag_str = f" tag={self.tag}" if self.tag else ""
-                level_str = f" level={self.level}" if self.level else ""
-                phase_str = f" phase={self.phase}" if self.phase else ""
-                module_str = f" module={self.module}." if self.module else ""
-                result.msg = f"Ran {module_str}{self.function}.{result.count:03d}{tag_str}{level_str}{phase_str}"
+                # Use a dictionary to store the optional parts of the message
+                # This makes it easier to add or remove parts in the future
+                msg_parts = {
+                    'tag': self.tag,
+                    'level': self.level,
+                    'phase': self.phase,
+                    'module': self.module,
+                }
+                # Only include the parts that have a value
+                msg_str = ' '.join(f"{key}={value}" for key, value in msg_parts.items() if value)
+                result.msg = f"Ran {msg_str} {self.function}.{result.count:03d}"
         return result
