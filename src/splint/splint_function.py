@@ -2,10 +2,11 @@ import time
 import inspect
 import traceback
 import logging
-import functools
+from functools import wraps
 
 from .splint_result import SplintResult
 from .splint_attribute import get_attribute
+from .splint_exception import SplintException
 
 
 
@@ -34,23 +35,51 @@ class SplintFunction:
     """
     def __init__(self, module,function,allowed_exceptions=None):
         self.module = module
-        self.function = function
         self.function_name = function.__name__
         self.doc = inspect.getdoc(function)
         self.parameters = inspect.signature(function).parameters
-        self.is_generator = inspect.isgeneratorfunction(function)
-
+       
         # Get funciton attributes, using defaults if the user did not specify attributes.
         self.tag = get_attribute(function, 'tag')
         self.level = get_attribute(function, 'level')
         self.phase = get_attribute(function, 'phase')
         self.weight = get_attribute(function, 'weight')
         self.skip = get_attribute(function, 'skip')
+        
+        #For now attributes are hard coded, eventually this will go away.
+        self.function = self._force_generator(function)
+      
         logging.debug("Loaded function %s", self)
         self.allowed_exceptions = allowed_exceptions or (Exception,)
 
     def __str__(self):
         return f"SplintFunction({self.function=},{self.parameters=})"
+
+    def _force_generator(self,func):
+        """Allow splint_functions to use yield or returns of bool or SplintResults
+        
+        This is a nod to simplicity for the high level code being able to do whatever
+        the hell they want.  Within reason, basically you can return booleans, lists
+        of booleans and of course you can return SR/SplintResults.
+        """
+        if not inspect.isgenerator(func):
+            @wraps(SplintFunction)
+            def wrapper(*args, **kwargs):
+                results = self.function(*args, **kwargs)
+                if isinstance(results,bool):
+                    yield(SplintResult(results))
+                elif isinstance(results,SplintResult):
+                    yield results
+                elif isinstance(results,list):
+                    for result in results:
+                        if isinstance(result,bool):
+                            yield(SplintResult(result))
+                        else:
+                            yield result
+            func = wrapper
+        return func
+        
+   
 
     def get_parameter_values(self):
        return [],{}
@@ -77,33 +106,12 @@ class SplintFunction:
             # so we need a value to be set for count.
             count = 1
 
-            # This allows for returning a single result using return or
-            # multiple results returning a list of results.
-            if not self.is_generator:
-                # If the function is not a generator, then just call it
-                results = self.function(*args,**kwds)
-                end_time = time.time()
-                if isinstance(results,SplintResult):
-                    results = [results]
-
-                # TODO: This should be in a decorator
-                elif isinstance(results,bool):
-                    results = [SplintResult(status=results)]
-                for count,r in enumerate(results,start=1):
-                    r = self.load_result(r,start_time,end_time,count=1)
-                    yield r
-                return
-
-            # Since functions can return multiple results, we keep track of them
+            # Since functions can yield multiple results, we keep track of them
             # with a count attribute.  THis is helpful for reporting.
             for count,result in enumerate(self.function(*args,**kwds),start=1):
                 end_time = time.time()
 
-                #TODO: This should be in a decorator
-                if isinstance(result,bool):
-                    result = SplintResult(status=result)
-
-                result = self.load_result(result,start_time,end_time,count)
+                result = self.load_result(result,start_time=start_time,end_time= end_time,count=count)
 
                 yield result
                 start_time = time.time()

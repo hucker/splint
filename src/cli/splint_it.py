@@ -9,7 +9,6 @@ import splint
 import pathlib
 import glob
 import json
-import requests
 
 app = typer.Typer(add_completion=False)
 
@@ -50,10 +49,11 @@ def run_checks_on_repo(repo: str):
 
 @app.command()
 def run_checks(
-    module: str = typer.Option(None, '-m', help="The module to run checks on."),
-    pkg: str = typer.Option(None, '-p', help="The package to run checks on."),
-    repo: str = typer.Option(None,'-r', help="The repo to run checks on."),
-    json_file: str = typer.Option(None, '-j', help="The JSON file to write results to."),
+    module: str = typer.Option(None, '-m','--mod', help="The module to run rules against."),
+    pkg: str = typer.Option(None, '-p','--pkg', help="The package to run rules against."),
+    repo: str = typer.Option(None,'-r','--repo', help="The repo to run rules against."),
+    json_file: str = typer.Option(None, '-j','--json', help="The JSON file to write results to."),
+    flat: bool = typer.Option(True, '-f', '--flat', help="Should the output be flat or a hierachy."),
     verbose: bool = typer.Option(False, '-v', '--verbose', help="Enable verbose output.")
 ):
     """Run Splint checks on a given using a typer command line app."""
@@ -69,14 +69,6 @@ def run_checks(
         typer.echo("Please provide a module, package, or repo to run checks on.")
         return
 
-    response = requests.get(f'https://pypi.org/pypi/splint/json')
-
-    # Check if the 'splint' package exists
-    if response.status_code == 200:
-        print("The 'splint' package exists on PyPI.")
-    else:
-        print("The 'splint' package does not exist on PyPI.")
-
     try:
         if module:
             results = run_checks_on_module(module)
@@ -85,6 +77,9 @@ def run_checks(
         elif repo:
             results = run_checks_on_repo(repo)
 
+        if not flat:
+            results = splint.splint_result.group_by(results,["repo_name",'pkg_name','module_name','func_name'])
+            
         if verbose:
             dump_results(results)
         else:
