@@ -21,8 +21,8 @@ def run_checks_on_module(module: str):
     """ Run checks on a module"""
     target_path = pathlib.Path(module)
     if target_path.is_file():
-        m = splint.SplintModule(module_name=target_path.stem,module_file=str(target_path))
-        results = m.run_all()
+        mod = splint.SplintModule(module_name=target_path.stem,module_file=str(target_path))
+        results = mod.run_all()
         return results
     else:
         typer.echo(f"Invalid module: {module}")
@@ -30,15 +30,19 @@ def run_checks_on_module(module: str):
 def run_checks_on_package(pkg: str):
     """ Run checks on a package"""
     folder = pathlib.Path(pkg)
-    s = splint.SplintPackage(folder=folder)
+    pkg = splint.SplintPackage(folder=folder)
     if folder.is_dir():
-        results = s.run_all()
+        results = pkg.run_all()
         return results
     else:
         typer.echo(f"Invalid package: {pkg}")
 
 def run_checks_on_repo(repo: str):
-    """ Run checks on a repo"""
+    """ Run checks on a repo
+    TODO: THis is not functional
+    """
+    if 1:
+        raise splint.SplintException("Repo not implimented.")
     target_path = pathlib.Path(repo)
     if target_path.is_dir():
         for check_folder in glob.glob(str(target_path / 'check*')):

@@ -6,7 +6,6 @@ from functools import wraps
 
 from .splint_result import SplintResult
 from .splint_attribute import get_attribute
-from .splint_exception import SplintException
 
 
 

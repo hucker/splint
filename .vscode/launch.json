@@ -7,59 +7,43 @@
 
 
         {
-            "name": "Python: Typer Splint Repo",
+            "name": "Python: Typer Splinter Repo",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/src/splint_it.py",
+            "program": "${workspaceFolder}/src/cli/splinter.py",
             "console": "integratedTerminal",
             "args": [ "-r", "./test/repo"]
         },
         {
-            "name": "Python: Typer Splint Package",
+            "name": "Python: Typer Splinter Package",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/src/cli/splint_it.py",
+            "program": "${workspaceFolder}/src/cli/splinter.py",
             "console": "integratedTerminal",
             "args": [ "-p", "./src/cli","-j","./src/cli/result.json"]
         },
         {
-            "name": "Python: Typer Splint Module Verbose",
+            "name": "Python: Typer Splinter Module Verbose",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/src/cli/splint_it.py",
+            "program": "${workspaceFolder}/src/cli/splinter.py",
             "console": "integratedTerminal",
             "args": [ "-m", "./src/cli/check_1.py","-v","-j","./src/cli/result.json"]
         },        {
-            "name": "Python: Typer Splint Module",
+            "name": "Python: Typer Splinter Module",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/src/cli/splint_it.py",
+            "program": "${workspaceFolder}/src/cli/splinter.py",
             "console": "integratedTerminal",
             "args": [ "-m", "./src/cli/check_1.py","-j","./src/cli/result.json"]
         },
         {
-            "name": "Python: Typer Splint Help",
+            "name": "Python: Typer Splinter Help",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/src/cli/splint_it.py",
+            "program": "${workspaceFolder}/src/cli/splinter.py",
             "console": "integratedTerminal",
             "args": [ "--help"]
-        },
-        {
-            "name": "Python: CLI Splint",
-            "type": "python",
-            "request": "launch",
-            "program": "src/cli_splint.py",
-            "console": "integratedTerminal",
-            "justMyCode": true
-        },
-        {
-            "name": "Python: Decorator Check",
-            "type": "python",
-            "request": "launch",
-            "program": "src/decorator_check.py",
-            "console": "integratedTerminal",
-            "justMyCode": true
         }
     ]
 }
