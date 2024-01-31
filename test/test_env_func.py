@@ -39,20 +39,20 @@ def test_func_no_defaults_used():
         assert result.tag == "Env"
 
 def test_func_no_defaults_used_bad_order():
-    """ Test function environment with default value"""
+    """ Test function environment with various default values overriding some of them"""
     @splint.attributes(tag="Env")
     def func(x=1,y=2,z=3):
         """Test Function"""
-        yield splint.SR(status= (x==2 and y==3 and z==4), msg="It works")
-    env = {'z':4}
-    sfunc = splint.SplintFunction(None, func,env=env)
+        yield splint.SR(status= (x==1 and y==2 and z==4), msg="It works")
 
-    for result in sfunc():
-        assert result.func_name == "func"
+    # Always override z and hard code x and y to the default values
+    for env in [{'x':1},{'y':2},{'x':1,'y':2}]:
+        env['z'] = 4
+        sfunc = splint.SplintFunction(None, func,env=env)
+        result =next(sfunc())
         assert result.status is True
-        assert result.msg == "It works"
-        assert result.doc == "Test Function"
-        assert result.tag == "Env"
+
+
 
 def test_func_defaults_used():
     """ Test function environment with no default value"""
