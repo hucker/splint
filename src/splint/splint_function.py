@@ -6,7 +6,7 @@ import functools
 
 from .splint_result import SplintResult
 from .splint_attribute import get_attribute
-
+from .splint_exception import SplintException
 
 
 class SplintFunction:
@@ -36,10 +36,10 @@ class SplintFunction:
         self.env = env or {}
         self.module = module
         self.function = function
+        self.is_generator = inspect.isgeneratorfunction(function)
         self.function_name = function.__name__
         self.doc = inspect.getdoc(function)
         self.parameters = inspect.signature(function).parameters
-        self.is_generator = inspect.isgeneratorfunction(function)
 
         # Get funciton attributes, using defaults if the user did not specify attributes.
         self.tag = get_attribute(function, 'tag')
@@ -49,6 +49,7 @@ class SplintFunction:
         self.skip = get_attribute(function, 'skip')
         logging.debug("Loaded function %s", self)
         self.allowed_exceptions = allowed_exceptions or (Exception,)
+
 
     def __str__(self):
         return f"SplintFunction({self.function=},{self.parameters=})"
@@ -64,7 +65,7 @@ class SplintFunction:
                 print("???")
         return args
 
-    def __call__(self) -> SplintResult:
+    def __call__(self, *args, **kwds) -> SplintResult:
         """Call the user provided function and collect information about the result.
 
         Raises:
@@ -104,7 +105,7 @@ class SplintFunction:
 
             # Since functions can return multiple results, we keep track of them
             # with a count attribute.  THis is helpful for reporting.
-            for count,result in enumerate(self.function(*args),start=1):
+            for count,result in enumerate(self.function(*args,**kwds),start=1):
                 end_time = time.time()
 
                 #TODO: This should be in a decorator
@@ -124,7 +125,6 @@ class SplintFunction:
             mod_msg = "" if not self.module else f"{self.module}"
             result.msg = f"Exception '{e}' occurred while running {mod_msg}{self.function.__name__}"
             yield result
-
     def load_result(self,result:SplintResult,start_time,end_time,count=1):
         """
         Provide a bunch of metadata about the function call.

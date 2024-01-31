@@ -1,6 +1,5 @@
 from dataclasses import dataclass,asdict
 from typing import Callable, List
-from collections import defaultdict
 import itertools
 from operator import attrgetter
 from collections import Counter
@@ -8,11 +7,14 @@ from collections import Counter
 class SplintResult:
     """
     Return value of a SplintFunction.
+    
+    Note that many of these are string version of the classes.  The result class is
+    for reporting and serialization, typically with json.
 
     Attributes:
         status (bool): Indicates if the check passed or failed. Default is False.
-        module (str): The name of the module. Default is an empty string.
-        function (str): The name of the function. Default is an empty string.
+        module_name (str): The name of the module. Default is an empty string.
+        func_name (str): The name of the function. Default is an empty string.
         msg (str): A short one-line message to be displayed to the user. Default is an empty string.
         info_msg (str): Additional information about the function call. Default is an empty string.
         warn_msg (str): A warning message. Default is an empty string.
@@ -27,18 +29,31 @@ class SplintResult:
     """
 
     status: bool = False
-    module_name: str = ""
+ 
+    
+    # Name hierachy
     func_name: str = ""
     pkg_name: str = ""
     repo_name: str = ""
+    module_name: str = ""
+ 
+    # Msg Hierarchy
     msg: str = ""
     info_msg: str = ""
     warn_msg: str = ""
+    
+    # Function Info
     doc: str = ""
+    
+    # Timing Info
     runtime_sec: float = 0.0
+    
+    # Error Info
     except_: Exception = None
     traceback: str = ""
     skipped: bool = False
+    
+    # Attribute Info - This needs to be factored out?
     tag: str = ""
     level: int = 1
     phase: str = ""
@@ -93,9 +108,15 @@ def fix_blank_msg(sr:SplintResult):
     Returns:
         SplintResult: The result with its message set to the module and function name if it was blank.
     """
+    repo_msg = f"{sr.repo_name}." if sr.repo_name else ""
+    pkg_msg = f"{sr.pkg_name}." if sr.pkg_name else ""
+    mod_msg = f"{sr.module_name}." if sr.module_name else ""
+    func_msg = f"{sr.func_name}." if sr.func_name else ""
+    
     if not sr.msg:
-        sr.msg = f"{sr.module}.{sr.func_name}"
+        sr.msg = f"{repo_msg}{pkg_msg}{mod_msg}{func_msg}.{sr.count:03d}"
     return sr
+
 
 def yield_result_pipeline(transformers: List[Callable], results:List[SplintResult]):
     """Applies a list of functions to a list of results.
