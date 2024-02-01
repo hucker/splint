@@ -1,15 +1,21 @@
+""" This module contains the SplintResult class and some common result transformers. """
+
 from dataclasses import dataclass,asdict
 from typing import Callable, List
 import itertools
 from operator import attrgetter
 from collections import Counter
+
 @dataclass
 class SplintResult:
     """
     Return value of a SplintFunction.
-    
-    Note that many of these are string version of the classes.  The result class is
-    for reporting and serialization, typically with json.
+
+    This dataclass tracks the result of a SplintFunction. It contains information about the function call, including
+    the status, the name of the module and function, a message, additional information, a warning message, the docstring,
+    the runtime, any exceptions raised, the traceback, whether the function was skipped, a tag, a level, and a count.
+
+    This data can be used for reporting purposes.
 
     Attributes:
         status (bool): Indicates if the check passed or failed. Default is False.
@@ -29,30 +35,30 @@ class SplintResult:
     """
 
     status: bool = False
- 
-    
+
+
     # Name hierachy
     func_name: str = ""
     pkg_name: str = ""
     repo_name: str = ""
     module_name: str = ""
- 
+
     # Msg Hierarchy
     msg: str = ""
     info_msg: str = ""
     warn_msg: str = ""
-    
+
     # Function Info
     doc: str = ""
-    
+
     # Timing Info
     runtime_sec: float = 0.0
-    
+
     # Error Info
     except_: Exception = None
     traceback: str = ""
     skipped: bool = False
-    
+
     # Attribute Info - This needs to be factored out?
     tag: str = ""
     level: int = 1
@@ -112,7 +118,7 @@ def fix_blank_msg(sr:SplintResult):
     pkg_msg = f"{sr.pkg_name}." if sr.pkg_name else ""
     mod_msg = f"{sr.module_name}." if sr.module_name else ""
     func_msg = f"{sr.func_name}." if sr.func_name else ""
-    
+
     if not sr.msg:
         sr.msg = f"{repo_msg}{pkg_msg}{mod_msg}{func_msg}.{sr.count:03d}"
     return sr
