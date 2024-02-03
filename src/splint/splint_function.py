@@ -3,6 +3,7 @@ import inspect
 import traceback
 import logging
 import functools
+import re
 
 from .splint_result import SplintResult
 from .splint_attribute import get_attribute
@@ -95,7 +96,10 @@ class SplintFunction:
         self.function = function
         self.is_generator = inspect.isgeneratorfunction(function)
         self.function_name = function.__name__
+
+        # Using inspect gets the docstring without the python indent.
         self.doc = inspect.getdoc(function)
+
         self.parameters = inspect.signature(function).parameters
         self.result_hooks = [result_hook_fix_blank_msg]
 
@@ -114,7 +118,7 @@ class SplintFunction:
         else:
             raise SplintException("post_sr_hooks must be a list")
 
-        # Get funciton attributes, using defaults if the user did not specify attributes.
+        # Get function attributes, using defaults if the user did not specify attributes.
         self.tag = get_attribute(function, "tag")
         self.level = get_attribute(function, "level")
         self.phase = get_attribute(function, "phase")
@@ -200,6 +204,43 @@ class SplintFunction:
             mod_msg = "" if not self.module else f"{self.module}"
             result.msg = f"Exception '{e}' occurred while running {mod_msg}{self.function.__name__}"
             yield result
+
+    def _get_section(self, header='',text=None):
+        """
+        Extracts a section from the docstring based on the provided header.
+        If no header is provided, it returns the text before the first header.
+        If the header is provided, it returns the text under that header.
+        If the header isn't found, it returns the text before the first header.
+
+        Parameters:
+        header (str): The header of the section to extract.
+        text (str): INternally this is never used, but is usefull for testing.
+
+        Returns:
+        str: The text of the requested section.
+        """
+
+        text = text or self.doc
+
+        # Split the docstring into sections
+        sections = re.split(r'(\w+:)', self.doc)
+
+        # Just return the first line of the header
+        if not header:
+            return sections[0].strip().split("\n", 1)[0].strip()
+
+        # Ensure the header ends with ':'
+        header = header.strip() + ':' if not header.endswith(':') else header
+
+
+        # Try to find the header and return the next section
+        for i, section in enumerate(sections):
+            if section.strip() == header:
+                return sections[i+1].strip()
+
+        # If the header wasn't found, return the text before the first header
+        return ''
+
 
     def load_result(self, result: SplintResult, start_time, end_time, count=1):
         """

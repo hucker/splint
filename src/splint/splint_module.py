@@ -43,6 +43,9 @@ class SplintModule:
             raise SplintException(f"Can't load {module_name}: {e}")
 
     def load_functions(self, module):
+        """Look through all of the functions in the module and if they start with the function_prefix
+        add them to the list of functions."""
+
         module = module or self.module
 
         for name in dir(module):

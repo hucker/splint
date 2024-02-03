@@ -1,6 +1,6 @@
 """ This module contains the SplintResult class and some common result transformers. """
 
-from dataclasses import dataclass,asdict
+from dataclasses import dataclass,field,asdict
 from typing import Callable, List
 import itertools
 from operator import attrgetter
@@ -65,10 +65,14 @@ class SplintResult:
     phase: str = ""
     count:int = 0
 
+    # Mitigations
+    mit_msg: str = ""
+    owner_list:List[str] = field(default_factory=list)
+
     def as_dict(self):
+        """Convert the SplintResult instance to a dictionary."""
         d = asdict(self)
         d['except_'] = str(d['except_'])
-        """Convert the SplintResult instance to a dictionary."""
         return d
 
 
