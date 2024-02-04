@@ -10,3 +10,4 @@ def test_splint_repo():
     assert all(r.func_name in expected_functions for r in results) # all 4 checks should be in the list of expected functions
     assert sum(r.tag == 'Pkg1' for r in results) == 2
     assert sum(r.tag == 'Pkg2' for r in results) == 2
+    

@@ -1,23 +1,24 @@
-import time
-import inspect
-import traceback
-import logging
 import functools
+import inspect
+import logging
 import re
+import time
+import traceback
+from typing import Generator
 
-from .splint_result import SplintResult
 from .splint_attribute import get_attribute
 from .splint_exception import SplintException
+from .splint_result import SplintResult
 
 
 def result_hook_fix_blank_msg(sfunc, result: SplintResult) -> SplintResult:
     """Fix the message of a result if it is blank.
 
     This is an example of a result hook used by splint to write
-    a usefull message if the user did not provide one.
+    a useful message if the user did not provide one.
 
     Args:
-        result (SplintResult): The result to rerite.
+        result (SplintResult): The result to rewrite.
 
     Returns:
         SplintResult: The result with the message fixed.
@@ -48,7 +49,7 @@ def result_hook_warn_to_fail(_, result: SplintResult) -> SplintResult:
     """If a warning message is provided change the status to fail
 
     Args:
-        result (SplintResult): The result to rerite.
+        result (SplintResult): The result to rewrite.
 
     Returns:
         SplintResult: The result with the message fixed.
@@ -62,14 +63,15 @@ class SplintFunction:
     """
     A class to represent a function in a module for the Splint framework.
 
-    This class stores a function and its associated module, and allows the function to be called with error handling.
+    This class stores a function and its associated module, and allows the function to be called with
+    error handling.
 
-    All functions that return values are converted to generators that yield SplintResult objects.  This allows
-    functions to return multiple results and for the user not to have to worry about the difference between
-    functions that return a single result and functions that return multiple results.
+    All functions returning values are converted to generators that yield SplintResult objects.
+    This allows functions to return multiple results and for the user not to worry about the
+    difference between functions that return a single result and functions returning multiple results.
 
-    Ideally people would just use generators everywhere, but this allows them to be lazy and just return a single
-    result and have it be converted to a generator.
+    Ideally people would just use generators everywhere, but this allows them to be lazy and just
+    return a single result and have it be converted to a generator.
 
     Attributes:
         module (ModuleType): The module that contains the function.
@@ -124,6 +126,8 @@ class SplintFunction:
         self.phase = get_attribute(function, "phase")
         self.weight = get_attribute(function, "weight")
         self.skip = get_attribute(function, "skip")
+        self.suid = get_attribute(function, "suid")
+
         logging.debug("Loaded function %s", self)
         self.allowed_exceptions = allowed_exceptions or (Exception,)
 
@@ -141,7 +145,7 @@ class SplintFunction:
                 print("???")
         return args
 
-    def __call__(self, *args, **kwds) -> SplintResult:
+    def __call__(self, *args, **kwds) -> Generator[SplintResult, None, None]:
         """Call the user provided function and collect information about the result.
 
         Raises:
@@ -153,14 +157,16 @@ class SplintFunction:
         Yields:
             Iterator[SplintResult]:
         """
-        # Call the stored functon and collect information about the result
+        # Call the stored function and collect information about the result
         start_time = time.time()
         # Function returns a generator that needs to be iterated over
         args = self._get_parameter_values()
+
+        # It is possible for an exception to occur before the generator is created.
+        # so we need a value to be set for count.
+        count = 1
+
         try:
-            # It is possible for an exception to occur before the generator is created.
-            # so we need a value to be set for count.
-            count = 1
 
             # This allows for returning a single result using return or
             # multiple results returning a list of results.
@@ -205,7 +211,7 @@ class SplintFunction:
             result.msg = f"Exception '{e}' occurred while running {mod_msg}{self.function.__name__}"
             yield result
 
-    def _get_section(self, header='',text=None):
+    def _get_section(self, header="", text=None):
         """
         Extracts a section from the docstring based on the provided header.
         If no header is provided, it returns the text before the first header.
@@ -214,7 +220,7 @@ class SplintFunction:
 
         Parameters:
         header (str): The header of the section to extract.
-        text (str): INternally this is never used, but is usefull for testing.
+        text (str): INternally this is never used, but is useful for testing.
 
         Returns:
         str: The text of the requested section.
@@ -223,24 +229,22 @@ class SplintFunction:
         text = text or self.doc
 
         # Split the docstring into sections
-        sections = re.split(r'(\w+:)', self.doc)
+        sections = re.split(r"(\w+:)", self.doc)
 
         # Just return the first line of the header
         if not header:
             return sections[0].strip().split("\n", 1)[0].strip()
 
         # Ensure the header ends with ':'
-        header = header.strip() + ':' if not header.endswith(':') else header
-
+        header = header.strip() + ":" if not header.endswith(":") else header
 
         # Try to find the header and return the next section
         for i, section in enumerate(sections):
             if section.strip() == header:
-                return sections[i+1].strip()
+                return sections[i + 1].strip()
 
         # If the header wasn't found, return the text before the first header
-        return ''
-
+        return ""
 
     def load_result(self, result: SplintResult, start_time, end_time, count=1):
         """

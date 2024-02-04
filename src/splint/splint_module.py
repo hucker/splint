@@ -1,8 +1,14 @@
+"""
+SplintModule is a class that represents a module that contains a set of functions that can be run. A module
+typically represents a file that is imported into the system by finding all function that
+start with a certain prefix and adding them to the list of functions to be managed by splint.
+"""
+
 import importlib
 from typing import List
-from .splint_function import SplintFunction
 import logging
-import sys
+
+from .splint_function import SplintFunction
 from .splint_exception import SplintException
 from .splint_filter import filter_none
 
@@ -15,6 +21,7 @@ class SplintModule:
         self.module_file = module_file
         self.function_prefix = function_prefix or "check_"
         self.doc = ""
+        self.suid_set = set()
         if autoload:
             self.load()
 
@@ -36,7 +43,6 @@ class SplintModule:
             self.module = module
             self.doc = module.__doc__
             self.load_functions(module)
-            logging.info(f"Loaded module {self}")
             return True
 
         except ImportError as e:
@@ -58,6 +64,14 @@ class SplintModule:
                 continue
             self.add_function(module, obj)
 
+    def suids(self):
+        """
+        Return a list of all of the SUIDs in the module.
+        Note that this can have duplicates, the list is sorted so
+        comparisons can be mad
+        """
+        return sorted(function.suid for function in self.functions)
+
     def yield_all(self, filter_func=filter_none()):
         for function in self.functions:
             if not function.skip and filter_func(function):
@@ -67,3 +81,4 @@ class SplintModule:
     def run_all(self, filter_func=filter_none()):
         results = list(self.yield_all(filter_func=filter_func))
         return results
+

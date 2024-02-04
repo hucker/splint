@@ -1,5 +1,5 @@
 from collections import namedtuple
-import src.splint as splint
+from src import splint 
 import pytest
 
 

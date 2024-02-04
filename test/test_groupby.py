@@ -1,6 +1,7 @@
-import pytest
+
 from src.splint.splint_result import SplintResult
 from src.splint.splint_result import group_by
+
 SR = SplintResult
 
 @pytest.fixture

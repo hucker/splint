@@ -84,15 +84,19 @@ class SplintPackage:
 
         return self.modules
 
-    def add(self, module: "SplintModule"):
-        logging.debug(f"Adding module {module.module_name} from {module} to Package")
-        self.modules.add(module)
 
     def get(self, module_name):
         for module in self.modules:
             if module.module_name == module_name:
                 return module
         return None
+
+    def suids(self):
+        """get a list of all the SUIDS in a package"""
+        suids = []
+        for module in self.modules:
+            suids.extend(module.suids())
+        return sorted(suids)
 
     def yield_all(self,filter_func=filter_none()):
         """

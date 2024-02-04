@@ -36,6 +36,12 @@ from .splint_attribute import get_attribute            # noqa: F401
 from .splint_attribute import attributes           # noqa: F401
 from .splint_result import overview                # noqa: F401
 
+from .splint_suid import module_suids              # noqa: F401
+from .splint_suid import package_suids             # noqa: F401
+from .splint_suid import empty_suids               # noqa: F401
+from .splint_suid import valid_suids               # noqa: F401
+from .splint_suid import suid_issues               # noqa: F401
+
 # Syntactic Sugar. Since this is used every time a result is returned it
 # makes sense to make it easier to type.
 SR = SplintResult
