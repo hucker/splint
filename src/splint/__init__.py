@@ -4,6 +4,9 @@ Public API for the Splint project.
 
 
 from .splint_environment import SplintEnvironment  # noqa: F401
+from .splint_environment import make_constant_function     # noqa: F401
+from .splint_environment import SplintEnvScope       # noqa: F401
+from .splint_environment import SplintEnvFunction    # noqa: F401
 from .splint_package import SplintPackage          # noqa: F401
 from .splint_result import SplintResult            # noqa: F401
 from .splint_exception import SplintException      # noqa: F401

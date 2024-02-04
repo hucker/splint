@@ -148,10 +148,10 @@ class SplintFunction:
             SplintException: Exceptions are remapped to SplintExceptions for easier handling
 
         Returns:
-            SplintResult: _description_
+            SplintResult:
 
         Yields:
-            Iterator[SplintResult]: _description_
+            Iterator[SplintResult]:
         """
         # Call the stored functon and collect information about the result
         start_time = time.time()
@@ -178,23 +178,23 @@ class SplintFunction:
                     # TODO: Time is wrong here, we should estimate each part taking 1/count of the total time
                     r = self.load_result(r, start_time, end_time, count=1)
                     yield r
-                return
 
-            # Functions can return multiple results, track them with a count attribute.
-            for count, result in enumerate(self.function(*args, **kwds), start=1):
-                end_time = time.time()
+            else:
+                # Functions can return multiple results, track them with a count attribute.
+                for count, result in enumerate(self.function(*args, **kwds), start=1):
+                    end_time = time.time()
 
-                if isinstance(result, bool):
-                    result = SplintResult(status=result)
-                elif isinstance(result, list):
-                    raise SplintException(
-                        "Function yielded a list rather than a SplintResult or boolean"
-                    )
+                    if isinstance(result, bool):
+                        result = SplintResult(status=result)
+                    elif isinstance(result, list):
+                        raise SplintException(
+                            "Function yielded a list rather than a SplintResult or boolean"
+                        )
 
-                result = self.load_result(result, start_time, end_time, count)
+                    result = self.load_result(result, start_time, end_time, count)
 
-                yield result
-                start_time = time.time()
+                    yield result
+                    start_time = time.time()
 
         except self.allowed_exceptions as e:
             result = SplintResult(status=False)
