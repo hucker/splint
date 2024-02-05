@@ -1,32 +1,33 @@
 # Splint
 
-A "linting" tool for anything that isn't code.
+Splint is a linting tool designed for tasks beyond traditional code analysis. Inspired by the effectiveness of `pylint` in identifying and rectifying issues in code, I envisioned a tool that could extend this functionality to various aspects of my workflows with just a button press. As someone dealing with diverse data formats and intricate inter-relationships, I found the need to ensure specific conditions hold true across my work.
 
-IT was born when I realized that I subconcious  use pylint and ruff every day when I write code and it tells me whats wrong and I intuitively fix things.  I wanted to be able to press a button and have everything I know that must be true, actuall is true.
+Whether it's maintaining folders without old files, enforcing rules on CSV data, or adhering to complex instruction sets, many of these checks are usually done manually. Identifying issues that are almost right can be challenging for humans.
 
-After many variations that looked like just writing a bunch of scripts that checked each thing, and then hooking in configuration files that tested all sorts of similar things conveniently I decided that what I wanted was to run something like pytest against various systems. `Pytest` does mostly what I want but it is really designed to solve a different problem.  I liked the declarative style of writing independent tests that get collected and run by a framework that managed the overhead of running tests, collecting results, reporting, filtering, and I wanted to build something outside of my box.
+After experimenting with different approaches involving scripting and configuration files, I concluded that a pytest-like framework could be the solution. While `pytest` served a different purpose, I appreciated its declarative style for writing independent tests, which are then managed by the framework. This led to the creation of Splint, a tool that allows you to run rules against various systems.
 
-So I built splint.  If you know `pytes`t, you will be up and running quickly.  The basics are the same.  Splint has rules that live in files.  The rules are functions and they are loaded sort of like plugins to your app.  The functions you write can have decorators that add attributes to your rules to simplify reporting, and filtering.
+If you're familiar with `pytest`, adapting to Splint will be seamless. Both follow a similar structure. Splint defines rules in files, where rules are python functions that plugin to your application with very little effort. All you need to do is write simple pytong code that checks your rules and place those functions in a pyton file and add a decorator to the function (opiontally).
 
-The auto loaded modules and auto detected rule functions can take parameters.  These parameters work very similar to `pytest` in that they are detected and loaded from an environment that is dynamically built up from a hiearchy of your system.  It sound complicated, but if you get `pytes`t you will get splint.
+Splint's auto-loaded modules and rule functions support parameters, mirroring some of the behavior of `pytest`. These parameters are dynamically built from the environment, following a hierarchy of your system. While it may sound intricate, if you grasp `pytest`, you'll easily understand Splint.
+
 
 ## Why not pytest?
-Good question.  `Pytes`t is huge and complicated while splint is small and simple.  Splint is made to drop into a command line app or a `streamlit` app with ease.  It is meant to be part of something else, plus I wanted to write something useful while learning about how plugin in files works.
+Good question.  `Pytest` is huge and complicated while splint is small and simple. `Pytest` is for code and all of the ways that oode can break, it is tied intricately to python.  Splint doesn't care about code it cares about rules that you write against your system.  Splint is made to drop into a command line app or a `streamlit` app with ease.  It is meant to be part of something else, plus I wanted to write something useful while learning about how plugin in files works.
 
 ## Getting Started
 
-As I said, splint, works like `pytest`.  If you know `pytest`, you will be very good at `splint`. You write independent checks that can be run in any order to verify system state.  They should be atomic.   If you are used to writing tests with modules that start with "test" and functions that start with "test" it will be a breeze to get started. If you understand fixtures, that concept is also available through environments. Checks can be tagged with attributes so you can run various subsets of tests easily.  It is easy to write a trivial check with a single check function, but there is support for complete checking hierarchies.
+As I said, splint, works like `pytest`.  If you know `pytest`, you will be  good at `splint`. You write independent checks that can be run in any order to verify system state.  They should be atomic.   If you are used to writing tests with modules that start with "test" and functions that start with "test" it will be a breeze to get started. If you understand fixtures, that concept is also available through environments. Checks can be tagged with attributes so you can run various subsets of tests easily.  It is easy to write a trivial check with a single check function, but there is support for complete checking hierarchies.
 
 From the most simple you could write rules like this:
 ```python
 from splint import SplintResult,attributes
 
-def check_equality()
-    return True
+def check_boolean()
+    return get_drive_space('/foo') > 1_000_000_000
 
 def check_yielded_values():
-    yield 1 == 1
-    yield 2 != 1
+    yield 1get_drive_space('/foo') > 1_000_000_000)
+    yield get_drive_space('/fum') > 1_000_000_000)
 ```
 
 As you might expect running this will provide 3 passing test results.
@@ -34,19 +35,19 @@ As you might expect running this will provide 3 passing test results.
 You can up the game and return status message info:
 From the most simple you could write rules like this:
 ```python
-from splint import SplintResult,attributes
+from splint import SplintResult,attributes,SR
 
-def check_equality()
-    return SplintResult(1==1,msg="Equality Check")
+def check_boolean()
+    return SR(status=get_drive_space('/foo') > 1_000_000_000,msg="Drive space check for foo")
 
 def check_yielded_values():
-    yield SplintResult(status=1 == 1,msg="Equality Check")
-    yield SplintResult(status=2 != 1,msg="Inequality Check")
+    yield SR(status=get_drive_space('/foo') > 1_000_000_000,msg="Drive space check for foo")
+    yield SR(status=get_drive_space('/fum') > 1_000_000_000,msg="Drive space check for fum")
 ```
 
-As you might expect runing this will provide 3 passing test results.
+As you might expect running this will provide 3 passing test results.
 
-Now we can add more comlexity.  Tag a test functions with attributes.
+Now we can add more complexity.  Tag a test functions with attributes.
 ```python
 from splint import SplintResult,attributes
 import pathlib
@@ -72,10 +73,9 @@ def check_file_age():
         return SplintResult(status=False,"The file is stale")
 ```
 
-And even a bit more complexity pass values to these functions using environments, which are very similar to fixutures.
+And even a bit more complexity pass values to these functions using environments, which are very similar to `pytest` fixutures.
 
 ```python
-
 
 @environment('module')
 def csv_file()
@@ -98,13 +98,26 @@ def check_file_age(csv_file):
     else:
         return SplintResult(status=False,"The file is stale")
 ```
+## How is Splint Organized?
+Splint uses the following bottom-up hierarchy:
+  SplintFunction
+      SplintModule (one or more SplintFunctions in a Python file)
+          SplintPackage (one or more SplintModules in a folder)
+              SplintRepo (one or more SplintPackages in a folder)
 
+Each Splint function returns 0-to-N results from its generator function. By convention, if None is returned, the rule was skipped.
+The rule functions that you write don't need to use generators. They can return a wide variety of output
+(e.g., Boolean, List of Boolean, SplintResult, List of SplintResult), or you can write a generator that yields them as they are created.
 
-## What are SUIDS?
+## What is the output?
+The low level output of Splint is a SplintResult.  Each SplintResult is trivially converted to a json record, or a line in a CSV file
+for processing by other tools.  IT is very easy to connect things up to Streamlit, FastAPI or a typer CLI app.
+
+## What are RUIDS?
 Tags and phases are generic information that is only present for filtering.  The values don't have much meaning to the inner
-workings of splint.  `SUID`s are different.  The purpose of an `SUID` is to tag every check function with a unique value that
+workings of splint.  `RUID`s are different.  The purpose of an `RUID` is to tag every check function with a unique value that
 is meaningful to the end USER.  The only rule to the code is that they are unique.  If you tag a single function with an
-SUID the system will expect you to put a unique ID on very function.  Exceptions are generated if there are SUIDs that are
+RUID the system will expect you to put a unique ID on very function.  Exceptions are generated if there are RUIDs that are
 not unique.
 
 What do you get for this? You now have fine grain control to the function level AND the user level to enable/disable checks.

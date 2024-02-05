@@ -3,7 +3,7 @@ DEFAULT_LEVEL = 1
 DEFAULT_PHASE = ""
 DEFAULT_WEIGHT = 100
 DEFAULT_SKIP = False
-DEFAULT_SUID = ''
+DEFAULT_RUID = ""
 
 
 def attributes(
@@ -13,8 +13,7 @@ def attributes(
     level=DEFAULT_LEVEL,
     weight=DEFAULT_WEIGHT,
     skip=DEFAULT_SKIP,
-    suid=DEFAULT_SUID
-
+    ruid=DEFAULT_RUID
 ):
     """
     Decorator to add attributes to a Splint function..
@@ -26,7 +25,7 @@ def attributes(
         func.level = level
         func.weight = weight
         func.skip = skip
-        func.suid = suid
+        func.ruid = ruid
         return func
 
     return decorator
@@ -42,7 +41,7 @@ def get_attribute(func, attr, default_value=None):
         "level": DEFAULT_LEVEL,
         "weight": DEFAULT_WEIGHT,
         "skip": DEFAULT_SKIP,
-        "suid": DEFAULT_SUID
+        "ruid": DEFAULT_RUID,
     }
     default = default_value or defs[attr]
     return getattr(func, attr, default)

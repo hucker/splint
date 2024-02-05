@@ -126,7 +126,7 @@ class SplintFunction:
         self.phase = get_attribute(function, "phase")
         self.weight = get_attribute(function, "weight")
         self.skip = get_attribute(function, "skip")
-        self.suid = get_attribute(function, "suid")
+        self.ruid = get_attribute(function, "ruid")
 
         logging.debug("Loaded function %s", self)
         self.allowed_exceptions = allowed_exceptions or (Exception,)

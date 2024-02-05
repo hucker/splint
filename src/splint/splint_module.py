@@ -7,10 +7,9 @@ start with a certain prefix and adding them to the list of functions to be manag
 import importlib
 from typing import List
 
-
-from .splint_function import SplintFunction
 from .splint_exception import SplintException
 from .splint_filter import filter_none
+from .splint_function import SplintFunction
 
 
 class SplintModule:
@@ -21,7 +20,6 @@ class SplintModule:
         self.module_file = module_file
         self.function_prefix = function_prefix or "check_"
         self.doc = ""
-        self.suid_set = set()
         if auto_load:
             self.load()
 
@@ -64,13 +62,13 @@ class SplintModule:
                 continue
             self.add_function(module, obj)
 
-    def suids(self):
+    def ruids(self):
         """
-        Return a list of all of the SUIDs in the module.
+        Return a list of all of the RUIDs in the module.
         Note that this can have duplicates.  The list is
         sorted to facilitate comparison.
         """
-        return sorted(function.suid for function in self.functions)
+        return sorted(function.ruid for function in self.functions)
 
     def yield_all(self, filter_func=filter_none()):
         for function in self.functions:
@@ -81,4 +79,3 @@ class SplintModule:
     def run_all(self, filter_func=filter_none()):
         results = list(self.yield_all(filter_func=filter_func))
         return results
-
