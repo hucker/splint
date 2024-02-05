@@ -4,21 +4,22 @@ Splint is a linting tool designed for tasks beyond traditional code analysis. In
 
 Whether it's maintaining folders without old files, enforcing rules on CSV data, or adhering to complex instruction sets, many of these checks are usually done manually. Identifying issues that are almost right can be challenging for humans.
 
-After experimenting with different approaches involving scripting and configuration files, I concluded that a pytest-like framework could be the solution. While `pytest` served a different purpose, I appreciated its declarative style for writing independent tests, which are then managed by the framework. This led to the creation of Splint, a tool that allows you to run rules against various systems.
+After experimenting with different approaches involving scripting and configuration files, I concluded that a `pytest`-like framework could be the solution. While `pytest` served a different purpose, I appreciated its declarative style for writing independent tests, which are then managed by the framework. This led to the creation of Splint, a tool that allows you to run rules against various systems.
 
-If you're familiar with `pytest`, adapting to Splint will be seamless. Both follow a similar structure. Splint defines rules in files, where rules are python functions that plugin to your application with very little effort. All you need to do is write simple pytong code that checks your rules and place those functions in a pyton file and add a decorator to the function (opiontally).
+If you're familiar with `pytest`, adapting to Splint will be seamless. Both follow a similar structure. Splint defines rules in files, where rules are python functions that plugin to your application with very little effort. All you need to do is write simple python code that checks your rules and place those functions in a paton file and add a decorator to the function (optionally).
 
 Splint's auto-loaded modules and rule functions support parameters, mirroring some of the behavior of `pytest`. These parameters are dynamically built from the environment, following a hierarchy of your system. While it may sound intricate, if you grasp `pytest`, you'll easily understand Splint.
 
 
 ## Why not pytest?
-Good question.  `Pytest` is huge and complicated while splint is small and simple. `Pytest` is for code and all of the ways that oode can break, it is tied intricately to python.  Splint doesn't care about code it cares about rules that you write against your system.  Splint is made to drop into a command line app or a `streamlit` app with ease.  It is meant to be part of something else, plus I wanted to write something useful while learning about how plugin in files works.
+Good question.  `Pytest` is huge and complicated while splint is small and simple. `Pytest` is for code and all of the ways that code can break, it is tied intricately to python.  Splint doesn't care about code it cares about rules that you write against your system.  Splint is made to drop into a command line app or a `streamlit` app with ease.  It is meant to be part of something else, plus I wanted to write something useful while learning about how plugin in files works.
 
 ## Getting Started
 
 As I said, splint, works like `pytest`.  If you know `pytest`, you will be  good at `splint`. You write independent checks that can be run in any order to verify system state.  They should be atomic.   If you are used to writing tests with modules that start with "test" and functions that start with "test" it will be a breeze to get started. If you understand fixtures, that concept is also available through environments. Checks can be tagged with attributes so you can run various subsets of tests easily.  It is easy to write a trivial check with a single check function, but there is support for complete checking hierarchies.
 
 From the most simple you could write rules like this:
+
 ```python
 from splint import SplintResult,attributes
 
@@ -99,19 +100,24 @@ def check_file_age(csv_file):
         return SplintResult(status=False,"The file is stale")
 ```
 ## How is Splint Organized?
-Splint uses the following bottom-up hierarchy:
-  SplintFunction
-      SplintModule (one or more SplintFunctions in a Python file)
-          SplintPackage (one or more SplintModules in a folder)
-              SplintRepo (one or more SplintPackages in a folder)
+Splint uses the following hierarchy:
+
+     `SplintRepo` (one or more SplintPackages in a folder)
+        `SplintPackage` (one or more SplintModules in a folder)
+            `SplintModule` (one or more SplintFunctions in a Python file (function starting with the text "check_"))
+                `SplintFunction` (0 or more `SplintResults`)
+
+Typically one works at the module or package level where you have files that have 1 or more files with rules in them.  For
+workflows in companies with < 200 people our problems rarely exceed this level.  The repo level was added for "fun."
 
 Each Splint function returns 0-to-N results from its generator function. By convention, if None is returned, the rule was skipped.
 The rule functions that you write don't need to use generators. They can return a wide variety of output
-(e.g., Boolean, List of Boolean, SplintResult, List of SplintResult), or you can write a generator that yields them as they are created.
+(e.g., Boolean, List of Boolean, SplintResult, List of SplintResult), or you can write a generator that yields results as
+they are checked.
 
 ## What is the output?
-The low level output of Splint is a SplintResult.  Each SplintResult is trivially converted to a json record, or a line in a CSV file
-for processing by other tools.  IT is very easy to connect things up to Streamlit, FastAPI or a typer CLI app.
+The low level output of a SplintFunction are SplintResults.  Each SplintResult is trivially converted to a json record, or a line in a CSV file
+for processing by other tools.  It is very easy to connect things up to `Streamlit`, FastAPI or a `typer` CLI app.
 
 ## What are RUIDS?
 Tags and phases are generic information that is only present for filtering.  The values don't have much meaning to the inner
@@ -121,9 +127,10 @@ RUID the system will expect you to put a unique ID on very function.  Exceptions
 not unique.
 
 What do you get for this? You now have fine grain control to the function level AND the user level to enable/disable checks.
-A code analogy is that you can turn off line width checks globally for you project setting values in the `.lintrc` file.  In the
+A `pylint` analogy is that you can turn off line width checks globally for you project setting values in the `.lintrc` file.  In the
 case of splint, perhaps part of your system has one set of rules and another part of the system has a different set of rules.
-The same code base with a different config file eanbling/disabling tests would be quite useful.
+Or perhaps in an early phase development a subset of rules is applied, and at another a different set of rules is applied. RUIDS
+allow you to set this up with "simple" config files.
 
 UIDs can be anything.  Simple integers starting from 1, smart-ish values like File-001, Fill-002, 'smarter' or File-Required,
 File-Too-Old. Whatever makes sense on the project.  As a general rule smart naming conventions aren't smart, so beware of the
@@ -142,6 +149,10 @@ def check_file_age():
     f = pathlib.Path("/user/file2.txt")
     return SplintResult(status=f.exists(),f"File {f.name}")
 ```
+
+This TOML file has a "simple" mode and a "comlex" mode.  In each case they run all the checks (based on the include) and then
+anything in the exclude list is not reported.  Note that this happens BEFORE the tests are run rather than running the test
+and then throwing away the result.
 
 ```toml
 [simple]
