@@ -8,15 +8,26 @@ from src import splint
 
 @pytest.fixture(scope="function")
 def sys_path():
+    """
+    Prevent sys.path from being modified by tests.
+
+    This is a case where you should @pytest.mark.usefixtures("sys_path")
+    at the top of each functionthat can modify sys.path. This will ensure
+    that sys.path is reset after each test and prevent warnings
+    about sys_path not being used.
+    """
     original_sys_path = sys.path.copy()
     yield
     sys.path = original_sys_path
 
 
-def test_ruid1(sys_path):
+@pytest.mark.usefixtures("sys_path")
+def test_ruid1():
+    """Normal case all RUIDS are unique"""
     pkg = splint.SplintPackage(folder="./test/ruid", name="ruid")
 
     ruids = pkg.ruids()
+
 
 
     assert ruids == ["suid11", "suid12", "suid21", "suid22"]
@@ -24,7 +35,8 @@ def test_ruid1(sys_path):
     assert splint.ruid_issues(ruids) == "No issues found."
 
 
-def test_ruid_dup(sys_path):
+@pytest.mark.usefixtures("sys_path")
+def test_ruid_dup():
     """Load up a package with duplicate RUIDS and blanks"""
     pkg = splint.SplintPackage(folder="./test/ruid_dup", name="ruid_dup")
 
@@ -36,8 +48,8 @@ def test_ruid_dup(sys_path):
         splint.ruid_issues(ruids) == "Duplicates: suid12, suid22. Blank RUIDs present."
     )
 
-
-def test_no_ruid(sys_path):
+@pytest.mark.usefixtures("sys_path")
+def test_no_ruid():
     """Load a package that has no RUIDS"""
     pkg = splint.SplintPackage(folder="./test/ruid_empty", name="ruid_empty")
 
