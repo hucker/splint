@@ -14,7 +14,7 @@ class SplintPackage:
         folder="check",
         module_glob="check_*.py",
         function_prefix="check_",
-        autoload=True,
+        auto_load=True,
         name=None,
         env: SplintEnvironment = None,
     ):
@@ -41,7 +41,7 @@ class SplintPackage:
         if self.env is None:
             raise SplintException("An environment has not been defined.")
 
-        if autoload:
+        if auto_load:
             self.load_modules()
 
     def _verify_dir(self):
@@ -72,14 +72,10 @@ class SplintPackage:
     def load_modules(self, glob=None):
         checkfile_glob = glob or self.module_glob
 
-        logging.info(
-            f"Loading splint modules from %s with pattern {checkfile_glob}", self.folder
-        )
-
         for file_path in sorted(self.folder.glob(checkfile_glob)):
             module_name = f"{file_path.stem}"
 
-            module = SplintModule(module_name, module_file=file_path, autoload=True)
+            module = SplintModule(module_name, module_file=file_path, auto_load=True)
             self.modules.append(module)
 
         return self.modules

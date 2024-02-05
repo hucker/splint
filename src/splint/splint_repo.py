@@ -7,12 +7,12 @@ import pathlib
 
 
 class SplintRepo:
-    def __init__(self, pkg_folder=None, pkg_glob="pkg_*", autoload=True, stop_on_exc=False):
+    def __init__(self, pkg_folder=None, pkg_glob="pkg_*", auto_load=True, stop_on_exc=False):
         self.packages: List[SplintPackage] = []
         self.pkg_folders = list(pathlib.Path(pkg_folder).glob(pkg_glob))
         self.pkg_glob = pkg_glob
         self.stop_on_exc = stop_on_exc
-        if autoload and self.pkg_folders:
+        if auto_load and self.pkg_folders:
             self.load_packages()
 
     def load_packages(self, pkg_folders=None):

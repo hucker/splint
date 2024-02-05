@@ -6,7 +6,7 @@ start with a certain prefix and adding them to the list of functions to be manag
 
 import importlib
 from typing import List
-import logging
+
 
 from .splint_function import SplintFunction
 from .splint_exception import SplintException
@@ -14,7 +14,7 @@ from .splint_filter import filter_none
 
 
 class SplintModule:
-    def __init__(self, module_name, module_file, function_prefix=None, autoload=True):
+    def __init__(self, module_name, module_file, function_prefix=None, auto_load=True):
         self.module_name = module_name
         self.functions: List[SplintFunction] = []
         self.module = None
@@ -22,7 +22,7 @@ class SplintModule:
         self.function_prefix = function_prefix or "check_"
         self.doc = ""
         self.suid_set = set()
-        if autoload:
+        if auto_load:
             self.load()
 
     def __str__(self):
@@ -67,8 +67,8 @@ class SplintModule:
     def suids(self):
         """
         Return a list of all of the SUIDs in the module.
-        Note that this can have duplicates, the list is sorted so
-        comparisons can be mad
+        Note that this can have duplicates.  The list is
+        sorted to facilitate comparison.
         """
         return sorted(function.suid for function in self.functions)
 

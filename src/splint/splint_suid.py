@@ -57,5 +57,5 @@ def suid_issues(suids:List[str])->str:
         else:
             issues.append("Blank SUIDs present.")
 
-    msg = " ".join(issues) if issues else "No issues found"
+    msg = " ".join(issues) if issues else "No issues found."
     return msg
