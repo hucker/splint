@@ -67,15 +67,21 @@ class SplintModule:
         Return a list of all of the RUIDs in the module.
         Note that this can have duplicates.  The list is
         sorted to facilitate comparison.
+
+        RUID = rule identifier
         """
         return sorted(function.ruid for function in self.functions)
 
-    def yield_all(self, filter_func=filter_none()):
+    def yield_all(self, filter_functions=None):
+
+        filter_functions = filter_functions or [filter_none()]
+
         for function in self.functions:
-            if not function.skip and filter_func(function):
+            filter_skip = any(filter_func(function) for filter_func in filter_functions)
+            if not function.skip and not filter_skip:
                 for result in function():
                     yield result
 
-    def run_all(self, filter_func=filter_none()):
-        results = list(self.yield_all(filter_func=filter_func))
+    def run_all(self, filter_functions=None)):
+        results = list(self.yield_all(filter_functions=filter_functions))
         return results
