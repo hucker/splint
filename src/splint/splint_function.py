@@ -265,6 +265,7 @@ class SplintFunction:
         result.tag = self.tag
         result.level = self.level
         result.phase = self.phase
+        result.ruid = self.ruid
         result.runtime_sec = end_time - start_time
         result.count = count
 

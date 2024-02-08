@@ -8,7 +8,7 @@ import importlib
 from typing import List
 
 from .splint_exception import SplintException
-from .splint_filter import filter_none
+from .splint_filter import filter_all
 from .splint_function import SplintFunction
 
 
@@ -72,16 +72,4 @@ class SplintModule:
         """
         return sorted(function.ruid for function in self.functions)
 
-    def yield_all(self, filter_functions=None):
 
-        filter_functions = filter_functions or [filter_none()]
-
-        for function in self.functions:
-            filter_skip = any(filter_func(function) for filter_func in filter_functions)
-            if not function.skip and not filter_skip:
-                for result in function():
-                    yield result
-
-    def run_all(self, filter_functions=None)):
-        results = list(self.yield_all(filter_functions=filter_functions))
-        return results

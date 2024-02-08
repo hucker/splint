@@ -37,7 +37,6 @@ from .splint_filter import (
 from .splint_function import SplintFunction  # noqa: F401
 from .splint_module import SplintModule  # noqa: F401
 from .splint_package import SplintPackage  # noqa: F401
-from .splint_repo import SplintRepo  # noqa: F401
 from .splint_result import (
     SplintResult,  # noqa: F401
     overview,  # noqa: F401
@@ -48,6 +47,18 @@ from .splint_ruid import (
     package_ruids,  # noqa: F401
     ruid_issues,  # noqa: F401
     valid_ruids,  # noqa: F401
+)
+
+from .splint_checker import (
+    exclude_levels,  # noqa: F401
+    exclude_phases,  # noqa: F401
+    exclude_ruids,  # noqa: F401
+    exclude_tags,  # noqa: F401
+    keep_levels,  # noqa: F401
+    keep_phases,  # noqa: F401
+    keep_ruids,  # noqa: F401
+    keep_tags,  # noqa: F401
+    SplintChecker,  # noqa: F401
 )
 
 # Syntactic Sugar. Since this is used every time a result is returned it

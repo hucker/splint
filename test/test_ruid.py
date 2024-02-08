@@ -12,7 +12,7 @@ def sys_path():
     Prevent sys.path from being modified by tests.
 
     This is a case where you should @pytest.mark.usefixtures("sys_path")
-    at the top of each functionthat can modify sys.path. This will ensure
+    at the top of each function that can modify sys.path. This will ensure
     that sys.path is reset after each test and prevent warnings
     about sys_path not being used.
     """
@@ -25,6 +25,26 @@ def sys_path():
 def test_ruid1():
     """Normal case all RUIDS are unique"""
     pkg = splint.SplintPackage(folder="./test/ruid", name="ruid")
+
+    ruids = pkg.ruids()
+
+
+
+    assert ruids == ["suid11", "suid12", "suid21", "suid22"]
+    assert splint.valid_ruids(ruids)
+    assert splint.ruid_issues(ruids) == "No issues found."
+
+
+@pytest.mark.usefixtures("sys_path")
+def test_run_ruid_1():
+    """Normal case all RUIDS are unique"""
+    pkg = splint.SplintPackage(folder="./test/ruid", name="ruid")
+    ch = splint.SplintChecker(packages=pkg)
+    ch.pre_collect()
+    ch.prepare()
+
+
+    results = ch.run_all()
 
     ruids = pkg.ruids()
 

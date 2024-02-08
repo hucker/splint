@@ -71,7 +71,7 @@ class SplintPackage:
     def module_count(self) -> int:
         return 0 if not self.modules else len(self.modules)
 
-    def load_modules(self, glob=None):
+    def load_modules(self, glob=None)->List[SplintModule]:
         checkfile_glob = glob or self.module_glob
 
         for file_path in sorted(self.folder.glob(checkfile_glob)):
@@ -82,7 +82,7 @@ class SplintPackage:
 
         return self.modules
 
-    def get(self, module_name):
+    def get(self, module_name)->SplintModule:
         for module in self.modules:
             if module.module_name == module_name:
                 return module
@@ -94,26 +94,3 @@ class SplintPackage:
         for module in self.modules:
             ruids.extend(module.ruids())
         return sorted(ruids)
-
-    def yield_all(self, filter_func=filter_none()):
-        """
-        Generator method to run all functions in the modules that satisfy the filter_func condition.
-
-        This method iterates over all modules and their functions. If a function satisfies the condition
-        specified by filter_func, it is run and its results are yielded one by one.
-
-        Args:
-            filter_func (callable): A function that takes a SplintFunction instance as an argument and
-                                    returns a boolean. Only functions for which this returns True are run.
-                                    By default, all functions are run.
-
-        Yields:
-            SplintResult: The result of each function that satisfies the filter_func condition.
-        """
-        for module in self.modules:
-            results = module.yield_all(filter_func=filter_func)
-            for result in results:
-                yield result
-
-    def run_all(self, filter_func=filter_none()):
-        return list(self.yield_all(filter_func=filter_func))

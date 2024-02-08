@@ -64,6 +64,7 @@ class SplintResult:
     level: int = 1
     phase: str = ""
     count:int = 0
+    ruid:str=""
 
     # Mitigations
     mit_msg: str = ""

@@ -32,50 +32,49 @@ def run_checks_on_package(pkg: str):
     else:
         typer.echo(f"Invalid package: {pkg}")
 
-def run_checks_on_repo(repo: str):
-    """ Run checks on a repo
-    TODO: THis is not functional
-    """
-    if 1:
-        raise splint.SplintException("Repo not implimented.")
-    target_path = pathlib.Path(repo)
-    if target_path.is_dir():
-        for check_folder in glob.glob(str(target_path / 'check*')):
-            for module in pathlib.Path(check_folder).rglob('*.py'):
-                s.run_checks(str(module))
-    else:
-        typer.echo(f"Invalid repo: {repo}")
+
 
 @app.command()
 def run_checks(
     module: str = typer.Option(None, '-m','--mod', help="The module to run rules against."),
     pkg: str = typer.Option(None, '-p','--pkg', help="The package to run rules against."),
-    repo: str = typer.Option(None,'-r','--repo', help="The repo to run rules against."),
     json_file: str = typer.Option(None, '-j','--json', help="The JSON file to write results to."),
-    flat: bool = typer.Option(True, '-f', '--flat', help="Should the output be flat or a hierachy."),
+    flat: bool = typer.Option(True, '-f', '--flat', help="Should the output be flat or a hierarchy."),
     verbose: bool = typer.Option(False, '-v', '--verbose', help="Enable verbose output.")
 ):
     """Run Splint checks on a given using a typer command line app."""
 
-    options = {"module": module, "package": pkg, "repo": repo}
-    selected_options = {k: v for k, v in options.items() if v is not None}
+    options = {"module": module, "package": pkg}
 
-    if len(selected_options) > 1:
-        typer.echo("Please provide only one of module, package, or repo.")
-        return
-
-    if not selected_options:
-        typer.echo("Please provide a module, package, or repo to run checks on.")
-        return
 
     try:
+
         if module:
-            results = run_checks_on_module(module)
-        elif pkg:
-            results = run_checks_on_package(pkg)
-        elif repo:
-            pass
-            #results = run_checks_on_repo(repo)
+            target_path = pathlib.Path(module)
+            if target_path.is_file():
+                mod = splint.SplintModule(module_name=target_path.stem,module_file=str(target_path))
+            else:
+                typer.echo(f"Invalid module: {module}")
+        else:
+            mod = None
+
+        if pkg:
+            folder = pathlib.Path(pkg)
+            if folder.is_dir():
+                pkg = splint.SplintPackage(folder=folder)
+            else:
+                typer.echo(f"Invalid package: {pkg}")
+        else:
+            pkg = None
+
+        if mod or pkg:
+            ch = splint.SplintChecker(modules=mod,packages=pkg)
+            ch.pre_collect()
+            ch.prepare()
+            results = ch.run_all()
+        else:
+            typer.echo("Please provide a module, package to run checks on.")
+            return
 
         if not flat:
             results = splint.splint_result.group_by(results,["repo_name",'pkg_name','module_name','func_name'])

@@ -102,13 +102,11 @@ def check_file_age(csv_file):
 ## How is Splint Organized?
 Splint uses the following hierarchy:
 
-     `SplintRepo` (one or more SplintPackages in a folder)
-        `SplintPackage` (one or more SplintModules in a folder)
-            `SplintModule` (one or more SplintFunctions in a Python file (function starting with the text "check_"))
-                `SplintFunction` (0 or more `SplintResults`)
+    `SplintPackage` (one or more SplintModules in a folder)
+        `SplintModule` (one or more SplintFunctions in a Python file (function starting with the text "check_"))
+            `SplintFunction` (0 or more `SplintResults`)
 
-Typically one works at the module or package level where you have files that have 1 or more files with rules in them.  For
-workflows in companies with < 200 people our problems rarely exceed this level.  The repo level was added for "fun."
+Typically one works at the module or package level where you have files that have 1 or more files with rules in them.
 
 Each Splint function returns 0-to-N results from its generator function. By convention, if None is returned, the rule was skipped.
 The rule functions that you write don't need to use generators. They can return a wide variety of output
@@ -172,7 +170,6 @@ Lots of ways.
 1) Just give it a bunch of functions in a list would work.
 2) Point it to a file and splint will find all the functions in that file and call them. (ScruffModule)
 3) Point it to a folder (or pass it a bunch of filenames) and splint will load each module and collect all the tests (ScruffPackage)
-4) Point it to a folder of folders (or pass a list of folder names) and splint will load each module and collect all the tests (ScruffRepo)
 
 For me that is as deep as I want things to go.
 
@@ -184,7 +181,7 @@ Splint is just a name that sounds cool.  When I started this I thought system-li
 
 ## Command Line Demo App For `splinter`:
 
-Included is a light weight `typer` app that allows to point splint at a file, folder or repo (folder of folders) and run all tests via the command line.
+Included is a light weight `typer` app that allows to point splint at a file or folder and run all tests via the command line.
 
 To run it against a folder
 
@@ -200,7 +197,6 @@ Usage: splinter.py [OPTIONS]
 ╭─ Options ─────────────────────────────────────────────────────────────────────────╮
 │            -m      TEXT  The module to run checks on. [default: None]             │
 │            -p      TEXT  The package to run checks on. [default: None]            │
-│            -r      TEXT  The repo to run checks on. [default: None]               │
 │ --verbose  -v            Enable verbose output.                                   │
 │ --help                   Show this message and exit.                              │
 ╰───────────────────────────────────────────────────────────────────────────────────╯

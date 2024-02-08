@@ -1,5 +1,4 @@
 {
-    "python.analysis.typeCheckingMode": "basic",
     "editor.formatOnSave": true,
     "editor.formatOnSaveMode": "file",
     "editor.codeActionsOnSave": {
@@ -9,5 +8,9 @@
     "python.testing.pytestEnabled": true,
     "python.testing.pytestArgs": [
         "test"
+    ],
+    "cSpell.words": [
+        "ruid",
+        "ruids"
     ]
 }
