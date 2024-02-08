@@ -124,14 +124,9 @@ class SplintEnvironment:
     The environment is a dictionary of name/value pairs that represent the name of the environment
     variable and the scope of the variable.
 
-    Variables that are repo scope are for the duration of the run.
     Variables that are package scope are reloaded each time a new package is loaded
     Variables that are module scope are reloaded each time a new module is loaded
     Variables that are function scope are reloaded each time a new function is loaded
-
-    When creating an environment an optional file may be given that will load a repo scope environment
-    from the file.  This is useful for setting up the environment for a run.  An environment as
-    a dictionary may also be provided.
 
     The semantics of the environment work like pytest. Each environment function is yielded
     one at a time when the module is loaded and yielded again when unloaded (in reverse order),

@@ -40,7 +40,6 @@ class SplintResult:
     # Name hierachy
     func_name: str = ""
     pkg_name: str = ""
-    repo_name: str = ""
     module_name: str = ""
 
     # Msg Hierarchy
@@ -119,13 +118,12 @@ def fix_blank_msg(sr:SplintResult):
     Returns:
         SplintResult: The result with its message set to the module and function name if it was blank.
     """
-    repo_msg = f"{sr.repo_name}." if sr.repo_name else ""
     pkg_msg = f"{sr.pkg_name}." if sr.pkg_name else ""
     mod_msg = f"{sr.module_name}." if sr.module_name else ""
     func_msg = f"{sr.func_name}." if sr.func_name else ""
 
     if not sr.msg:
-        sr.msg = f"{repo_msg}{pkg_msg}{mod_msg}{func_msg}.{sr.count:03d}"
+        sr.msg = f"{{pkg_msg}{mod_msg}{func_msg}.{sr.count:03d}"
     return sr
 
 

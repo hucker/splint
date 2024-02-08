@@ -24,7 +24,7 @@ def result_hook_fix_blank_msg(sfunc, result: SplintResult) -> SplintResult:
         SplintResult: The result with the message fixed.
     """
     # If the result has no message, then create a default one either
-    # from the doc string or from the function name/module/package/repo.
+    # from the doc string or from the function name/module/package.
     if not result.msg:
         if sfunc.doc.strip().count("\n") == 0 and sfunc.doc.strip():
             result.msg = f"{result.func_name}{sfunc.doc.strip()}"

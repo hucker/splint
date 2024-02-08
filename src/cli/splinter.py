@@ -77,7 +77,7 @@ def run_checks(
             return
 
         if not flat:
-            results = splint.splint_result.group_by(results,["repo_name",'pkg_name','module_name','func_name'])
+            results = splint.splint_result.group_by(results,['pkg_name','module_name','func_name'])
 
         if verbose:
             dump_results(results)
