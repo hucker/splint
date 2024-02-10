@@ -123,7 +123,7 @@ def fix_blank_msg(sr:SplintResult):
     func_msg = f"{sr.func_name}." if sr.func_name else ""
 
     if not sr.msg:
-        sr.msg = f"{{pkg_msg}{mod_msg}{func_msg}.{sr.count:03d}"
+        sr.msg = f"{pkg_msg}{mod_msg}{func_msg}.{sr.count:03d}"
     return sr
 
 

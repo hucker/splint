@@ -41,9 +41,7 @@ def test_function_list(func1, func2):
 def test_filtered_function_list(func1, func2):
     """Test building a custom filter function"""
 
-    funcs = [func1, func2]
-
-    ch = splint.SplintChecker(functions=funcs)
+    ch = splint.SplintChecker(functions=[func1, func2])
 
     def filter1(f: splint.SplintFunction):
         return f.ruid == "suid_1"
@@ -90,11 +88,10 @@ def test_built_exclude_ruids(func1, func2):
 
 def test_filter_all(func1, func2):
     """Test filtering everyting"""
-    funcs = [func1, func2]
 
     filters = [splint.exclude_ruids(["suid_1", "suid_2"])]
 
-    ch = splint.SplintChecker(functions=funcs)
+    ch = splint.SplintChecker(functions=[func1, func2])
     ch.pre_collect()
     ch.prepare(filter_functions=filters)
 
@@ -104,11 +101,10 @@ def test_filter_all(func1, func2):
 
 def test_built_exclude_tags(func1, func2):
     """Test exclude_tags"""
-    funcs = [func1, func2]
 
     filters = [splint.exclude_tags(["t2"])]
 
-    ch = splint.SplintChecker(functions=funcs)
+    ch = splint.SplintChecker(functions=[func1, func2])
     ch.pre_collect()
     ch.prepare(filter_functions=filters)
 
@@ -119,7 +115,7 @@ def test_built_exclude_tags(func1, func2):
 
     filters = [splint.exclude_tags(["t1"])]
 
-    ch = splint.SplintChecker(functions=funcs)
+    ch = splint.SplintChecker(functions=[func1, func2])
     ch.pre_collect()
     ch.prepare(filter_functions=filters)
 
@@ -127,3 +123,30 @@ def test_built_exclude_tags(func1, func2):
     assert len(results) == 1
     assert results[0].tag == "t2"
     assert results[0].msg == "It works2"
+
+
+def test_as_dict(func1,func2):
+    ch = splint.SplintChecker(functions=[func1, func2])
+    ch.pre_collect()
+    ch.prepare()
+    results = ch.run_all()
+    d = ch.as_dict()
+    assert isinstance(d, dict)
+
+    assert d["functions"] == ['func1', 'func2']
+    assert d["modules"] == []
+    assert d["package_count"] == 0
+    assert d["module_count"] == 0
+    assert d["function_count"] == 2
+    assert d["passed_count"] == 2
+    assert d["failed_count"] == 0
+    assert d["total_count"] == 2
+
+def test_progress(capsys, func1, func2):
+    funcs = [func1, func2]
+    ch = splint.SplintChecker(functions=funcs, progress_callback=splint.debug_progress)
+    ch.pre_collect()
+    ch.prepare()
+    results = ch.run_all()
+    captured = capsys.readouterr()
+    assert captured[0] == 'Start Rule Check\nFunc Start func1\n+Func done.\nFunc Start func2\n+Func done.\nRule Check Complete.\n'

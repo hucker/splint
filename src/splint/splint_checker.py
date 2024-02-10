@@ -1,10 +1,12 @@
 import random
 from typing import List
+import datetime as dt
 
 from .splint_exception import SplintException
 from .splint_function import SplintFunction
 from .splint_module import SplintModule
 from .splint_package import SplintPackage
+from .splint_result import SplintResult
 from .splint_ruid import valid_ruids, ruid_issues, empty_ruids
 
 def random_order():
@@ -89,6 +91,17 @@ def keep_phases(phases: List[str]):
 
     return filter_func
 
+def debug_progress(msg=None,result:SplintResult=None):# pylint: disable=unused-argument
+    """Print a debug message."""
+    if msg:
+        print(msg)
+    if result:
+        print('+' if result.status else '-',end='')
+
+
+def quiet_progress(msg=None,result=None): # pylint: disable=unused-argument
+    """Do nothing."""
+    ...
 
 class SplintChecker:
 
@@ -97,6 +110,7 @@ class SplintChecker:
         packages: List[SplintPackage] | None = None,
         modules: List[SplintModule] | None = None,
         functions: List[SplintFunction] | None = None,
+        progress_callback=None,
         env=None,
     ):
         """
@@ -151,8 +165,14 @@ class SplintChecker:
         else:
             self.env = {}
 
+        # Install a default if needed.
+        self.progress_callback = progress_callback or quiet_progress
+
         self.collected = []
         self.pre_collected = []
+        self.start_time = dt.datetime.now()
+        self.end_time = dt.datetime.now()
+        self.results = []
 
         if not self.packages and not self.modules and not self.functions:
             raise SplintException(
@@ -189,11 +209,11 @@ class SplintChecker:
         """
         Prepare the collected functions for running checks.
 
-        Run through the collected functions to prepart the checks that will be run.
+        Run through the collected functions to prepare the checks that will be run.
         A list of filter functions may be provided to filter the functions. Filter
         functions must return True if the function should be kept.
 
-        An order function may be provided to sort the function sbefore running them
+        An order function may be provided to sort the functions before running them
 
         Args:
             filter_functions (_type_, optional): _description_. Defaults to None.
@@ -265,13 +285,48 @@ class SplintChecker:
         # that the filter functions have filtered out all of the
         # functions.
         # Oddly enough this simple loop runs the whole program.
+        self.progress_callback("Start Rule Check")
+        self.start_time = dt.datetime.now()
         for function in self.collected:
             function.env = env
+            self.progress_callback(f"Func Start {function.function_name}")
             for result in function():
                 yield result
+                self.progress_callback("",result)
+            self.progress_callback("Func done.")
+        self.end_time = dt.datetime.now()
+        self.progress_callback("Rule Check Complete.")
 
     def run_all(self, env=None):
         """
         List version of yield all.
         """
-        return list(self.yield_all(env=env))
+        self.results = list(self.yield_all(env=env))
+
+        return self.results
+
+    def as_dict(self):
+        """
+        Return a dictionary of the results.
+        """
+        r = {
+            "start_time": self.start_time,
+            "end_time": self.end_time,
+            "duration_seconds": (self.end_time - self.start_time).total_seconds(),
+            "package_count": len(self.packages),
+            "module_count": len(self.modules),
+            "modules": [m.module_name for m in self.modules],
+            "function_count": len(self.functions),
+            "functions": [f.function_name for f in self.functions],
+            "passed_count": len([r for r in self.results if r.status]),
+            "failed_count": len([r for r in self.results if not r.status]),
+            "skip_count": len([r for r in self.results if r.skipped]),
+            "tags": sorted(list(set(r.tag for r in self.results))),
+            "levels": sorted(list(set(r.level for r in self.results))),
+            "phases": sorted(list(set(r.phase for r in self.results))),
+            "total_count": len(self.results),
+            "ruids": self.ruids(),
+            "results": [r.as_dict() for r in self.results],
+        }
+        return r
+

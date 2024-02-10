@@ -58,6 +58,8 @@ from .splint_checker import (
     keep_phases,  # noqa: F401
     keep_ruids,  # noqa: F401
     keep_tags,  # noqa: F401
+    debug_progress, # noqa: F401
+    quiet_progress, # noqa: F401
     SplintChecker,  # noqa: F401
 )
 
