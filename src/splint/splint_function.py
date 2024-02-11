@@ -128,7 +128,9 @@ class SplintFunction:
         self.skip = get_attribute(function, "skip")
         self.ruid = get_attribute(function, "ruid")
 
-        logging.debug("Loaded function %s", self)
+        if self.weight is None or 0.0:
+            self.weight = 100.0
+
         self.allowed_exceptions = allowed_exceptions or (Exception,)
 
     def __str__(self):

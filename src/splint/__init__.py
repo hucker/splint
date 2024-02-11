@@ -61,6 +61,12 @@ from .splint_checker import (
     debug_progress, # noqa: F401
     quiet_progress, # noqa: F401
     SplintChecker,  # noqa: F401
+
+    ScoreByResultSimple, # noqa: F401
+    ScoreSimpleFunction, # noqa: F401
+    ScoreSimpleWeightFunction, # noqa: F401
+    ScoreWeightResultWeighted, # noqa: F401
+    ScoreWeightedFunction, # noqa: F401
 )
 
 # Syntactic Sugar. Since this is used every time a result is returned it

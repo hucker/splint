@@ -37,7 +37,7 @@ class SplintResult:
     status: bool = False
 
 
-    # Name hierachy
+    # Name hierarchy
     func_name: str = ""
     pkg_name: str = ""
     module_name: str = ""
@@ -57,6 +57,8 @@ class SplintResult:
     except_: Exception = None
     traceback: str = ""
     skipped: bool = False
+
+    weight: float = 100.0
 
     # Attribute Info - This needs to be factored out?
     tag: str = ""

@@ -28,6 +28,9 @@ def attributes(
         func.ruid = ruid
         return func
 
+    if weight <= 0:
+        raise ValueError("Weight must be greater than 0.0.  The nominal value is 100.0.")
+
     return decorator
 
 

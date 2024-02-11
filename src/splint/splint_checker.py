@@ -1,5 +1,5 @@
 import random
-from typing import List
+from typing import Any, List
 import datetime as dt
 
 from .splint_exception import SplintException
@@ -103,6 +103,130 @@ def quiet_progress(msg=None,result=None): # pylint: disable=unused-argument
     """Do nothing."""
     ...
 
+import abc
+
+class ScoreStrategy:
+    @abc.abstractmethod
+    def score(self,results:List[SplintResult]=None):
+        """Provide a numeric score for a run of results from 0.0 to 100.0"""
+        pass
+
+class ScoreByResultSimple(ScoreStrategy):
+
+    def score(self,results:List[SplintResult]=None):
+        """Simple scoring where each test counts as 1 and there is no weighting"""
+        passed = 0
+        count = 0
+        for count,result in enumerate(results,start=1):
+            if result.skipped:
+                continue
+            passed += 1 if result.status else 0
+
+        if count == 0:
+            return 0.0
+        else:
+            return (100.0 * passed)/(count*1.0)
+
+class ScoreWeightResultWeighted(ScoreStrategy):
+
+    def score(self,results:List[SplintResult]=None):
+        """This is the same as the simple scoring but a weight is applied to the results."""
+        count = 0
+        weight_sum = 0
+        passed_sum = 0
+        for count,result in enumerate(results,start=1):
+            if result.skipped:
+                continue
+            passed_sum += result.weight if result.status  else 0
+            weight_sum += result.weight
+        if count == 0:
+            return 0.0
+        else:
+            return (100.0 * passed_sum)/(weight_sum*1.0)
+
+
+
+class ScoreSimpleFunction(ScoreStrategy):
+
+    def score(self,results:List[SplintResult]=None):
+        """Each of the splint functions may have one or more results.  In this case a fail (even if it 1 in 20) makes the function fail."""
+
+        score_funcs = {}
+
+        for result in results:
+            key = f"{result.pkg_name}.{result.module_name}.{result.func_name}".lstrip('.')
+            score_funcs.setdefault(key, []).append(result)
+
+        # Now we have a dictionary of results for each function.  We can now score each function
+
+        for key,results in score_funcs.items():
+            if not results:
+                score_funcs[key] = 0.0
+            else:
+                score_funcs[key] = 100.0 if all(r.status for r in results if not r.skipped) else 0.0
+
+        # The score should be the average of the scores for each function
+        return sum(score_funcs.values())/(len(score_funcs)*1.0)
+
+
+class ScoreSimpleWeightFunction(ScoreStrategy):
+
+    def score(self,results:List[SplintResult]=None):
+        """Each of the splint functions may have one or more results.  In this case a fail (even if it 1 in 20) makes the function fail."""
+
+        score_funcs = {}
+        if not results:
+            return 0.0
+
+        for result in results:
+            key = f"{result.pkg_name}.{result.module_name}.{result.func_name}".lstrip('.')
+            score_funcs.setdefault(key, []).append(result)
+
+        # Now we have a dictionary of results for each function.  We can now score each function
+        sum_weights = 0
+        sum_passed = 0
+        for key,results in score_funcs.items():
+            weight = results[0].weight if results else 1
+            sum_weights += weight
+            if not results:
+                sum_passed += 0.0
+            else:
+                sum_passed += weight if all(r.status for r in results if not r.skipped) else 0.0
+
+        if sum_weights == 0:
+            raise SplintException("The sum of weights is 0.  This is not allowed.")
+
+        # The score should be the average of the scores for each function
+        return (100.0 * sum_passed)/(sum_weights*1.0)
+
+
+class ScoreWeightedFunction(ScoreStrategy):
+
+    def score(self,results:List[SplintResult]=None):
+        """Each of the splint functions may have one or more results.  In this case a fail (even if it 1 in 20) makes the function fail."""
+
+        score_funcs = {}
+        if not results:
+            return 0.0
+
+        for result in results:
+            key = f"{result.pkg_name}.{result.module_name}.{result.func_name}".lstrip('.')
+            score_funcs.setdefault(key, []).append(result)
+
+        # Now we have a dictionary of results for each function.  We can now score each function
+        sum_weights = 0
+        sum_passed = 0
+        for key,results in score_funcs.items():
+
+            sum_weights += sum(sr.weight for sr in results if not sr.skipped)
+            sum_passed += sum(sr.weight for sr in results if sr.status if not sr.skipped)
+
+        if sum_weights == 0:
+            raise SplintException("The sum of weights is 0.  This is not allowed.")
+
+        # The score should be the average of the scores for each function
+        return (100.0 * sum_passed)/(sum_weights*1.0)
+
 class SplintChecker:
 
     def __init__(
@@ -111,6 +235,7 @@ class SplintChecker:
         modules: List[SplintModule] | None = None,
         functions: List[SplintFunction] | None = None,
         progress_callback=None,
+        score_strategy:ScoreStrategy|None = None,
         env=None,
     ):
         """
@@ -159,6 +284,9 @@ class SplintChecker:
             self.functions = []
         else:
             raise SplintException("Functions must be a list of SplintFunction objects.")
+
+        # If the user has not provided a score strategy then use the simple one
+        self.score_strategy =  score_strategy or ScoreByResultSimple()
 
         if env:
             self.env = env
@@ -267,6 +395,11 @@ class SplintChecker:
 
         return sorted(set(f.ruid for f in self.collected))
 
+
+
+
+
+
     def yield_all(self, env=None):
         """
         Yield all the results from the collected functions
@@ -284,7 +417,6 @@ class SplintChecker:
         # empty.  This is not an error condition.  It is possible
         # that the filter functions have filtered out all of the
         # functions.
-        # Oddly enough this simple loop runs the whole program.
         self.progress_callback("Start Rule Check")
         self.start_time = dt.datetime.now()
         for function in self.collected:
