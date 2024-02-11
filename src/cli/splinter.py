@@ -14,25 +14,6 @@ def dump_results(results):
     for result in results:
         typer.echo(result)
 
-def run_checks_on_module(module: str):
-    """ Run checks on a module"""
-    target_path = pathlib.Path(module)
-    if target_path.is_file():
-        mod = splint.SplintModule(module_name=target_path.stem,module_file=str(target_path))
-        return mod.run_all()
-    else:
-        typer.echo(f"Invalid module: {module}")
-
-def run_checks_on_package(pkg: str):
-    """ Run checks on a package"""
-    folder = pathlib.Path(pkg)
-    if folder.is_dir():
-        pkg = splint.SplintPackage(folder=folder)
-        return pkg.run_all()
-    else:
-        typer.echo(f"Invalid package: {pkg}")
-
-
 
 @app.command()
 def run_checks(
@@ -40,6 +21,7 @@ def run_checks(
     pkg: str = typer.Option(None, '-p','--pkg', help="The package to run rules against."),
     json_file: str = typer.Option(None, '-j','--json', help="The JSON file to write results to."),
     flat: bool = typer.Option(True, '-f', '--flat', help="Should the output be flat or a hierarchy."),
+    score: bool = typer.Option(False, '-s', '--score', help="Print the score of the rules."),
     verbose: bool = typer.Option(False, '-v', '--verbose', help="Enable verbose output.")
 ):
     """Run Splint checks on a given using a typer command line app."""
@@ -67,6 +49,7 @@ def run_checks(
         else:
             pkg = None
 
+        # If they supply 1 or both they are all run since the checker can handle arbitrary combinations
         if mod or pkg:
             ch = splint.SplintChecker(modules=mod,packages=pkg)
             ch.pre_collect()
@@ -74,6 +57,10 @@ def run_checks(
             results = ch.run_all()
         else:
             typer.echo("Please provide a module, package to run checks on.")
+            return
+
+        if not results:
+            typer.echo("There were no results.")
             return
 
         if not flat:
@@ -84,6 +71,10 @@ def run_checks(
         else:
             typer.echo(splint.overview(results))
 
+        if score:
+            test_score = splint.ScoreByResult()
+            typer.echo(f"Score: {test_score(results):.1f}")
+
         if json_file:
             d = splint.splint_result.results_as_dict(results)
             with open(json_file, 'w',encoding='utf-8') as f:
@@ -92,6 +83,8 @@ def run_checks(
 
     except splint.SplintException as e:
         typer.echo(f"SplintException: {e}")
+
+    # Crude
     except Exception as e:
         typer.echo(f"An error occurred: {e}")
 

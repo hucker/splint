@@ -87,7 +87,7 @@ def test_built_exclude_ruids(func1, func2):
 
 
 def test_filter_all(func1, func2):
-    """Test filtering everyting"""
+    """Test filtering everything"""
 
     filters = [splint.exclude_ruids(["suid_1", "suid_2"])]
 

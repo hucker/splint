@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/src/cli/splinter.py",
             "console": "integratedTerminal",
-            "args": [ "-p", "./src/cli","-j","./src/cli/result.json","-v"]
+            "args": [ "-s","-p", "./src/cli","-v","-j","./src/cli/result.json"]
         },
         {
             "name": "Python: Typer Splinter Package",
@@ -18,7 +18,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/src/cli/splinter.py",
             "console": "integratedTerminal",
-            "args": [ "-p", "./src/cli","-j","./src/cli/result.json"]
+            "args": [ "-p", "./src/cli","-s","-j","./src/cli/result.json"]
         },
         {
             "name": "Python: Typer Splinter Module Verbose",
@@ -26,14 +26,14 @@
             "request": "launch",
             "program": "${workspaceFolder}/src/cli/splinter.py",
             "console": "integratedTerminal",
-            "args": [ "-m", "./src/cli/check_1.py","-v","-j","./src/cli/result.json"]
+            "args": [ "-s","-m", "./src/cli/check_1.py","-v","-j","./src/cli/result.json"]
         },        {
             "name": "Python: Typer Splinter Module",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/src/cli/splinter.py",
             "console": "integratedTerminal",
-            "args": [ "-m", "./src/cli/check_1.py","-j","./src/cli/result.json"]
+            "args": [ "-s","-m", "./src/cli/check_1.py","-j","./src/cli/result.json"]
         },
         {
             "name": "Python: Typer Splinter Help",

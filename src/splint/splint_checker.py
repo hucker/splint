@@ -1,23 +1,23 @@
-import random
-from typing import Any, List
 import datetime as dt
-
+import random
+from typing import List
 from .splint_exception import SplintException
 from .splint_function import SplintFunction
 from .splint_module import SplintModule
 from .splint_package import SplintPackage
 from .splint_result import SplintResult
-from .splint_ruid import valid_ruids, ruid_issues, empty_ruids
+from .splint_ruid import empty_ruids, ruid_issues, valid_ruids
+from .splint_score import ScoreStrategy,ScoreByResult
+
 
 def random_order():
     """Return a random number to order the functions."""
     return lambda _: random.random()
 
+
 def order_by_pkg_mod_func(s_func: SplintFunction):
     """Return a string to order the functions by package, module and function."""
     return f"{s_func.pkg_name}.{s_func.module_name}.{s_func.func_name}"
-
-
 
 
 def exclude_ruids(ruids: List[str]):
@@ -91,141 +91,22 @@ def keep_phases(phases: List[str]):
 
     return filter_func
 
-def debug_progress(msg=None,result:SplintResult=None):# pylint: disable=unused-argument
+
+def debug_progress(
+    msg=None, result: SplintResult = None
+):  # pylint: disable=unused-argument
     """Print a debug message."""
     if msg:
         print(msg)
     if result:
-        print('+' if result.status else '-',end='')
+        print("+" if result.status else "-", end="")
 
 
-def quiet_progress(msg=None,result=None): # pylint: disable=unused-argument
+def quiet_progress(msg=None, result=None):  # pylint: disable=unused-argument
     """Do nothing."""
     ...
 
-import abc
 
-class ScoreStrategy:
-    @abc.abstractmethod
-    def score(self,results:List[SplintResult]=None):
-        """Provide a numeric score for a run of results from 0.0 to 100.0"""
-        pass
-
-class ScoreByResultSimple(ScoreStrategy):
-
-    def score(self,results:List[SplintResult]=None):
-        """Simple scoring where each test counts as 1 and there is no weighting"""
-        passed = 0
-        count = 0
-        for count,result in enumerate(results,start=1):
-            if result.skipped:
-                continue
-            passed += 1 if result.status else 0
-
-        if count == 0:
-            return 0.0
-        else:
-            return (100.0 * passed)/(count*1.0)
-
-class ScoreWeightResultWeighted(ScoreStrategy):
-
-    def score(self,results:List[SplintResult]=None):
-        """This is the same as the simple scoring but a weight is applied to the results."""
-        count = 0
-        weight_sum = 0
-        passed_sum = 0
-        for count,result in enumerate(results,start=1):
-            if result.skipped:
-                continue
-            passed_sum += result.weight if result.status  else 0
-            weight_sum += result.weight
-        if count == 0:
-            return 0.0
-        else:
-            return (100.0 * passed_sum)/(weight_sum*1.0)
-
-
-
-class ScoreSimpleFunction(ScoreStrategy):
-
-    def score(self,results:List[SplintResult]=None):
-        """Each of the splint functions may have one or more results.  In this case a fail (even if it 1 in 20) makes the function fail."""
-
-        score_funcs = {}
-
-        for result in results:
-            key = f"{result.pkg_name}.{result.module_name}.{result.func_name}".lstrip('.')
-            score_funcs.setdefault(key, []).append(result)
-
-        # Now we have a dictionary of results for each function.  We can now score each function
-
-        for key,results in score_funcs.items():
-            if not results:
-                score_funcs[key] = 0.0
-            else:
-                score_funcs[key] = 100.0 if all(r.status for r in results if not r.skipped) else 0.0
-
-        # The score should be the average of the scores for each function
-        return sum(score_funcs.values())/(len(score_funcs)*1.0)
-
-
-class ScoreSimpleWeightFunction(ScoreStrategy):
-
-    def score(self,results:List[SplintResult]=None):
-        """Each of the splint functions may have one or more results.  In this case a fail (even if it 1 in 20) makes the function fail."""
-
-        score_funcs = {}
-        if not results:
-            return 0.0
-
-        for result in results:
-            key = f"{result.pkg_name}.{result.module_name}.{result.func_name}".lstrip('.')
-            score_funcs.setdefault(key, []).append(result)
-
-        # Now we have a dictionary of results for each function.  We can now score each function
-        sum_weights = 0
-        sum_passed = 0
-        for key,results in score_funcs.items():
-            weight = results[0].weight if results else 1
-            sum_weights += weight
-            if not results:
-                sum_passed += 0.0
-            else:
-                sum_passed += weight if all(r.status for r in results if not r.skipped) else 0.0
-
-        if sum_weights == 0:
-            raise SplintException("The sum of weights is 0.  This is not allowed.")
-
-        # The score should be the average of the scores for each function
-        return (100.0 * sum_passed)/(sum_weights*1.0)
-
-
-class ScoreWeightedFunction(ScoreStrategy):
-
-    def score(self,results:List[SplintResult]=None):
-        """Each of the splint functions may have one or more results.  In this case a fail (even if it 1 in 20) makes the function fail."""
-
-        score_funcs = {}
-        if not results:
-            return 0.0
-
-        for result in results:
-            key = f"{result.pkg_name}.{result.module_name}.{result.func_name}".lstrip('.')
-            score_funcs.setdefault(key, []).append(result)
-
-        # Now we have a dictionary of results for each function.  We can now score each function
-        sum_weights = 0
-        sum_passed = 0
-        for key,results in score_funcs.items():
-
-            sum_weights += sum(sr.weight for sr in results if not sr.skipped)
-            sum_passed += sum(sr.weight for sr in results if sr.status if not sr.skipped)
-
-        if sum_weights == 0:
-            raise SplintException("The sum of weights is 0.  This is not allowed.")
-
-        # The score should be the average of the scores for each function
-        return (100.0 * sum_passed)/(sum_weights*1.0)
 
 class SplintChecker:
 
@@ -235,7 +116,7 @@ class SplintChecker:
         modules: List[SplintModule] | None = None,
         functions: List[SplintFunction] | None = None,
         progress_callback=None,
-        score_strategy:ScoreStrategy|None = None,
+        score_strategy: ScoreStrategy | None = None,
         env=None,
     ):
         """
@@ -286,7 +167,7 @@ class SplintChecker:
             raise SplintException("Functions must be a list of SplintFunction objects.")
 
         # If the user has not provided a score strategy then use the simple one
-        self.score_strategy =  score_strategy or ScoreByResultSimple()
+        self.score_strategy = score_strategy or ScoreByResult()
 
         if env:
             self.env = env
@@ -307,7 +188,7 @@ class SplintChecker:
                 "You must provide at least one package, module or function to check."
             )
 
-    def pre_collect(self)->List[SplintFunction]:
+    def pre_collect(self) -> List[SplintFunction]:
         """
         Collect all the functions from the packages, modules and functions with no filtering.
         This list of functions is will be filtered by the checker before running checks.
@@ -378,11 +259,12 @@ class SplintChecker:
         if empty_ruids(ruids) or valid_ruids(ruids):
             return self.collected
         else:
-            raise SplintException(f"There are duplicate or missing RUIDS: {ruid_issues(ruids)}")
+            raise SplintException(
+                f"There are duplicate or missing RUIDS: {ruid_issues(ruids)}"
+            )
 
         # List of functions that will be run
         return self.collected
-
 
     def ruids(self):
         """
@@ -395,11 +277,6 @@ class SplintChecker:
 
         return sorted(set(f.ruid for f in self.collected))
 
-
-
-
-
-
     def yield_all(self, env=None):
         """
         Yield all the results from the collected functions
@@ -410,8 +287,6 @@ class SplintChecker:
         Yields:
             _type_: SplintResult
         """
-
-
 
         # Note that it is possible for the collected list to be
         # empty.  This is not an error condition.  It is possible
@@ -424,7 +299,7 @@ class SplintChecker:
             self.progress_callback(f"Func Start {function.function_name}")
             for result in function():
                 yield result
-                self.progress_callback("",result)
+                self.progress_callback("", result)
             self.progress_callback("Func done.")
         self.end_time = dt.datetime.now()
         self.progress_callback("Rule Check Complete.")
@@ -461,4 +336,3 @@ class SplintChecker:
             "results": [r.as_dict() for r in self.results],
         }
         return r
-

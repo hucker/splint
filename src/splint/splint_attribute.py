@@ -1,8 +1,23 @@
-DEFAULT_TAG = ""
-DEFAULT_LEVEL = 1
-DEFAULT_PHASE = ""
-DEFAULT_WEIGHT = 100
-DEFAULT_SKIP = False
+"""
+Attributes can be added to any Splint function using the @attributes decorator.
+
+Attributes allow metadata to be added to rule functions to control how they are
+run, filtered, and scored. In order to meet our minimalist sensibilities, we have
+kept the number of attributes to a minimum and NONE are required in order to
+minimize, nearly to zero the overhead of writing a rule.
+
+This design philosophy matches a bit of the zen of python: "Simple is better than
+complex." In order to write a simple test you are never required to add each and
+every attribute to a rule. Defaults are provided for all attributes. You can go
+along way never using an attribute...and once you learn them you will use them all
+the time.
+"""
+
+DEFAULT_TAG = ""       # A string indicating the type of rule, used for grouping/filtering results
+DEFAULT_LEVEL = 1      #
+DEFAULT_PHASE = ""     # A string indicating what phase of the development process a rule is best suited for
+DEFAULT_WEIGHT = 100   # The nominal weight for a rule should be a postive number
+DEFAULT_SKIP = False   # Set to true to skip a rule
 DEFAULT_RUID = ""
 
 
