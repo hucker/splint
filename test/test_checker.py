@@ -147,6 +147,7 @@ def test_progress(capsys, func1, func2):
     ch = splint.SplintChecker(functions=funcs, progress_callback=splint.debug_progress)
     ch.pre_collect()
     ch.prepare()
-    results = ch.run_all()
+    _ = ch.run_all()
     captured = capsys.readouterr()
     assert captured[0] == 'Start Rule Check\nFunc Start func1\n+Func done.\nFunc Start func2\n+Func done.\nRule Check Complete.\n'
+

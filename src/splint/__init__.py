@@ -54,6 +54,12 @@ from .splint_ruid import package_ruids  # noqa: F401
 from .splint_ruid import ruid_issues  # noqa: F401
 from .splint_ruid import valid_ruids  # noqa: F401
 
+from .rule_files import rule_large_files  # noqa: F401
+from .rule_files import rule_stale_files  # noqa: F401
+from .rule_files import rule_path_exists  # noqa: F401
+from .rule_files import rule_url_200 # noqa: F401
+
 # Syntactic Sugar. Since this is used every time a result is returned it
 # makes sense to make it easier to type.
 SR = SplintResult
+
