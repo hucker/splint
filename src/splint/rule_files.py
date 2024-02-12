@@ -67,20 +67,22 @@ def rule_large_files(folder: str, pattern: str, max_size: float, fail_only=True)
         yield SR(status=True, msg=f"No files found matching {pattern} in {folder}.")
 
 
-def rule_url_200(urls, timeout_sec=5):
-    """ Simple rule check to verify that URL is active. """
-    for url in urls:
-        try:
-            response = requests.get(url, timeout=timeout_sec)
+def rule_max_files(folders: list, max_files: int, pattern: str = '*', fail_only=True):
+    """Rule to verify that the number of files in a list of folders does not exceed a given limit."""
 
-            if response.status_code == 200:
-                yield SR(status=True, msg=f"URL {url} returned {response.status_code}")
-            else:
-                yield SR(status=response.status_code == 200, msg=f"URL {url} returned {response.status_code}")
+    if isinstance(max_files,int):
+        max_files = [max_files]*len(folders)
 
-        except requests.exceptions.Timeout as e2:
-            yield SR(status=False, msg=f"URL {url} exception {str(e2)}",except_=e2)
+    if len(folders) != len(max_files):
+        raise SplintException("The number of folders and the number of max_files must be the same.")
 
-        except requests.exceptions.RequestException:
-            yield SR(status=False, msg=f"URL {url} timed out after {timeout_sec} seconds")
+    for folder,max_file in zip(folders,max_files):
+        count = 0
+        for count, _ in enumerate(pathlib.Path(folder).rglob(pattern), start=1):
+            pass
+
+        if count > max_file:
+                yield SR(status=False, msg=f"Folder {folder} contains more than {max_file} files.")
+        if fail_only is False:
+            yield SR(status=True, msg=f"Folder {folder} contains less than {max_file} files. ({count=}) ")
 

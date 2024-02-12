@@ -80,6 +80,37 @@ def test_urls():
     @splint.attributes(tag="tag")
     def check_rule1():
         yield from splint.rule_url_200(urls=urls)
-    
+
     for result in check_rule1():
         assert result.status
+
+def test_max_files():
+    @splint.attributes(tag="tag")
+    def check_rule1():
+        yield from splint.rule_max_files(folders=["./test/rule_files_"], max_files=10)
+
+    for result in check_rule1():
+        assert result.status
+
+    @splint.attributes(tag="tag")
+    def check_rule2():
+        yield from splint.rule_max_files(folders=["./test/rule_files_"], max_files=1)
+
+    for result in check_rule2():
+        assert result.status is False
+
+def test_web_api():
+    @splint.attributes(tag="tag")
+    def check_rule1():
+        yield from splint.rule_web_api(url='https://swapi.dev/api/people/1',
+                                       json_d={'name':'Luke Skywalker','height':'172','mass':'77'})
+
+    @splint.attributes(tag="tag")
+    def check_rule_badmass():
+        yield from splint.rule_web_api(url='https://swapi.dev/api/people/1',
+                                       json_d={'name':'Luke Skywalker','height':'172','mass':'78'})
+    for result in check_rule1():
+        assert result.status
+
+    for result in check_rule_badmass():
+        assert not result.status
