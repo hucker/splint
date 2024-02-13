@@ -1,1 +1,48 @@
-[]
+
+[
+  {
+    "status": true,
+    "func_name": "check_result_1_1",
+    "pkg_name": "",
+    "module_name": "check_1",
+    "msg": "Result 1.1",
+    "info_msg": "",
+    "warn_msg": "",
+    "doc": "Check result 1.1 docstring",
+    "runtime_sec": 0.00019788742065429688,
+    "except_": "None",
+    "traceback": "",
+    "skipped": false,
+    "weight": 100.0,
+    "tag": "",
+    "level": 1,
+    "phase": "",
+    "count": 1,
+    "ruid": "",
+    "mit_msg": "",
+    "owner_list": []
+  },
+  {
+    "status": true,
+    "func_name": "check_result_1_2",
+    "pkg_name": "",
+    "module_name": "check_1",
+    "msg": "Result 1.2",
+    "info_msg": "",
+    "warn_msg": "",
+    "doc": "Check result 1.2 docstring",
+    "runtime_sec": 2.002716064453125e-05,
+    "except_": "None",
+    "traceback": "",
+    "skipped": false,
+    "weight": 100.0,
+    "tag": "",
+    "level": 1,
+    "phase": "",
+    "count": 1,
+    "ruid": "",
+    "mit_msg": "",
+    "owner_list": []
+  }
+]
+

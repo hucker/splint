@@ -1,21 +1,26 @@
+"""
+SplintModule is a class that represents a module that contains a set of functions that can be run. A module
+typically represents a file that is imported into the system by finding all function that
+start with a certain prefix and adding them to the list of functions to be managed by splint.
+"""
+
 import importlib
 from typing import List
-from .splint_function import SplintFunction
-import logging
-import sys
+
 from .splint_exception import SplintException
-from .splint_filter import filter_none
+from .splint_filter import filter_all
+from .splint_function import SplintFunction
 
 
 class SplintModule:
-    def __init__(self, module_name, module_file, function_prefix=None, autoload=True):
+    def __init__(self, module_name, module_file, function_prefix=None, auto_load=True):
         self.module_name = module_name
         self.functions: List[SplintFunction] = []
         self.module = None
         self.module_file = module_file
         self.function_prefix = function_prefix or "check_"
         self.doc = ""
-        if autoload:
+        if auto_load:
             self.load()
 
     def __str__(self):
@@ -36,13 +41,15 @@ class SplintModule:
             self.module = module
             self.doc = module.__doc__
             self.load_functions(module)
-            logging.info(f"Loaded module {self}")
             return True
 
         except ImportError as e:
             raise SplintException(f"Can't load {module_name}: {e}")
 
     def load_functions(self, module):
+        """Look through all of the functions in the module and if they start with the function_prefix
+        add them to the list of functions."""
+
         module = module or self.module
 
         for name in dir(module):
@@ -55,12 +62,14 @@ class SplintModule:
                 continue
             self.add_function(module, obj)
 
-    def yield_all(self, filter_func=filter_none()):
-        for function in self.functions:
-            if not function.skip and filter_func(function):
-                for result in function():
-                    yield result
+    def ruids(self):
+        """
+        Return a list of all of the RUIDs in the module.
+        Note that this can have duplicates.  The list is
+        sorted to facilitate comparison.
 
-    def run_all(self, filter_func=filter_none()):
-        results = list(self.yield_all(filter_func=filter_func))
-        return results
+        RUID = rule identifier
+        """
+        return sorted(function.ruid for function in self.functions)
+
+

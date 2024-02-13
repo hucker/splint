@@ -1,4 +1,4 @@
-"""DocString for check_dec"""
+"""DocString for check_dec_complex"""
 import src.splint as splint
 
 
