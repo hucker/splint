@@ -57,12 +57,20 @@ from .splint_ruid import valid_ruids  # noqa: F401
 from .rule_files import rule_large_files  # noqa: F401
 from .rule_files import rule_stale_files  # noqa: F401
 from .rule_files import rule_path_exists  # noqa: F401
-from .rule_files import rule_max_files # noqa: F401
+from .rule_files import rule_max_files  # noqa: F401
 
-from .rule_webapi import rule_web_api # noqa: F401
-from .rule_webapi import rule_url_200 # noqa: F401
+from .rule_webapi import rule_web_api  # noqa: F401
+from .rule_webapi import rule_url_200  # noqa: F401
+
+try:
+    import pandas as pd  # noqa: F401
+    from .rule_dataframe import rule_validate_df_schema  # noqa: F401
+    from .rule_dataframe import rule_validate_df_column  # noqa: F401
+
+except ImportError:
+    pass
+
 
 # Syntactic Sugar. Since this is used every time a result is returned it
 # makes sense to make it easier to type.
 SR = SplintResult
-
