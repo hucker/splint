@@ -3,30 +3,28 @@ from requests.exceptions import RequestException
 from requests.exceptions import Timeout
 from .splint_result import SplintResult as SR
 
-def rule_url_200(urls, timeout_sec=5):
+def rule_url_200(urls, expected_status=200, timeout_sec=5):
     """Simple rule check to verify that URL is active."""
+
+
     for url in urls:
         try:
             response = requests.get(url, timeout=timeout_sec)
 
-            if response.status_code == 200:
+            if response.status_code == expected_status :
                 yield SR(status=True, msg=f"URL {url} returned {response.status_code}")
             else:
                 yield SR(
-                    status=response.status_code == 200,
+                    status=response.status_code == expected_status,
                     msg=f"URL {url} returned {response.status_code}",
                 )
 
-        except Timeout as e2:
-            yield SR(status=False, msg=f"URL {url} exception {str(e2)}", except_=e2)
-
-        except RequestException:
-            yield SR(
-                status=False, msg=f"URL {url} timed out after {timeout_sec} seconds"
-            )
+        except RequestException as ex:
+            yield SR(status=False, msg=f"URL {url} exception.", except_=ex)
 
 
 def _verify_dicts(d_check, d_truth, key_path=None):
+    """Recursive dictionary verifier"""
     if key_path is None:
         key_path = []
     for key, value in d_truth.items():
@@ -43,13 +41,18 @@ def _verify_dicts(d_check, d_truth, key_path=None):
     return None
 
 
-def rule_web_api(url: str, json_d: dict, timeout_sec=5):
+def rule_web_api(url: str,json_d: dict, timeout_sec=5, expected_response=200):
     """Simple rule check to verify that URL is active."""
     try:
         response = requests.get(url, timeout=timeout_sec)
 
-        if response.status_code != 200:
+        if response.status_code != expected_response :
             yield SR(status=False, msg=f"URL {url} returned {response.status_code}")
+            return
+
+        # This handles an expected failure by return true but not checking the json
+        if expected_response != 200:
+            yield SR(status=True,msg=f"URL {url} returned {response.status_code}, no JSON comparison needed.")
             return
 
         response_json = response.json()
@@ -60,8 +63,5 @@ def rule_web_api(url: str, json_d: dict, timeout_sec=5):
         else:
             yield SR(status=False, msg=f"URL {url} did not match at key {d_status}")
 
-    except Timeout as e2:
-        yield SR(status=False, msg=f"URL {url} exception {str(e2)}", except_=e2)
-
-    except RequestException:
-        yield SR(status=False, msg=f"URL {url} timed out after {timeout_sec} seconds")
+    except RequestException as ex:
+        yield SR(status=False, msg=f"URL {url} had exception {ex}", except_= ex)

@@ -106,8 +106,7 @@ class ScoreByFunctionMean(ScoreStrategy):
         """Find the average of the results from each function."""
 
         function_results = {}
-        if not results:
-            return 0.0
+
 
         # Remove any skipped results
         results = [result for result in results if not result.skipped]
