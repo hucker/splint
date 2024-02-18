@@ -3,6 +3,7 @@ import sys
 import pathlib
 import typer
 import json
+import uvicorn
 
 s = pathlib.Path('./src').resolve()
 sys.path.insert(0,str(s))
@@ -22,6 +23,8 @@ def run_checks(
     json_file: str = typer.Option(None, '-j','--json', help="The JSON file to write results to."),
     flat: bool = typer.Option(True, '-f', '--flat', help="Should the output be flat or a hierarchy."),
     score: bool = typer.Option(False, '-s', '--score', help="Print the score of the rules."),
+    api: bool = typer.Option(False, '-a', '--api', help="Start FastAPI."),
+    port: int = typer.Option(8000, '-p','--port', help="FastAPI Port"),
     verbose: bool = typer.Option(False, '-v', '--verbose', help="Enable verbose output.")
 ):
     """Run Splint checks on a given using a typer command line app."""
@@ -30,15 +33,13 @@ def run_checks(
 
 
     try:
-
+        mod = None
         if module:
             target_path = pathlib.Path(module)
             if target_path.is_file():
                 mod = splint.SplintModule(module_name=target_path.stem,module_file=str(target_path))
             else:
                 typer.echo(f"Invalid module: {module}")
-        else:
-            mod = None
 
         if pkg:
             folder = pathlib.Path(pkg)
@@ -46,15 +47,18 @@ def run_checks(
                 pkg = splint.SplintPackage(folder=folder)
             else:
                 typer.echo(f"Invalid package: {pkg}")
-        else:
-            pkg = None
 
         # If they supply 1 or both they are all run since the checker can handle arbitrary combinations
         if mod or pkg:
             ch = splint.SplintChecker(modules=mod,packages=pkg)
             ch.pre_collect()
             ch.prepare()
-            results = ch.run_all()
+            if api:
+                splint.set_splint_checker(ch)
+                uvicorn.run(splint.splint_api.app,host="0.0.0.0",port=port)
+                return
+            else:
+                results = ch.run_all()
         else:
             typer.echo("Please provide a module, package to run checks on.")
             return

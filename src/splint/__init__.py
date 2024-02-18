@@ -2,6 +2,7 @@
 Public API for the Splint project.
 """
 
+from .splint_api import set_splint_checker
 from .splint_attribute import attributes  # noqa: F401
 from .splint_attribute import get_attribute  # noqa: F401
 from .splint_score import ScoreByFunctionBinary  # noqa: F401

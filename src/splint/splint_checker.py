@@ -166,14 +166,14 @@ class SplintChecker:
             raise SplintException("Modules must be a list of SplintModule objects.")
 
         if isinstance(functions, list) and len(functions) >= 1:
-            self.functions = functions
+            self.functions:List[SplintFunction] = functions
             for f in functions:
                 if not isinstance(f, SplintFunction):
                     raise SplintException(
                         "Functions must be a list of SplintFunction objects."
                     )
         elif not functions:
-            self.functions = []
+            self.functions:List[SplintFunction] = []
         else:
             raise SplintException("Functions must be a list of SplintFunction objects.")
 
