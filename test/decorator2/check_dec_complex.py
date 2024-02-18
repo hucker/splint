@@ -1,7 +1,6 @@
 """DocString for check_dec_complex"""
 import src.splint as splint
 
-
 """ In this example we have a more complex decorator structure where
     we have 3 levels of decorators.  The decorators are applied to
     the functions in the following way:
@@ -14,34 +13,38 @@ import src.splint as splint
     This allows us to test the filtering by tags and levels.
 """
 
-@splint.attributes(tag='tag1',level=1)
+
+@splint.attributes(tag='tag1', level=1)
 def check_dec11():
     """DocString for check_dec11"""
-    yield splint.SplintResult(status=True,msg="Result check_dec1")
+    yield splint.SplintResult(status=True, msg="Result check_dec1")
 
-@splint.attributes(tag='tag2',level=2)
+
+@splint.attributes(tag='tag2', level=2)
 def check_dec21():
     """DocString for check_dec1"""
-    yield splint.SplintResult(status=True,msg="Result check_dec2")
+    yield splint.SplintResult(status=True, msg="Result check_dec2")
 
-@splint.attributes(tag='tag3',level=2)
+
+@splint.attributes(tag='tag3', level=2)
 def check_dec22():
     """DocString for check_dec1"""
-    yield splint.SplintResult(status=True,msg="Result check_dec4")
+    yield splint.SplintResult(status=True, msg="Result check_dec4")
 
-@splint.attributes(tag='tag4',level=3)
+
+@splint.attributes(tag='tag4', level=3)
 def check_dec31():
     """DocString for check_dec1"""
-    yield splint.SplintResult(status=True,msg="Result check_dec31")
+    yield splint.SplintResult(status=True, msg="Result check_dec31")
 
-@splint.attributes(tag='tag5',level=3)
+
+@splint.attributes(tag='tag5', level=3)
 def check_dec32():
     """DocString for check_dec22"""
-    yield splint.SplintResult(status=True,msg="Result check_dec32")
+    yield splint.SplintResult(status=True, msg="Result check_dec32")
 
-@splint.attributes(tag='tag6',level=3)
+
+@splint.attributes(tag='tag6', level=3)
 def check_dec33():
     """DocString for check_dec22"""
-    yield splint.SplintResult(status=True,msg="Result check_dec33")
-
-
+    yield splint.SplintResult(status=True, msg="Result check_dec33")

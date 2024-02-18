@@ -70,6 +70,8 @@ def rule_large_files(folder: str, pattern: str, max_size: float, fail_only=True)
 def rule_max_files(folders: list, max_files: int, pattern: str = '*', fail_only=True):
     """Rule to verify that the number of files in a list of folders does not exceed a given limit."""
 
+    if isinstance(folders, str) or isinstance(folders,pathlib.Path):
+        folders = [folders]
     if isinstance(max_files,int):
         max_files = [max_files]*len(folders)
 
@@ -78,11 +80,12 @@ def rule_max_files(folders: list, max_files: int, pattern: str = '*', fail_only=
 
     for folder,max_file in zip(folders,max_files):
         count = 0
+        # don't materialize the list, just count
         for count, _ in enumerate(pathlib.Path(folder).rglob(pattern), start=1):
             pass
 
         if count > max_file:
-                yield SR(status=False, msg=f"Folder {folder} contains more than {max_file} files.")
+            yield SR(status=False, msg=f"Folder {folder} contains more than {max_file} files.")
         if fail_only is False:
             yield SR(status=True, msg=f"Folder {folder} contains less than {max_file} files. ({count=}) ")
 

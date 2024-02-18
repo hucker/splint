@@ -7,24 +7,15 @@ from .splint_module import SplintModule
 from .splint_package import SplintPackage
 from .splint_result import SplintResult
 from .splint_ruid import empty_ruids, ruid_issues, valid_ruids
-from .splint_score import ScoreStrategy,ScoreByResult
+from .splint_score import ScoreStrategy, ScoreByResult
 
-
-def random_order():
-    """Return a random number to order the functions."""
-    return lambda _: random.random()
-
-
-def order_by_pkg_mod_func(s_func: SplintFunction):
-    """Return a string to order the functions by package, module and function."""
-    return f"{s_func.pkg_name}.{s_func.module_name}.{s_func.func_name}"
 
 
 def exclude_ruids(ruids: List[str]):
     """Return a filter function that will exclude the ruids from the list."""
 
-    def filter_func(splint_function: SplintFunction):
-        return splint_function.ruid not in ruids
+    def filter_func(s_func: SplintFunction):
+        return s_func.ruid not in ruids
 
     return filter_func
 
@@ -32,8 +23,8 @@ def exclude_ruids(ruids: List[str]):
 def exclude_tags(tags: List[str]):
     """Return a filter function that will exclude the tags from the list."""
 
-    def filter_func(splint_function: SplintFunction):
-        return splint_function.tag not in tags
+    def filter_func(s_func: SplintFunction):
+        return s_func.tag not in tags
 
     return filter_func
 
@@ -41,8 +32,8 @@ def exclude_tags(tags: List[str]):
 def exclude_levels(levels: List[int]):
     """Return a filter function that will exclude the levels from the list."""
 
-    def filter_func(splint_function: SplintFunction):
-        return splint_function.level not in levels
+    def filter_func(s_func: SplintFunction):
+        return s_func.level not in levels
 
     return filter_func
 
@@ -50,8 +41,8 @@ def exclude_levels(levels: List[int]):
 def exclude_phases(phases: List[str]):
     """Return a filter function that will exclude the phases from the list."""
 
-    def filter_func(splint_function: SplintFunction):
-        return splint_function.phase not in phases
+    def filter_func(s_func: SplintFunction):
+        return s_func.phase not in phases
 
     return filter_func
 
@@ -59,8 +50,8 @@ def exclude_phases(phases: List[str]):
 def keep_ruids(ruids: List[str]):
     """Return a filter function that will keep the ruids from the list."""
 
-    def filter_func(splint_function: SplintFunction):
-        return splint_function.ruid in ruids
+    def filter_func(s_func: SplintFunction):
+        return s_func.ruid in ruids
 
     return filter_func
 
@@ -68,8 +59,8 @@ def keep_ruids(ruids: List[str]):
 def keep_tags(tags: List[str]):
     """Return a filter function that will keep the tags from the list."""
 
-    def filter_func(splint_function: SplintFunction):
-        return splint_function.tag in tags
+    def filter_func(s_func: SplintFunction):
+        return s_func.tag in tags
 
     return filter_func
 
@@ -77,8 +68,8 @@ def keep_tags(tags: List[str]):
 def keep_levels(levels: List[int]):
     """Return a filter function that will keep the levels from the list."""
 
-    def filter_func(splint_function: SplintFunction):
-        return splint_function.level in levels
+    def filter_func(s_func: SplintFunction):
+        return s_func.level in levels
 
     return filter_func
 
@@ -86,14 +77,14 @@ def keep_levels(levels: List[int]):
 def keep_phases(phases: List[str]):
     """Return a filter function that will keep the phases from the list."""
 
-    def filter_func(splint_function: SplintFunction):
-        return splint_function.phase in phases
+    def filter_func(s_func: SplintFunction):
+        return s_func.phase in phases
 
     return filter_func
 
 
 def debug_progress(
-    msg=None, result: SplintResult = None
+        msg=None, result: SplintResult = None
 ):  # pylint: disable=unused-argument
     """Print a debug message."""
     if msg:
@@ -104,20 +95,40 @@ def debug_progress(
 
 def quiet_progress(msg=None, result=None):  # pylint: disable=unused-argument
     """Do nothing."""
-    ...
+    pass
 
 
+def orderby_tag():
+    """Order collected list by tag"""
+    def sort_key(x:SplintFunction):
+        return x.tag
+
+    return sort_key
+
+
+def orderby_ruid():
+    """Order collected list by tag"""
+
+    def sort_key(x: SplintFunction):
+        return x.ruid
+
+    return sort_key
 
 class SplintChecker:
+    """
+    Collect all the rule functions and order them if need be and then run them.
+
+    Calling yield_all or run_all will iterate over the rules and return all the results.
+    """
 
     def __init__(
-        self,
-        packages: List[SplintPackage] | None = None,
-        modules: List[SplintModule] | None = None,
-        functions: List[SplintFunction] | None = None,
-        progress_callback=None,
-        score_strategy: ScoreStrategy | None = None,
-        env=None,
+            self,
+            packages: List[SplintPackage] | None = None,
+            modules: List[SplintModule] | None = None,
+            functions: List[SplintFunction] | None = None,
+            progress_callback=None,
+            score_strategy: ScoreStrategy | None = None,
+            env=None,
     ):
         """
         User can provide a list of packages, modules and functions to check.
@@ -127,7 +138,7 @@ class SplintChecker:
 
         """
 
-        if isinstance(packages, list) and len(packages) > 1:
+        if isinstance(packages, list) and len(packages) >= 1:
             self.packages = packages
             if not all(isinstance(p, SplintPackage) for p in packages):
                 raise SplintException(
@@ -140,7 +151,7 @@ class SplintChecker:
         else:
             raise SplintException("Packages must be a list of SplintPackage objects.")
 
-        if isinstance(modules, list) and len(modules) > 1:
+        if isinstance(modules, list) and len(modules) >= 1:
             self.modules = modules
             for m in modules:
                 if not isinstance(m, SplintModule):
@@ -154,7 +165,7 @@ class SplintChecker:
         else:
             raise SplintException("Modules must be a list of SplintModule objects.")
 
-        if isinstance(functions, list) and len(functions) > 1:
+        if isinstance(functions, list) and len(functions) >= 1:
             self.functions = functions
             for f in functions:
                 if not isinstance(f, SplintFunction):
@@ -244,8 +255,8 @@ class SplintChecker:
                 self.collected.append(splint_func)
 
         # If an order function is provided then sort the collected functions,
-        # you could sort by tag, level, ruid etc.  Not sure this will ever be
-        # used but it's here.
+        # you could sort by tag, level, ruid etc.  Not sure if this will ever be
+        # used, but it's here.
         if order_function:
             self.collected = sorted(self.collected, key=order_function)
 
@@ -256,25 +267,23 @@ class SplintChecker:
         # we can proceed.  If not then we need to raise an exception and show the issues.
         ruids = [f.ruid for f in self.collected]
 
+        # If the user decided to setup ruids for every function OR if they didn't configure
+        # any ruids then we can just run with the collected functions.
         if empty_ruids(ruids) or valid_ruids(ruids):
             return self.collected
-        else:
-            raise SplintException(
+
+        # Otherwise there is a problem.
+        raise SplintException(
                 f"There are duplicate or missing RUIDS: {ruid_issues(ruids)}"
             )
 
-        # List of functions that will be run
-        return self.collected
-
     def ruids(self):
         """
-        Return a list of all of the RUIDs in the collected functions.
+        Return a list of all the RUIDs in the collected functions.
 
         Returns:
             _type_: _description_
         """
-        ruids = [f.ruid for f in self.collected]
-
         return sorted(set(f.ruid for f in self.collected))
 
     def yield_all(self, env=None):
@@ -290,7 +299,7 @@ class SplintChecker:
 
         # Note that it is possible for the collected list to be
         # empty.  This is not an error condition.  It is possible
-        # that the filter functions have filtered out all of the
+        # that the filter functions have filtered out all the
         # functions.
         self.progress_callback("Start Rule Check")
         self.start_time = dt.datetime.now()
@@ -312,6 +321,35 @@ class SplintChecker:
 
         return self.results
 
+    @property
+    def skip_count(self):
+        return len([r for r in self.results if r.skipped])
+
+    @property
+    def pass_count(self):
+        return len([r for r in self.results if r])
+
+    @property
+    def fail_count(self):
+        return len([r for r in self.results if not r.status])
+
+    @property
+    def total_count(self):
+        return len(self.results)
+
+    @property
+    def function_count(self):
+        return len(self.collected)
+
+    @property
+    def module_count(self):
+        return len(self.modules)
+
+    @property
+    def package_count(self):
+        return len(self.packages)
+
+
     def as_dict(self):
         """
         Return a dictionary of the results.
@@ -320,19 +358,20 @@ class SplintChecker:
             "start_time": self.start_time,
             "end_time": self.end_time,
             "duration_seconds": (self.end_time - self.start_time).total_seconds(),
-            "package_count": len(self.packages),
-            "module_count": len(self.modules),
+            "package_count": self.package_count,
+            "module_count": self.module_count,
             "modules": [m.module_name for m in self.modules],
-            "function_count": len(self.functions),
+            "function_count": self.function_count ,
             "functions": [f.function_name for f in self.functions],
-            "passed_count": len([r for r in self.results if r.status]),
-            "failed_count": len([r for r in self.results if not r.status]),
-            "skip_count": len([r for r in self.results if r.skipped]),
+            "passed_count": self.pass_count,
+            "failed_count": self.fail_count,
+            "skip_count": self.skip_count,
             "tags": sorted(list(set(r.tag for r in self.results))),
             "levels": sorted(list(set(r.level for r in self.results))),
             "phases": sorted(list(set(r.phase for r in self.results))),
-            "total_count": len(self.results),
+            "total_count": self.total_count,
             "ruids": self.ruids(),
+            # the meat of the output livers here
             "results": [r.as_dict() for r in self.results],
         }
         return r

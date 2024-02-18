@@ -24,6 +24,8 @@ from .splint_environment import SplintEnvironment  # noqa: F401
 from .splint_environment import SplintEnvScope  # noqa: F401
 from .splint_environment import make_constant_function  # noqa: F401
 from .splint_exception import SplintException  # noqa: F401
+from .splint_exception import SplintTypeError # noqa: F401
+from .splint_exception import SplintValueError # noqa: F401
 from .splint_filter import and_filters  # noqa: F401
 from .splint_filter import filter_level  # noqa: F401
 from .splint_filter import filter_level_gt  # noqa: F401
@@ -47,6 +49,7 @@ from .splint_function import SplintFunction  # noqa: F401
 from .splint_module import SplintModule  # noqa: F401
 from .splint_package import SplintPackage  # noqa: F401
 from .splint_result import SplintResult  # noqa: F401
+from .splint_result import SplintYield
 from .splint_result import overview  # noqa: F401
 from .splint_ruid import empty_ruids  # noqa: F401
 from .splint_ruid import module_ruids  # noqa: F401
@@ -65,7 +68,7 @@ from .rule_webapi import rule_url_200  # noqa: F401
 try:
     import pandas as pd  # noqa: F401
     from .rule_dataframe import rule_validate_df_schema  # noqa: F401
-    from .rule_dataframe import rule_validate_df_column  # noqa: F401
+    from .rule_dataframe import rule_validate_df_values_by_col  # noqa: F401
 
 except ImportError:
     pass

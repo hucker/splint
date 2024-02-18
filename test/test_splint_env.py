@@ -10,11 +10,11 @@ def test_splint_enum():
     assert splint.SplintEnvScope.MODULE.value == 2
     assert splint.SplintEnvScope.FUNCTION.value == 1
 
-
     assert splint.SplintEnvScope.REPO.name == "REPO"
     assert splint.SplintEnvScope.PACKAGE.name == "PACKAGE"
     assert splint.SplintEnvScope.MODULE.name == "MODULE"
     assert splint.SplintEnvScope.FUNCTION.name == "FUNCTION"
+
 
 def test_splint_gt_cmp():
     assert splint.SplintEnvScope.REPO.value > splint.SplintEnvScope.PACKAGE.value
@@ -22,20 +22,24 @@ def test_splint_gt_cmp():
     assert splint.SplintEnvScope.MODULE.value > splint.SplintEnvScope.FUNCTION.value
     assert splint.SplintEnvScope.REPO.value > splint.SplintEnvScope.MODULE.value
 
+
 def test_splint_lt_cmp():
     assert splint.SplintEnvScope.PACKAGE.value < splint.SplintEnvScope.REPO.value
     assert splint.SplintEnvScope.MODULE.value < splint.SplintEnvScope.PACKAGE.value
     assert splint.SplintEnvScope.FUNCTION.value < splint.SplintEnvScope.MODULE.value
     assert splint.SplintEnvScope.MODULE.value < splint.SplintEnvScope.REPO.value
 
+
 def test_make_constant_function():
     func = splint.make_constant_function("test", 1)
     assert func() == 1
     assert func.__name__ == "test"  # noqa: F821
 
+
 def test_splint_env_function():
     def func():
         return 1
+
     sef = splint.SplintEnvFunction("test", splint.SplintEnvScope.REPO, func)
     assert sef.name == "test"
     assert sef.scope == splint.SplintEnvScope.REPO
@@ -53,8 +57,8 @@ def test_splint_env_function():
     assert sef.value is None
 
 
-
 GLOBAL_SETUP_TEARDOWN_TRACKER = 0
+
 
 def test_splint_env_gen():
     def gen_func():

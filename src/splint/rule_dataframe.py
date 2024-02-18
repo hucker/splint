@@ -2,6 +2,8 @@
 from typing import List, Generator, Tuple
 import pandas as pd
 import numpy as np
+from pandas.core.interchange import column
+
 from .splint_result import SplintResult as SR
 from .splint_exception import SplintException
 
@@ -94,95 +96,148 @@ def rule_validate_df_schema(df: pd.DataFrame,
             raise SplintException("min_rows must be less than or equal to max_rows.")
 
         if len(df) >= min_rows and len(df) <= max_rows:
-            yield SR(status=True, msg=f"Data frame has between {min_rows} and {max_rows} rows.")
+            yield SR(status=True, msg=f"Data frame has {len(df)} rows. Range = {min_rows} - {max_rows} rows.")
         else:
-            yield SR(status=False, msg=f"Data frame has {len(df)} rows, which is not between {min_rows} and {max_rows}.")
+            yield SR(status=False, msg=f"Data frame has {len(df)} rows. Range = {min_rows} - {max_rows} rows.")
 
     if not columns and not no_null_columns and not int_columns and not float_columns and not str_columns and not row_min_max and not allowed_values:
         yield SR(status=False, msg="There are no columns to check")
 
-def rule_validate_df_column(df: pd.DataFrame,
-                         columns:List[str]=None,
-                         positive:bool=None,
-                         non_negative:bool=None,
-                         percent:float=None,
-                         rng:Tuple[float,float]=None,
-                         negative:bool=None,
-                         non_positive:bool=None):
+
+
+def rule_validate_df_values_by_col(df: pd.DataFrame,
+                                   positive: List[str] = None,
+                                   non_negative: List[str] = None,
+                                   percent: List[str] = None,
+                                   min_: Tuple[float,List[str]] = None,
+                                   max_: Tuple[float,List[str]] = None,
+                                   negative: List[str] = None,
+                                   non_positive: List[str] = None,
+                                   correlation: List[str] = None,
+                                   probability: List[str] = None):
     """
-    Validate specified columns in a DataFrame based on given conditions.
+   Validate provided columns in a DataFrame based on different conditions such as whether
+   values are positive, non-negative, in a certain percentage range, less than or
+   greater than a certain minimum or maximum value, negative, non-positive or a probability.
 
-    Parameters:
-    df (pd.DataFrame): The DataFrame to validate.
-    columns (List[str], optional): The list of column names to validate. Defaults to None.
-    positive (bool, optional): If True, checks if all values in the columns are positive. Defaults to None.
-    non_negative (bool, optional): If True, checks if all values in the columns are non-negative. Defaults to None.
-    percent (float, optional): If True, checks if all values in the columns are between 0 and 100. Defaults to None.
-    rng (Tuple[float,float], optional): If specified, checks if all values in the columns are within this range. Defaults to None.
-    negative (bool, optional): If True, checks if all values in the columns are negative. Defaults to None.
-    non_positive (bool, optional): If True, checks if all values in the columns are non-positive. Defaults to None.
+   There is a strong argument that these should all be separate, but the case where I sure
+   like typing 'a,b,c' rather than ['a','b','c'], roughly half the characters.  If your col
+   names have , in them then tough luck.
 
-    Raises:
-    SplintException: If df is None, no columns are specified, more than one condition is specified,
-                     specified columns are not in the DataFrame, no conditions are specified, or
-                     the range is not a tuple or list of two numbers with the first less than the second.
+   yield from rule_validate_df_values_by_column(positive='A', probability='B', negative='C')
 
-    Yields:
-    SR: A status report object containing the status of the validation (True if the condition is met, False otherwise)
-        and a message describing the result.
+   is hard to resist.
+
+   Parameters:
+   df (pd.DataFrame): The input DataFrame to validate.
+   positive (List[str], optional): List of columns to check if all values are positive. Defaults to None.
+   non_negative (List[str], optional): List of columns to check if all values are non-negative. Defaults to None.
+   percent (List[str], optional): List of columns to check if all values are between 0 and 100. Defaults to None.
+   min_ (Tuple[float, List[str]], optional): Tuple with minimum value and list of column names. Checks if all values
+                                             in the columns are >= min value. Defaults to None.
+   max_ (Tuple[float, List[str]], optional): Tuple with maximum value and list of column names. Checks if all values
+                                             in the columns are <= max value. Defaults to None.
+   negative (List[str], optional): List of columns to check if all values are negative. Defaults to None.
+   non_positive (List[str], optional): List of columns to check if all values are non-positive. Defaults to None.
+   probability (List[str], optional): List of columns to check if all values are between 0 and 1. Defaults to None.
+
+   Raises:
+   SplintException: If df is None, no columns are specified or if there are any incompatible values in the specified columns.
+
+   Yields:
+   SR: A status report object containing the status of the validation (True if the condition is met, False otherwise)
+       and a message describing the result.
     """
+
     if df is None:
         raise SplintException("Data frame is None.")
 
-    if not columns:
-        raise SplintException("No columns specified.")
+    # Let lazy people specify a columns by string
+    positive = positive.split(',') if isinstance(positive,str) else positive
+    non_negative = non_negative.split(',') if isinstance(non_negative,str) else non_negative
+    percent = percent.split(',') if isinstance(percent,str) else percent
+    negative = negative.split(',') if isinstance(negative,str) else negative
+    non_positive = non_positive.split(',') if isinstance(non_positive, str) else non_positive
+    correlation = correlation.split(',') if isinstance(correlation,str) else correlation
+    probability = probability.split(',') if isinstance(probability,str) else probability
 
-    conditions = [positive, non_negative, negative, non_positive, percent, bool(rng)]
-    if conditions.count(True) > 1:
-        raise SplintException("Only one condition should be specified.")
+    if min_:
+        min_ = (min[0],min_[1].split(',')) if isinstance(min_[1],str) else min_
+    if max_:
+        max_ = (max[0],max_[1].split(',')) if isinstance(max_[1],str) else max_
 
-    if not set(columns).issubset(df.columns):
-        raise SplintException(f"Columns {set(columns)-set(df.columns)} are not in data frame.")
+    conditions = [positive, non_negative, negative, non_positive, percent, min_, max_, probability,correlation]
 
-    if not any([positive, non_negative, percent, rng, negative, non_positive]):
-        raise SplintException("No conditions specified.")
 
-    if rng and (not isinstance(rng,(tuple,list)) or len(rng) != 2  or rng[0]>rng[1]):
-        raise SplintException("Range must be a tuple or list of the form (low, high)")
+    if not any(conditions):
+        raise SplintException("No data frame column value rules specified.")
+
 
     if positive:
-        if np.all(df[columns] > 0):
-            yield SR(status=True, msg="All specified columns are positive.")
-        else:
-            yield SR(status=False, msg="Not all specified columns are positive.")
+        for col in positive:
+            if np.all(df[col] > 0):
+                yield SR(status=True,msg=f"All values in {col} are  a positive.")
+            else:
+                yield SR(status=False, msg=f"Not all values in {col} are  a positive.")
 
     if non_negative:
-        if np.all(df[columns] >= 0):
-            yield SR(status=True, msg="All specified columns are non-negative.")
-        else:
-            yield SR(status=False, msg="Not all specified columns are non-negative.")
+        for col in non_negative:
+            if np.all(df[col] >= 0):
+                yield SR(status=True, msg=f"All values in {col} are  a non-negative.")
+            else:
+                yield SR(status=False, msg=f"Not all values in {col} are  a non-negative.")
 
     if percent:
-        if np.all((df[columns] >= 0) & (df[columns] <= 100)):
-            yield SR(status=True, msg="All specified columns are a percent.")
-        else:
-            yield SR(status=False, msg="Not all specified columns are a percent.")
+        # Just check 0-100
+        for col in percent:
+            if np.all((df[col] >= 0) & (df[col] <= 100)):
+                yield SR(status=True,msg=f"All values in {col} are  a percent.")
+            else:
+                yield SR(status=False, msg=f"All values in {col} are a percent.")
 
-    if rng:
-        low, high = rng
-        if np.all((df[columns] >= low) & (df[columns] <= high)):
-            yield SR(status=True, msg=f"All specified columns are in range [{low},{high}].")
-        else:
-            yield SR(status=False, msg=f"Not all specified columns are in range [{low},{high}].")
+    if probability:
+        for col in probability:
+            # Just check 0-100
+            if np.all((df[col] >= 0.0) & (df[col] <= 1.0)):
+                yield SR(status=True, msg=f"All values in {col} are probabilities.",)
+            else:
+                yield SR(status=False,  msg=f"Not all values in {col} are probabilities.")
+
+    if correlation:
+        for col in correlation:
+            # Just check 0-100
+            if np.all((df[col] >= -1.0) & (df[col] <= 1.0)):
+                yield SR(status=True, msg=f"All values in {col} are correlations.",)
+            else:
+                yield SR(status=False, msg=f"Not all values in {col} are correlations.")
+
+    if min_:
+        val,cols = min_
+        for col in cols:
+            if np.all((df[col] >= val)):
+                yield SR(status=True, msg=f"All values in {col} are > {val}")
+            else:
+                yield SR(status=False,msg=f"Not all values in {col} are > {val}")
+    if max_:
+        val,cols = max_
+        for col in cols:
+            if np.all((df[col] <= val)):
+                yield SR(status=True, msg=f"All values in {col} are < {val}")
+            else:
+                yield SR(status=False, msg=f"Not all values in {col} are < {val}")
 
     if negative:
-        if np.all(df[columns] < 0):
-            yield SR(status=True, msg="All specified columns are negative.")
-        else:
-            yield SR(status=False, msg="Not all specified columns are negative.")
+        for col in negative:
+            if np.all(df[col] < 0):
+                yield SR(status=True,  msg=f"All values in {col} are negative.")
+            else:
+                yield SR(status=False, msg=f"Not all values in {col} are negative.")
 
     if non_positive:
-        if np.all(df[columns] <= 0):
-            yield SR(status=True, msg="All specified columns are non-positive.")
-        else:
-            yield SR(status=False, msg="Not all specified columns are non-positive.")
+        for col in non_positive:
+            if np.all(df[col] <= 0):
+                yield SR(status=True, msg=f"All values in {col} are non-positive.")
+            else:
+                yield SR(status=False, msg=f"Not all valus in {col} are non-positive.")
+
+
