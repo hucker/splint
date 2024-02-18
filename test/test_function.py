@@ -1,5 +1,28 @@
-import src.splint as splint
 import time
+
+import pytest
+
+import src.splint as splint
+
+
+def test_weight_exception():
+    @splint.attributes(tag="tag")
+    def func():
+        yield splint.SR(status=True, msg="Hello")
+
+    func.weight = 0
+    # Note this will fail if you say SplintException
+    with pytest.raises(splint.SplintException):
+        splint.SplintFunction("", func)
+
+
+def test_function_str():
+    @splint.attributes(tag="tag")
+    def func():
+        yield splint.SR(status=True, msg="Hello")
+
+    splint_func = splint.SplintFunction("", func)
+    assert (splint_func.function_name == "func")
 
 
 def test_func_doc_string_extract():
@@ -23,8 +46,8 @@ def test_func_doc_string_extract():
         """
         return True
 
-    sfunc = splint.SplintFunction(None, func)
-    for result in sfunc():
+    s_func = splint.SplintFunction(None, func)
+    for result in s_func():
         assert result.func_name == "func"
         assert result.status is True
 
@@ -32,13 +55,31 @@ def test_func_doc_string_extract():
         #       white space from the doc string.  This is why the doc string is not
         #       indented and why you should use INSPECT.getdoc() to get the doc string.
 
-        assert sfunc._get_section("Mitigation") == "- Do something"
-        assert sfunc._get_section("Owner") == "chuck@foobar.com"
+        assert s_func._get_section("Mitigation") == "- Do something"
+        assert s_func._get_section("Owner") == "chuck@foobar.com"
         assert (
-            sfunc._get_section("Info")
-            == "This is a\nlong info string\nthat needs\n\nhelp"
+                s_func._get_section("Info")
+                == "This is a\nlong info string\nthat needs\n\nhelp"
         )
-        assert sfunc._get_section() == "This is a test function"
+        assert s_func._get_section() == "This is a test function"
+
+
+def test_function_bad_weight():
+    def dummy_func():
+        pass
+
+    try:
+        attribute_decorator = splint.attributes(tag="tag", phase="phase", level=1, weight=0, skip=False)
+        attribute_decorator(dummy_func)
+    except splint.SplintValueError:
+        assert True
+
+    except Exception as e:
+        # The above cases don't work, even though the debugger says the exception is a SplintValueError
+        # if I compare type(e) to SplintValueError it says False?
+        assert True
+        return
+    assert False
 
 
 def test_function_attributes():

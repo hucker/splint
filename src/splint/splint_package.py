@@ -72,9 +72,9 @@ class SplintPackage:
         return 0 if not self.modules else len(self.modules)
 
     def load_modules(self, glob=None)->List[SplintModule]:
-        checkfile_glob = glob or self.module_glob
+        check_file_glob = glob or self.module_glob
 
-        for file_path in sorted(self.folder.glob(checkfile_glob)):
+        for file_path in sorted(self.folder.glob(check_file_glob)):
             module_name = f"{file_path.stem}"
 
             module = SplintModule(module_name, module_file=file_path, auto_load=True)

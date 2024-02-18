@@ -1,10 +1,27 @@
 """ This module contains the SplintResult class and some common result transformers. """
 
-from dataclasses import dataclass,field,asdict
+from dataclasses import dataclass, field, asdict
+from functools import wraps
 from typing import Callable, List
 import itertools
 from operator import attrgetter
 from collections import Counter
+
+import splint
+
+
+def enforce_keyword_arguments(cls):
+    init = cls.__init__
+
+    @wraps(init)
+    def wrapper(self, *args, **kwargs):
+        if args:
+            raise TypeError(f"{cls.__name__} only accepts keyword arguments.")
+        init(self, **kwargs)
+
+    cls.__init__ = wrapper
+    return cls
+
 
 @dataclass
 class SplintResult:
@@ -36,7 +53,6 @@ class SplintResult:
 
     status: bool = False
 
-
     # Name hierarchy
     func_name: str = ""
     pkg_name: str = ""
@@ -64,12 +80,12 @@ class SplintResult:
     tag: str = ""
     level: int = 1
     phase: str = ""
-    count:int = 0
-    ruid:str=""
+    count: int = 0
+    ruid: str = ""
 
     # Mitigations
     mit_msg: str = ""
-    owner_list:List[str] = field(default_factory=list)
+    owner_list: List[str] = field(default_factory=list)
 
     def as_dict(self):
         """Convert the SplintResult instance to a dictionary."""
@@ -78,16 +94,72 @@ class SplintResult:
         return d
 
 
+class SplintYield:
+    """
+    This allows syntactic sugar to know how many times a generator
+    has been fired and how many passes and fails have occurred.
+
+    These internal counts allow top level code to NOT manage that
+    state at the rule level.  Instead you just report your passes
+    and fails and ask at the end how it played out.
+
+    gen = SprintYield()
+
+    if cond:
+        yield from gen(SR(True,"Info...")
+    if not gen.yielded:
+        yield from gen(SR(False,"Nothing to do"))
+
+    """
+
+    def __init__(self):
+        self._count = 0
+        self._fail_count = 0
+
+    @property
+    def yielded(self):
+        return self._count > 0
+
+    @property
+    def count(self):
+        return self._count
+
+    @property
+    def fail_count(self):
+        return self._fail_count
+
+    @property
+    def pass_count(self):
+        return self.count - self._fail_count
+
+    @property
+    def counts(self):
+        """Return pass/fail/total yield counts"""
+        return self.pass_count,self.fail_count,self.count
+
+    def __call__(self, results: SplintResult | List[SplintResult],fail_only: bool = False):
+        if isinstance(results, SplintResult):
+            results = [results]
+        elif isinstance(results, list) and isinstance(results[0], SplintResult):
+            pass
+        else:
+            raise splint.SplintException(f"Unknown result type {type(results)}")
+        for result in results:
+            self._count += 1
+            self._fail_count += 0 if result.status else 1
+            yield result
+
+
 # Result transformers do one of three things, nothing and pass the result on, modify the result
 # or return None to indicate that the result should be dropped.  What follows are some
 # common result transformers.
 
-def pass_only(sr:SplintResult):
+def pass_only(sr: SplintResult):
     """ Return only results that have pass status"""
     return sr if sr.status else None
 
 
-def fail_only(sr:SplintResult):
+def fail_only(sr: SplintResult):
     """Filters out successful results.
 
     Args:
@@ -98,7 +170,18 @@ def fail_only(sr:SplintResult):
     """
     return None if sr.status else sr
 
-def warn_as_fail(sr:SplintResult):
+def remove_info(sr: SplintResult):
+    """Filter out messages tagged as informational
+
+    Args:
+        sr (SplintResult): The result to check.
+
+    Returns:
+        SplintResult: The result if it has failed, otherwise None.
+    """
+    return None if sr.info_msg else sr
+
+def warn_as_fail(sr: SplintResult):
     """Treats results with a warning message as failures.
 
     Args:
@@ -111,7 +194,8 @@ def warn_as_fail(sr:SplintResult):
         sr.status = False
     return sr
 
-def fix_blank_msg(sr:SplintResult):
+
+def fix_blank_msg(sr: SplintResult):
     """Sets the message to the module and function name if it's blank.
 
     Args:
@@ -129,7 +213,7 @@ def fix_blank_msg(sr:SplintResult):
     return sr
 
 
-def yield_result_pipeline(transformers: List[Callable], results:List[SplintResult]):
+def yield_result_pipeline(transformers: List[Callable], results: List[SplintResult]):
     """Applies a list of functions to a list of results.
 
     The functions are applied in order and the results are passed to the next function in the list.
@@ -154,7 +238,8 @@ def yield_result_pipeline(transformers: List[Callable], results:List[SplintResul
         if result is not None:
             yield result
 
-def result_pipeline(transformers:List[Callable], results:List[SplintResult]):
+
+def result_pipeline(transformers: List[Callable], results: List[SplintResult]):
     """Applies a list of functions to a list of results and returns a list.
 
     This is a list version of the yield_result_pipeline function. It returns a list of results
@@ -169,7 +254,8 @@ def result_pipeline(transformers:List[Callable], results:List[SplintResult]):
     """
     return list(yield_result_pipeline(transformers, results))
 
-def results_as_dict(results:List[SplintResult]):
+
+def results_as_dict(results: List[SplintResult]):
     """Converts a list of SplintResult to a list of dictionaries.
 
     Args:
@@ -181,12 +267,11 @@ def results_as_dict(results:List[SplintResult]):
     return [result.as_dict() for result in results]
 
 
-
-def group_by(results:List[SplintResult], keys:List[str]):
+def group_by(results: List[SplintResult], keys: List[str]):
     """
     Groups a list of SplintResult by a list of keys.
 
-    This funciton allows for arbitrary grouping of SplintResult using the keys of the
+    This function allows for arbitrary grouping of SplintResult using the keys of the
     SplintResult as the grouping criteria.  You can group in any order or depth with
     any number of keys.
 
@@ -204,7 +289,7 @@ def group_by(results:List[SplintResult], keys:List[str]):
 
     # Check if all objects have the required attribute
     if not all(hasattr(x, key) for x in results):
-        raise ValueError(f"All objects must have an attribute '{key}'")
+        raise splint.SplintValueError(f"All objects must have an attribute '{key}'")
 
     # Sort and group by the first key
     results = sorted(results, key=key_func)
@@ -216,6 +301,7 @@ def group_by(results:List[SplintResult], keys:List[str]):
             results[i] = (k, group_by(group, keys[1:]))
 
     return dict(results)
+
 
 def overview(results: List[SplintResult]) -> str:
     """

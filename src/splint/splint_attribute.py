@@ -12,11 +12,12 @@ every attribute to a rule. Defaults are provided for all attributes. You can go
 along way never using an attribute...and once you learn them you will use them all
 the time.
 """
+import splint
 
 DEFAULT_TAG = ""       # A string indicating the type of rule, used for grouping/filtering results
 DEFAULT_LEVEL = 1      #
 DEFAULT_PHASE = ""     # A string indicating what phase of the development process a rule is best suited for
-DEFAULT_WEIGHT = 100   # The nominal weight for a rule should be a postive number
+DEFAULT_WEIGHT = 100   # The nominal weight for a rule should be a positive number
 DEFAULT_SKIP = False   # Set to true to skip a rule
 DEFAULT_RUID = ""
 
@@ -44,7 +45,7 @@ def attributes(
         return func
 
     if weight <= 0:
-        raise ValueError("Weight must be greater than 0.0.  The nominal value is 100.0.")
+        raise splint.SplintValueError("Weight must be greater than 0.0.  The nominal value is 100.0.")
 
     return decorator
 
@@ -61,5 +62,7 @@ def get_attribute(func, attr, default_value=None):
         "skip": DEFAULT_SKIP,
         "ruid": DEFAULT_RUID,
     }
+
     default = default_value or defs[attr]
+
     return getattr(func, attr, default)

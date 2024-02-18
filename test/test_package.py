@@ -1,30 +1,33 @@
-from collections import namedtuple
-from src import splint
 import pytest
+
+from src import splint
 
 
 @pytest.fixture
 def simple1_pkg():
-    return splint.SplintPackage(folder="./test/simple1",name="Simple1")
+    return splint.SplintPackage(folder="./simple1", name="Simple1")
 
 
 @pytest.fixture
 def decorator1_pkg():
-    return splint.SplintPackage(folder="./test/decorator1",name="Decorator1")
+    return splint.SplintPackage(folder="./decorator1", name="Decorator1")
 
 
 @pytest.fixture
 def decorator2_pkg():
-    return splint.SplintPackage(folder="./test/decorator2",name="Decorator2")
+    return splint.SplintPackage(folder="./decorator2", name="Decorator2")
+
 
 @pytest.fixture
 def skip_pkg():
-    return splint.SplintPackage(folder="./test/skip",name="Skip")
+    return splint.SplintPackage(folder="./skip", name="Skip")
+
 
 def test_sugar():
     r1 = splint.SplintResult(status=True, msg="msg")
     r2 = splint.SR(status=True, msg="msg")
     assert r1 == r2
+
 
 def test_load_1_package_load(simple1_pkg):
     assert len(simple1_pkg.modules) == 1
@@ -33,6 +36,7 @@ def test_load_1_package_load(simple1_pkg):
     assert m
     assert m.module_name == "check_simple1"
     assert m.doc == "DocString for check_simple1"
+
 
 def test_load_2_packages_load(decorator1_pkg, decorator2_pkg):
     assert len(decorator1_pkg.modules) == 1

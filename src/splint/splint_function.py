@@ -128,8 +128,10 @@ class SplintFunction:
         self.skip = get_attribute(function, "skip")
         self.ruid = get_attribute(function, "ruid")
 
-        if self.weight is None or 0.0:
+        if self.weight is None:
             self.weight = 100.0
+        elif self.weight <= 0.0:
+            raise SplintException("Weight must be greater than 0.0")
 
         self.allowed_exceptions = allowed_exceptions or (Exception,)
 
@@ -222,7 +224,7 @@ class SplintFunction:
 
         Parameters:
         header (str): The header of the section to extract.
-        text (str): INternally this is never used, but is useful for testing.
+        text (str): IInternally this is never used, but is useful for testing.
 
         Returns:
         str: The text of the requested section.
@@ -252,26 +254,24 @@ class SplintFunction:
         """
         Provide a bunch of metadata about the function call.
 
-        An important design decision was made to make the result data not be hierarchical.
-        because there are different possible hierarchies.  Instead the result data is flat
-        with attributes that can be used to filter and sort the results to achieve the desired
-        hierarchy.
+        A design decision was made to make the result data flat since there are no more than
+        1 possible hierarchy.
         """
         # Use getattr to avoid repeating the same pattern of checking if self.module exists
         result.pkg_name = getattr(self.module, "__package__", "")
         result.module_name = getattr(self.module, "__name__", "")
 
         # Assign the rest of the attributes directly
+        result.ruid = self.ruid
         result.func_name = self.function_name
         result.doc = self.doc
         result.tag = self.tag
         result.level = self.level
         result.phase = self.phase
-        result.ruid = self.ruid
         result.runtime_sec = end_time - start_time
         result.count = count
 
-        # Apply all of the hooks to the result
+        # Apply all the hooks to the result
         for hook in self.result_hooks:
             if result is not None:
                 result = hook(self, result)

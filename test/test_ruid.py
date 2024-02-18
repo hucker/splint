@@ -1,4 +1,3 @@
-import logging
 import sys
 
 import pytest
@@ -24,31 +23,37 @@ def sys_path():
 @pytest.mark.usefixtures("sys_path")
 def test_ruid1():
     """Normal case all RUIDS are unique"""
-    pkg = splint.SplintPackage(folder="./test/ruid", name="ruid")
+    pkg = splint.SplintPackage(folder="./ruid", name="ruid")
 
     ruids = pkg.ruids()
-
-
 
     assert ruids == ["suid11", "suid12", "suid21", "suid22"]
     assert splint.valid_ruids(ruids)
     assert splint.ruid_issues(ruids) == "No issues found."
 
+def test_ruids1_module():
+    """Make sure we can load modules individually and extract the ruids"""
+    module = splint.SplintModule(module_name="check_suid1_a",module_file='./ruid/check_suid1_a.py')
+    assert module.module_name == "check_suid1_a"
+    assert module.module_file == "./ruid/check_suid1_a.py"
+    assert module.ruids() == ["suid11", "suid12"]
+
+    module = splint.SplintModule(module_name="check_suid2_a",module_file='./ruid/check_suid2_a.py')
+    assert module.module_name == "check_suid2_a"
+    assert module.module_file == "./ruid/check_suid2_a.py"
+    assert module.ruids() == ["suid21", "suid22"]
 
 @pytest.mark.usefixtures("sys_path")
 def test_run_ruid_1():
     """Normal case all RUIDS are unique"""
-    pkg = splint.SplintPackage(folder="./test/ruid", name="ruid")
+    pkg = splint.SplintPackage(folder="./ruid", name="ruid")
     ch = splint.SplintChecker(packages=pkg)
     ch.pre_collect()
     ch.prepare()
 
-
     results = ch.run_all()
 
     ruids = pkg.ruids()
-
-
 
     assert ruids == ["suid11", "suid12", "suid21", "suid22"]
     assert splint.valid_ruids(ruids)
@@ -57,24 +62,18 @@ def test_run_ruid_1():
 
 @pytest.mark.usefixtures("sys_path")
 def test_ruid_dup():
-    """Load up a package with duplicate RUIDS and blanks"""
-    pkg = splint.SplintPackage(folder="./test/ruid_dup", name="ruid_dup")
+    """Load up a package with duplicate RUIDS to verify excepton"""
+    with pytest.raises(splint.SplintException,match="Duplicate RUIDs found in module: suid12"):
+        splint.SplintPackage(folder="./ruid_dup", name="ruid_dup")
 
-    ruids = pkg.ruids()
 
-    assert ruids == ["", "suid11", "suid12", "suid12", "suid21", "suid22", "suid22"]
-    assert splint.valid_ruids(ruids) is False
-    assert (
-        splint.ruid_issues(ruids) == "Duplicates: suid12, suid22. Blank RUIDs present."
-    )
 
 @pytest.mark.usefixtures("sys_path")
 def test_no_ruid():
     """Load a package that has no RUIDS"""
-    pkg = splint.SplintPackage(folder="./test/ruid_empty", name="ruid_empty")
+    pkg = splint.SplintPackage(folder="./ruid_empty", name="ruid_empty")
 
     ruids = pkg.ruids()
-
 
     # This package doesn't have RUIDS so all 4 should be empty
     assert ruids == ["", "", "", ""]
