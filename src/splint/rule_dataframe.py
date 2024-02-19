@@ -1,23 +1,21 @@
+from typing import Generator, List, Tuple
 
-from typing import List, Generator, Tuple
-import pandas as pd
 import numpy as np
-from pandas.core.interchange import column
+import pandas as pd
 
-from .splint_result import SplintResult as SR
 from .splint_exception import SplintException
-
+from .splint_result import SplintResult as SR
 
 
 def rule_validate_df_schema(df: pd.DataFrame,
-                   columns:List[str]=None,
-                   no_null_columns:List[str]=None,
-                   int_columns:List[str]=None,
-                   float_columns:List[str]=None,
-                   str_columns:List[str]= None,
-                   row_min_max:Tuple[int,int]=None,
-                   allowed_values:List=None,
-                   empty_ok:bool=False) -> Generator[SR,None,None]:
+                            columns: List[str] = None,
+                            no_null_columns: List[str] = None,
+                            int_columns: List[str] = None,
+                            float_columns: List[str] = None,
+                            str_columns: List[str] = None,
+                            row_min_max: Tuple[int, int] = None,
+                            allowed_values: List = None,
+                            empty_ok: bool = False) -> Generator[SR, None, None]:
     """
     Validate the schema of a DataFrame based on given conditions.
 
@@ -28,28 +26,29 @@ def rule_validate_df_schema(df: pd.DataFrame,
     int_columns (List[str], optional): List of columns that should be of integer type. Defaults to None.
     float_columns (List[str], optional): List of columns that should be of float type. Defaults to None.
     str_columns (List[str], optional): List of columns that should be of string type. Defaults to None.
-    row_min_max (Tuple[int,int], optional): Tuple specifying the minimum and maximum number of rows in the DataFrame. Defaults to None.
+    row_min_max (Tuple[int,int], optional): Tuple with the min/max # of rows in the DataFrame. Defaults to None.
     empty_ok (bool, optional): If True, an empty DataFrame is considered valid. Defaults to False.
 
     Raises:
-    SplintException: If df is None, min_rows and max_rows are not non-negative integers, or min_rows is greater than max_rows.
+    SplintException: If df is None, min_rows/max_rows are not non-negative integers, or min_rows is > than max_rows.
 
     Yields:
-    SR: A status report object containing the status of the validation (True if the condition is met, False otherwise)
+    SR: An object containing the status of the validation (True if the condition is met, False otherwise)
         and a message describing the result.
     """
-    def check_dtype(column, dtype, dtype_name):
-        if df[column].dtype in dtype:
-            yield SR(status=True, msg=f"Column {column} is of type {dtype_name}.")
-        else:
-            yield SR(status=False, msg=f"Column {column} is not of type {dtype_name}.")
 
-    def check_null(column):
-        null_count = df[column].isnull().sum()
-        if null_count == 0:
-            yield SR(status=True, msg=f"Column {column} has no null values.")
+    def check_dtype(col, dtype, dtype_name):
+        if df[col].dtype in dtype:
+            yield SR(status=True, msg=f"Column {col} is of type {dtype_name}.")
         else:
-            yield SR(status=False, msg=f"Column {column} has {null_count} null values.")
+            yield SR(status=False, msg=f"Column {col} is not of type {dtype_name}.")
+
+    def check_null(col):
+        null_count = df[col].isnull().sum()
+        if null_count == 0:
+            yield SR(status=True, msg=f"Column {col} has no null values.")
+        else:
+            yield SR(status=False, msg=f"Column {col} has {null_count} null values.")
 
     if df is None:
         raise SplintException("Data frame is None.")
@@ -62,31 +61,32 @@ def rule_validate_df_schema(df: pd.DataFrame,
         if set(columns).issubset(df.columns):
             yield SR(status=True, msg=f"All columns {columns} are in data frame.")
         else:
-            yield SR(status=False, msg=f"Columns {set(columns)-set(df.columns)} are not in data frame.")
+            yield SR(status=False,
+                     msg=f"Columns {set(columns) - set(df.columns)} are not in data frame.")
 
     if no_null_columns:
-        for column in no_null_columns:
-            yield from check_null(column)
+        for col in no_null_columns:
+            yield from check_null(col)
 
     if int_columns:
-        for column in int_columns:
-            yield from check_dtype(column, ['int64','int32'], 'int')
+        for col in int_columns:
+            yield from check_dtype(col, ['int64', 'int32'], 'int')
 
     if float_columns:
-        for column in float_columns:
-            yield from check_dtype(column, ['float64','float32'], 'float')
+        for col in float_columns:
+            yield from check_dtype(col, ['float64', 'float32'], 'float')
 
     if str_columns:
-        for column in str_columns:
-            yield from check_dtype(column, ['object'], 'object')
+        for col in str_columns:
+            yield from check_dtype(col, ['object'], 'object')
 
     if allowed_values:
-        for column in columns:
-            if df[column].isin(allowed_values).all():
-                yield SR(status=True, msg=f"All values in column {column} are in {allowed_values}.")
+        for col in columns:
+            if df[col].isin(allowed_values).all():
+                yield SR(status=True, msg=f"All values in column {col} are in {allowed_values}.")
             else:
-                yield SR(status=False, msg=f"Some values in column {column} are not in {allowed_values}.")
-
+                yield SR(status=False,
+                         msg=f"Some values in column {col} are not in {allowed_values}.")
 
     if row_min_max:
         min_rows, max_rows = row_min_max
@@ -96,21 +96,23 @@ def rule_validate_df_schema(df: pd.DataFrame,
             raise SplintException("min_rows must be less than or equal to max_rows.")
 
         if len(df) >= min_rows and len(df) <= max_rows:
-            yield SR(status=True, msg=f"Data frame has {len(df)} rows. Range = {min_rows} - {max_rows} rows.")
+            yield SR(status=True,
+                     msg=f"Data frame has {len(df)} rows. Range = {min_rows} - {max_rows} rows.")
         else:
-            yield SR(status=False, msg=f"Data frame has {len(df)} rows. Range = {min_rows} - {max_rows} rows.")
+            yield SR(status=False,
+                     msg=f"Data frame has {len(df)} rows. Range = {min_rows} - {max_rows} rows.")
 
-    if not columns and not no_null_columns and not int_columns and not float_columns and not str_columns and not row_min_max and not allowed_values:
-        yield SR(status=False, msg="There are no columns to check")
-
+    if not any([columns, no_null_columns, int_columns, float_columns, str_columns, row_min_max, allowed_values]):
+        yield SR(status=False,
+                 msg="There are no columns to check")
 
 
 def rule_validate_df_values_by_col(df: pd.DataFrame,
                                    positive: List[str] = None,
                                    non_negative: List[str] = None,
                                    percent: List[str] = None,
-                                   min_: Tuple[float,List[str]] = None,
-                                   max_: Tuple[float,List[str]] = None,
+                                   min_: Tuple[float, List[str]] = None,
+                                   max_: Tuple[float, List[str]] = None,
                                    negative: List[str] = None,
                                    non_positive: List[str] = None,
                                    correlation: List[str] = None,
@@ -142,7 +144,7 @@ def rule_validate_df_values_by_col(df: pd.DataFrame,
    probability (List[str], optional): List of columns to check if all values are between 0 and 1. Defaults to None.
 
    Raises:
-   SplintException: If df is None, no columns are specified or if there are any incompatible values in the specified columns.
+   SplintException: If df is None, no cols are spec'ed or if there are incompatible values in the specified columns.
 
    Yields:
    SR: A status report object containing the status of the validation (True if the condition is met, False otherwise)
@@ -153,30 +155,28 @@ def rule_validate_df_values_by_col(df: pd.DataFrame,
         raise SplintException("Data frame is None.")
 
     # Let lazy people specify a columns by string
-    positive = positive.split(',') if isinstance(positive,str) else positive
-    non_negative = non_negative.split(',') if isinstance(non_negative,str) else non_negative
-    percent = percent.split(',') if isinstance(percent,str) else percent
-    negative = negative.split(',') if isinstance(negative,str) else negative
+    positive = positive.split(',') if isinstance(positive, str) else positive
+    non_negative = non_negative.split(',') if isinstance(non_negative, str) else non_negative
+    percent = percent.split(',') if isinstance(percent, str) else percent
+    negative = negative.split(',') if isinstance(negative, str) else negative
     non_positive = non_positive.split(',') if isinstance(non_positive, str) else non_positive
-    correlation = correlation.split(',') if isinstance(correlation,str) else correlation
-    probability = probability.split(',') if isinstance(probability,str) else probability
+    correlation = correlation.split(',') if isinstance(correlation, str) else correlation
+    probability = probability.split(',') if isinstance(probability, str) else probability
 
     if min_:
-        min_ = (min[0],min_[1].split(',')) if isinstance(min_[1],str) else min_
+        min_ = (min[0], min_[1].split(',')) if isinstance(min_[1], str) else min_
     if max_:
-        max_ = (max[0],max_[1].split(',')) if isinstance(max_[1],str) else max_
+        max_ = (max[0], max_[1].split(',')) if isinstance(max_[1], str) else max_
 
-    conditions = [positive, non_negative, negative, non_positive, percent, min_, max_, probability,correlation]
-
+    conditions = [positive, non_negative, negative, non_positive, percent, min_, max_, probability, correlation]
 
     if not any(conditions):
         raise SplintException("No data frame column value rules specified.")
 
-
     if positive:
         for col in positive:
             if np.all(df[col] > 0):
-                yield SR(status=True,msg=f"All values in {col} are  a positive.")
+                yield SR(status=True, msg=f"All values in {col} are  a positive.")
             else:
                 yield SR(status=False, msg=f"Not all values in {col} are  a positive.")
 
@@ -191,7 +191,7 @@ def rule_validate_df_values_by_col(df: pd.DataFrame,
         # Just check 0-100
         for col in percent:
             if np.all((df[col] >= 0) & (df[col] <= 100)):
-                yield SR(status=True,msg=f"All values in {col} are  a percent.")
+                yield SR(status=True, msg=f"All values in {col} are  a percent.")
             else:
                 yield SR(status=False, msg=f"All values in {col} are a percent.")
 
@@ -199,27 +199,27 @@ def rule_validate_df_values_by_col(df: pd.DataFrame,
         for col in probability:
             # Just check 0-100
             if np.all((df[col] >= 0.0) & (df[col] <= 1.0)):
-                yield SR(status=True, msg=f"All values in {col} are probabilities.",)
+                yield SR(status=True, msg=f"All values in {col} are probabilities.", )
             else:
-                yield SR(status=False,  msg=f"Not all values in {col} are probabilities.")
+                yield SR(status=False, msg=f"Not all values in {col} are probabilities.")
 
     if correlation:
         for col in correlation:
             # Just check 0-100
             if np.all((df[col] >= -1.0) & (df[col] <= 1.0)):
-                yield SR(status=True, msg=f"All values in {col} are correlations.",)
+                yield SR(status=True, msg=f"All values in {col} are correlations.", )
             else:
                 yield SR(status=False, msg=f"Not all values in {col} are correlations.")
 
     if min_:
-        val,cols = min_
+        val, cols = min_
         for col in cols:
             if np.all((df[col] >= val)):
                 yield SR(status=True, msg=f"All values in {col} are > {val}")
             else:
-                yield SR(status=False,msg=f"Not all values in {col} are > {val}")
+                yield SR(status=False, msg=f"Not all values in {col} are > {val}")
     if max_:
-        val,cols = max_
+        val, cols = max_
         for col in cols:
             if np.all((df[col] <= val)):
                 yield SR(status=True, msg=f"All values in {col} are < {val}")
@@ -229,7 +229,7 @@ def rule_validate_df_values_by_col(df: pd.DataFrame,
     if negative:
         for col in negative:
             if np.all(df[col] < 0):
-                yield SR(status=True,  msg=f"All values in {col} are negative.")
+                yield SR(status=True, msg=f"All values in {col} are negative.")
             else:
                 yield SR(status=False, msg=f"Not all values in {col} are negative.")
 
@@ -239,5 +239,3 @@ def rule_validate_df_values_by_col(df: pd.DataFrame,
                 yield SR(status=True, msg=f"All values in {col} are non-positive.")
             else:
                 yield SR(status=False, msg=f"Not all valus in {col} are non-positive.")
-
-

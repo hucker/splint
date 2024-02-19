@@ -2,8 +2,9 @@
 
 import abc
 from typing import List
-from .splint_result import SplintResult
+
 from .splint_exception import SplintException
+from .splint_result import SplintResult
 
 
 class ScoreStrategy(abc.ABC):
@@ -14,7 +15,7 @@ class ScoreStrategy(abc.ABC):
     by providing a name that matches the class strat_name attribute.
     """
 
-    strat_name = None
+    strategy_name = None
 
     @abc.abstractmethod
     def score(self, results: List[SplintResult] = None):
@@ -25,13 +26,13 @@ class ScoreStrategy(abc.ABC):
 
     @classmethod
     def strategy_factory(cls, strategy_name_or_class) -> "ScoreStrategy":
-        """Make a strategy object from a name or class.  This will be read from files or code so they support both"""
+        """Make a strategy object from a name or class.  This will be read from files or code, so they support both"""
         if isinstance(strategy_name_or_class, str):
-            # Note this only goes one level deep in sub classes, which for now is good enough.
+            # Note this only goes one level deep in subclasses, which for now is good enough.
             for subclass in cls.__subclasses__():
                 if (
-                    subclass.strat_name == strategy_name_or_class
-                    or subclass.__name__ == strategy_name_or_class
+                        subclass.strategy_name == strategy_name_or_class
+                        or subclass.__name__ == strategy_name_or_class
                 ):
                     return subclass()
             raise SplintException(
@@ -48,7 +49,7 @@ class ScoreStrategy(abc.ABC):
 class ScoreByResult(ScoreStrategy):
     """Calculate the score by individually weighting each result"""
 
-    strat_name = "by_result"
+    strategy_name = "by_result"
 
     def score(self, results: List[SplintResult] = None):
         """Weighted result of all results."""
@@ -69,7 +70,7 @@ class ScoreByResult(ScoreStrategy):
 class ScoreByFunctionBinary(ScoreStrategy):
     """Calculate the score by requiring ALL results from a function to be pass to consider the function passed."""
 
-    strat_name = "by_function_binary"
+    strategy_name = "by_function_binary"
 
     def score(self, results: List[SplintResult] = None):
         """If any result on a function fails then the function fails."""
@@ -98,15 +99,14 @@ class ScoreByFunctionBinary(ScoreStrategy):
 
 
 class ScoreByFunctionMean(ScoreStrategy):
-    """Calculate the score by averaging the results of all results from a function.  This means that a function could 50% pass"""
+    """Calculate score by averaging the results from a function.  This means that a function could 50% pass"""
 
-    strat_name = "by_function_mean"
+    strategy_name = "by_function_mean"
 
     def score(self, results: List[SplintResult] = None):
         """Find the average of the results from each function."""
 
         function_results = {}
-
 
         # Remove any skipped results
         results = [result for result in results if not result.skipped]

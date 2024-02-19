@@ -1,5 +1,3 @@
-
-
 class SplintTypeError(TypeError):
     """Type errors associated with setting up Splint
 
@@ -10,6 +8,7 @@ class SplintTypeError(TypeError):
     """
     pass
 
+
 class SplintValueError(ValueError):
     """ Value Error associated with setting up Splint
 
@@ -17,6 +16,7 @@ class SplintValueError(ValueError):
     basic setup.  For example a negative weight.
 
     """
+
 
 class SplintException(Exception):
     """Specialized exception for splint."""

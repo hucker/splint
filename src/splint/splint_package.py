@@ -1,23 +1,21 @@
-import logging
 import pathlib
 import sys
 from typing import List
 
 from .splint_environment import SplintEnvironment
 from .splint_exception import SplintException
-from .splint_filter import filter_none
 from .splint_module import SplintModule
 
 
 class SplintPackage:
     def __init__(
-        self,
-        folder="check",
-        module_glob="check_*.py",
-        function_prefix="check_",
-        auto_load=True,
-        name=None,
-        env: SplintEnvironment = None,
+            self,
+            folder="check",
+            module_glob="check_*.py",
+            function_prefix="check_",
+            auto_load=True,
+            name=None,
+            env: SplintEnvironment = None,
     ):
         self.modules: List[SplintModule] = []
         self.folder: pathlib.Path = pathlib.Path(folder)
@@ -62,7 +60,7 @@ class SplintPackage:
 
         # Check if the absolute folder path is in sys.path
         if not any(
-            pathlib.Path(path).resolve() == absolute_folder_path for path in sys.path
+                pathlib.Path(path).resolve() == absolute_folder_path for path in sys.path
         ):
             # If it's not, add it to sys.path
             sys.path.insert(0, str(absolute_folder_path))
@@ -71,7 +69,7 @@ class SplintPackage:
     def module_count(self) -> int:
         return 0 if not self.modules else len(self.modules)
 
-    def load_modules(self, glob=None)->List[SplintModule]:
+    def load_modules(self, glob=None) -> List[SplintModule]:
         check_file_glob = glob or self.module_glob
 
         for file_path in sorted(self.folder.glob(check_file_glob)):
@@ -82,7 +80,7 @@ class SplintPackage:
 
         return self.modules
 
-    def get(self, module_name)->SplintModule:
+    def get(self, module_name) -> SplintModule | None:
         for module in self.modules:
             if module.module_name == module_name:
                 return module

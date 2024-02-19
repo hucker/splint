@@ -1,5 +1,4 @@
 import pathlib
-import requests
 import time
 
 from .splint_exception import SplintException
@@ -12,15 +11,18 @@ def rule_path_exists(path_: str) -> bool:
 
 
 def rule_stale_files(
-    folder: str,
-    pattern: str,
-    days: float = 0,
-    hours: float = 0,
-    minutes: float = 0,
-    seconds: float = 0,
-    fail_only=True,
+        folder: str,
+        pattern: str,
+        days: float = 0,
+        hours: float = 0,
+        minutes: float = 0,
+        seconds: float = 0,
+        fail_only=True,
 ):
-    """Rule to verify that there are no files older than some age.  Each file that is too old is reported.  The age is specified in days, hours, minutes, and seconds."""
+    """
+    Rule to verify that there are no files older than some age.  Each file that is too old is reported.
+    The age is specified in days, hours, minutes, and seconds.
+    """
     age_in_seconds = days * 86400.0 + hours * 3600.0 + minutes * 60.0 + seconds
     if age_in_seconds <= 0:
         raise SplintException("Age for stale file check should be > 0")
@@ -70,15 +72,15 @@ def rule_large_files(folder: str, pattern: str, max_size: float, fail_only=True)
 def rule_max_files(folders: list, max_files: int, pattern: str = '*', fail_only=True):
     """Rule to verify that the number of files in a list of folders does not exceed a given limit."""
 
-    if isinstance(folders, str) or isinstance(folders,pathlib.Path):
+    if isinstance(folders, (str,pathlib.Path)):
         folders = [folders]
-    if isinstance(max_files,int):
-        max_files = [max_files]*len(folders)
+    if isinstance(max_files, int):
+        max_files = [max_files] * len(folders)
 
     if len(folders) != len(max_files):
         raise SplintException("The number of folders and the number of max_files must be the same.")
 
-    for folder,max_file in zip(folders,max_files):
+    for folder, max_file in zip(folders, max_files):
         count = 0
         # don't materialize the list, just count
         for count, _ in enumerate(pathlib.Path(folder).rglob(pattern), start=1):
@@ -88,4 +90,3 @@ def rule_max_files(folders: list, max_files: int, pattern: str = '*', fail_only=
             yield SR(status=False, msg=f"Folder {folder} contains more than {max_file} files.")
         if fail_only is False:
             yield SR(status=True, msg=f"Folder {folder} contains less than {max_file} files. ({count=}) ")
-

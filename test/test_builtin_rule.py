@@ -1,8 +1,6 @@
 import pathlib
-import pytest
 import time
 
-from splint import SplintException
 from src import splint
 
 
@@ -83,6 +81,7 @@ def test_urls():
     for result in check_rule1():
         assert result.status
 
+
 def test_bad_urls():
     urls = ["https://www.google.com/doesnotexist", "https://www.yahooXXXXXX"]
 
@@ -92,6 +91,7 @@ def test_bad_urls():
 
     for result in check_rule1():
         assert not result.status
+
 
 def test_max_files():
     @splint.attributes(tag="tag")
@@ -114,6 +114,8 @@ def test_max_files():
 
     for result in check_rule3():
         assert result.status is False
+
+
 def test_bad_web_api():
     @splint.attributes(tag="tag")
     def check_rule1():
@@ -144,12 +146,12 @@ def test_web_api():
                                        json_d={'name': 'Luke Skywalker', 'height': '172', 'mass': '77'})
 
     @splint.attributes(tag="tag")
-    def check_rule_badmass():
+    def check_rule_bad_mass():
         yield from splint.rule_web_api(url='https://swapi.dev/api/people/1',
                                        json_d={'name': 'Luke Skywalker', 'height': '172', 'mass': '78'})
 
     for result in check_rule1():
         assert result.status
 
-    for result in check_rule_badmass():
+    for result in check_rule_bad_mass():
         assert not result.status

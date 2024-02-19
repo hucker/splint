@@ -32,7 +32,7 @@ def attributes(
     ruid=DEFAULT_RUID
 ):
     """
-    Decorator to add attributes to a Splint function..
+    Decorator to add attributes to a Splint function.
     """
 
     def decorator(func):

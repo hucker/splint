@@ -2,13 +2,15 @@
 Public API for the Splint project.
 """
 
+from .rule_files import rule_large_files  # noqa: F401
+from .rule_files import rule_max_files  # noqa: F401
+from .rule_files import rule_path_exists  # noqa: F401
+from .rule_files import rule_stale_files  # noqa: F401
+from .rule_webapi import rule_url_200  # noqa: F401
+from .rule_webapi import rule_web_api  # noqa: F401
 from .splint_api import set_splint_checker
 from .splint_attribute import attributes  # noqa: F401
 from .splint_attribute import get_attribute  # noqa: F401
-from .splint_score import ScoreByFunctionBinary  # noqa: F401
-from .splint_score import ScoreByFunctionMean  # noqa: F401
-from .splint_score import ScoreByResult  # noqa: F401
-from .splint_score import ScoreStrategy  # noqa: F401
 from .splint_checker import SplintChecker  # noqa: F401
 from .splint_checker import debug_progress  # noqa: F401
 from .splint_checker import exclude_levels  # noqa: F401
@@ -21,12 +23,12 @@ from .splint_checker import keep_ruids  # noqa: F401
 from .splint_checker import keep_tags  # noqa: F401
 from .splint_checker import quiet_progress  # noqa: F401
 from .splint_environment import SplintEnvFunction  # noqa: F401
-from .splint_environment import SplintEnvironment  # noqa: F401
 from .splint_environment import SplintEnvScope  # noqa: F401
+from .splint_environment import SplintEnvironment  # noqa: F401
 from .splint_environment import make_constant_function  # noqa: F401
 from .splint_exception import SplintException  # noqa: F401
-from .splint_exception import SplintTypeError # noqa: F401
-from .splint_exception import SplintValueError # noqa: F401
+from .splint_exception import SplintTypeError  # noqa: F401
+from .splint_exception import SplintValueError  # noqa: F401
 from .splint_filter import and_filters  # noqa: F401
 from .splint_filter import filter_level  # noqa: F401
 from .splint_filter import filter_level_gt  # noqa: F401
@@ -57,14 +59,10 @@ from .splint_ruid import module_ruids  # noqa: F401
 from .splint_ruid import package_ruids  # noqa: F401
 from .splint_ruid import ruid_issues  # noqa: F401
 from .splint_ruid import valid_ruids  # noqa: F401
-
-from .rule_files import rule_large_files  # noqa: F401
-from .rule_files import rule_stale_files  # noqa: F401
-from .rule_files import rule_path_exists  # noqa: F401
-from .rule_files import rule_max_files  # noqa: F401
-
-from .rule_webapi import rule_web_api  # noqa: F401
-from .rule_webapi import rule_url_200  # noqa: F401
+from .splint_score import ScoreByFunctionBinary  # noqa: F401
+from .splint_score import ScoreByFunctionMean  # noqa: F401
+from .splint_score import ScoreByResult  # noqa: F401
+from .splint_score import ScoreStrategy  # noqa: F401
 
 try:
     import pandas as pd  # noqa: F401
@@ -73,7 +71,6 @@ try:
 
 except ImportError:
     pass
-
 
 # Syntactic Sugar. Since this is used every time a result is returned it
 # makes sense to make it easier to type.
