@@ -40,25 +40,26 @@ async def check_all():
     return __splint_checker.as_dict()
 
 
-@app.get("/splint/ruid/{ruid}")
-async def check_ruid(ruid: str):
+@app.get("/splint/rule_id/{rule_id}")
+async def check_rule_id(rule_id: str):
     """
-    To call this function, use the following format:
+    Use this endpoint to check if any functions match the provided rule_id. The rule_id can be a regular expression.
+
+    You can call this function using the following format:
 
     Using curl from a terminal:
-    curl "http://<your_host>:<port>/splint/check/?ruid=first_ruid&ruid=second_ruid"
+    curl "http://<your_host>:<port>/splint/rule_id/<rule_id>"
 
     Using Python requests library:
     import requests
-    response = requests.get("http://<your_host>:<port>/splint/check/", params={"ruid": ["first_ruid", "second_ruid"]})
+    response = requests.get(f"http://<your_host>:<port>/splint/rule_id/{rule_id}")
     print(response.json())
     """
     checker_ok()
 
-    matched_funcs = [func for func in __splint_checker.collected if re.match(ruid, func.ruid)]
+    matched_funcs = [func for func in __splint_checker.collected if re.match(rule_id, func.ruid)]
     if not matched_funcs:
-        raise_404(msg=f"No function found with ruid {ruid}")
-
+        raise_404(msg=f"No function found with ruid {rule_id}")
 
     results: List[splint.SplintResult] = []
     for func in matched_funcs:
