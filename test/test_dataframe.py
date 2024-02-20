@@ -90,18 +90,19 @@ def test_all_columns():
     assert all([r.status for r in result])
 
 
-
 @pytest.fixture(scope="module")
 def df_val():
-    return pd.DataFrame({'A': [-1.0 , 0 , 1.0],
-                       'B':[-0.5,0,.5],
-                       'C':[-2,-10,-50],
-                       'D':[0,0,2],
-                       'E':[0,10,100],
-                       'F':[1,10,100],
-                       'G':[0,.4,1.0],
-                       },
-                      )
+    return pd.DataFrame({'A': [-1.0, 0, 1.0],
+                         'B': [-0.5, 0, .5],
+                         'C': [-2, -10, -50],
+                         'D': [0, 0, 2],
+                         'E': [0, 10, 100],
+                         'F': [1, 10, 100],
+                         'G': [0, .4, 1.0],
+                         },
+                        )
+
+
 
 def test_df_column_values_pass(df_val):
     df = df_val
@@ -137,7 +138,9 @@ def test_df_column_values_pass(df_val):
     for result in results:
         assert result.status
 
-def test_df_collumn_values_fail(df_val):
+
+def test_df_column_values_fail(df_val):
+
     df = df_val
 
     results = list(splint.rule_validate_df_values_by_col(df=df, non_negative='A'))
@@ -163,7 +166,6 @@ def test_df_collumn_values_fail(df_val):
     results = list(splint.rule_validate_df_values_by_col(df=df, probability='A,B,C,D,E,F'))
     for result in results:
         assert not result.status
-
 
     results = list(splint.rule_validate_df_values_by_col(df=df, non_positive='A,B,D,E,G'))
     for result in results:

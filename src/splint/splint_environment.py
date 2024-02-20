@@ -1,16 +1,15 @@
-from .splint_exception import SplintException
 import dataclasses
-from typing import Callable,Any
 import inspect
 import sys
 from enum import Enum
+from typing import Any, Callable
 
+from .splint_exception import SplintException
 
 PANDAS_AVAILABLE = 'pandas' in sys.modules
 
 if PANDAS_AVAILABLE:
     import pandas
-
 
 POLARS_AVAILABLE = 'polars' in sys.modules
 if POLARS_AVAILABLE:
@@ -29,10 +28,13 @@ def make_constant_function(name, constant_value):
         name (str): Variable name of function
         constant_value (Any): Value to return.
     """
+
     def func():
         return constant_value
+
     func.__name__ = name
     return func
+
 
 class SplintEnvScope(Enum):
     """ Indicate the level that each environment variable is valid.
@@ -45,6 +47,7 @@ class SplintEnvScope(Enum):
     MODULE = 2
     FUNCTION = 1
 
+
 @dataclasses.dataclass
 class SplintEnvFunction:
     """Handle individual environment functions
@@ -53,20 +56,20 @@ class SplintEnvFunction:
     environment functions and just extracting a value for non generators."""
     name: str
     scope: SplintEnvScope
-    function: Callable[...,Any]
+    function: Callable[..., Any]
     value: any = None
-    ready:bool = False       # You must have ready true to use the value since a valid value for value is None!!
+    ready: bool = False  # You must have ready true to use the value since a valid value for value is None!!
     force_immutable: bool = True
 
     # Tracking internal state.
     iterator = None
 
-    def setup(self,scope):
+    def setup(self, scope):
         """
         Set the value of the function if it is at the given scope.
 
         The intent of this is that there will be a large list of environment functions
-        all at different levels and we can set them all by passing in the scope as
+        all at different levels, and we can set them all by passing in the scope as
         needed.
 
         Note that we are VERY careful with immutable data structures.  We don't want
@@ -74,7 +77,7 @@ class SplintEnvFunction:
         gets a clean copy.
 
         Note that we handle data frames here as mutable data, and return a copy each time
-        it is setup.
+        it is set up.
 
         """
         if self.scope.value <= scope.value:
@@ -86,11 +89,11 @@ class SplintEnvFunction:
                 self.value = self.function()
 
             if self.force_immutable:
-                if isinstance(self.value,list):
+                if isinstance(self.value, list):
                     self.value = self.value.copy()
-                if isinstance(self.value,dict):
+                if isinstance(self.value, dict):
                     self.value = self.value.copy()
-                if isinstance(self.value,set):
+                if isinstance(self.value, set):
                     self.value = self.value.copy()
 
                 # Check if pandas is available and if the value is a DataFrame
@@ -100,22 +103,21 @@ class SplintEnvFunction:
                     self.value = self.value.clone()
             self.ready = True
 
-    def teardown(self,scope):
+    def teardown(self, scope):
         """
         Clear the value of the function if it is at the given scope.
 
         The intent of this is that there will be a large list of environment functions
-        all at different levels and we can clear them all by passing in the scope as
+        all at different levels, and we can clear them all by passing in the scope as
         needed
         """
         if self.scope.value <= scope.value:
             if inspect.isgeneratorfunction(self.function):
                 # Teardown
-                next(self.iterator,SplintEnvScope.FUNCTION)
+                next(self.iterator, SplintEnvScope.FUNCTION)
 
         self.value = None
         self.ready = False
-
 
 
 class SplintEnvironment:
@@ -124,9 +126,9 @@ class SplintEnvironment:
     The environment is a dictionary of name/value pairs that represent the name of the environment
     variable and the scope of the variable.
 
-    Variables that are package scope are reloaded each time a new package is loaded
-    Variables that are module scope are reloaded each time a new module is loaded
-    Variables that are function scope are reloaded each time a new function is loaded
+    Variables that are package scope reloaded each time a new package is loaded
+    Variables that are module scope reloaded each time a new module is loaded
+    Variables that are function scope reloaded each time a new function is loaded
 
     The semantics of the environment work like pytest. Each environment function is yielded
     one at a time when the module is loaded and yielded again when unloaded (in reverse order),
@@ -142,11 +144,11 @@ class SplintEnvironment:
 
     """
 
-    def __init__(self,env=None):
+    def __init__(self, env=None):
         self.environment = {}
         if env:
-            for k,v in env.items():
-                self.add(k,v)
+            for k, v in env.items():
+                self.add(k, v)
 
     def __call__(self, name):
         if name not in self.environment:
@@ -157,4 +159,3 @@ class SplintEnvironment:
         if name in self.environment:
             raise SplintException(f"The name {name} is already in the environment.")
         self.environment[name] = value
-

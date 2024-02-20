@@ -1,5 +1,3 @@
-from typing import List
-
 import pytest
 
 import src.splint as splint
@@ -25,7 +23,7 @@ def func2():
 
 @pytest.fixture
 def func3():
-    @splint.attributes(tag="t3", level=3, phase='p3',ruid = "suid_3")
+    @splint.attributes(tag="t3", level=3, phase='p3', ruid="suid_3")
 
     def func3():
         yield splint.SplintResult(status=True, msg="It works3")
@@ -105,23 +103,22 @@ def test_builtin_filter_ruids(func1, func2, func3):
     # Functions in random order
     funcs = [func3, func1, func2]
 
-
     ch = splint.SplintChecker(functions=funcs)
     ch.pre_collect()
     s_funcs = ch.prepare(filter_functions=[splint.exclude_ruids(["suid_1"])])
 
     assert len(s_funcs) == 2
-    assert set(s_funcs) == {func2,func3}
+    assert set(s_funcs) == {func2, func3}
 
-    s_funcs = ch.prepare(filter_functions=[splint.exclude_ruids(["suid_1","suid_2"])])
+    s_funcs = ch.prepare(filter_functions=[splint.exclude_ruids(["suid_1", "suid_2"])])
 
     assert len(s_funcs) == 1
     assert set(s_funcs) == {func3}
 
-
     ch = splint.SplintChecker(functions=funcs)
     ch.pre_collect()
     s_funcs = ch.prepare(filter_functions=[splint.keep_ruids(["suid_3"])])
+
 
     assert len(s_funcs) == 1
     assert set(s_funcs) == {func3}
@@ -129,7 +126,8 @@ def test_builtin_filter_ruids(func1, func2, func3):
     s_funcs = ch.prepare(filter_functions=[splint.keep_ruids(["suid_1", "suid_2"])])
 
     assert len(s_funcs) == 2
-    assert set(s_funcs) == {func1,func2}
+    assert set(s_funcs) == {func1, func2}
+
 
 
 def test_builtin_filter_phase(func1, func2, func3):
@@ -138,15 +136,14 @@ def test_builtin_filter_phase(func1, func2, func3):
     # Functions in random order
     funcs = [func3, func1, func2]
 
-
     ch = splint.SplintChecker(functions=funcs)
     ch.pre_collect()
     s_funcs = ch.prepare(filter_functions=[splint.exclude_phases(["p1"])])
 
     assert len(s_funcs) == 2
-    assert set(s_funcs) == {func2,func3}
+    assert set(s_funcs) == {func2, func3}
 
-    s_funcs = ch.prepare(filter_functions=[splint.exclude_phases(["p1","p2"])])
+    s_funcs = ch.prepare(filter_functions=[splint.exclude_phases(["p1", "p2"])])
 
     assert len(s_funcs) == 1
     assert set(s_funcs) == {func3}
@@ -162,7 +159,8 @@ def test_builtin_filter_phase(func1, func2, func3):
     s_funcs = ch.prepare(filter_functions=[splint.keep_phases(["p1", "p2"])])
 
     assert len(s_funcs) == 2
-    assert set(s_funcs) == {func1,func2}
+    assert set(s_funcs) == {func1, func2}
+
 
 def test_builtin_filter_level(func1, func2, func3):
     """Test exclude_ruids"""
@@ -170,19 +168,17 @@ def test_builtin_filter_level(func1, func2, func3):
     # Functions in random order
     funcs = [func3, func1, func2]
 
-
     ch = splint.SplintChecker(functions=funcs)
     ch.pre_collect()
     s_funcs = ch.prepare(filter_functions=[splint.exclude_levels([1])])
 
     assert len(s_funcs) == 2
-    assert set(s_funcs) == {func2,func3}
+    assert set(s_funcs) == {func2, func3}
 
-    s_funcs = ch.prepare(filter_functions=[splint.exclude_levels([1,2])])
+    s_funcs = ch.prepare(filter_functions=[splint.exclude_levels([1, 2])])
 
     assert len(s_funcs) == 1
     assert set(s_funcs) == {func3}
-
 
     ch = splint.SplintChecker(functions=funcs)
     ch.pre_collect()
@@ -191,10 +187,11 @@ def test_builtin_filter_level(func1, func2, func3):
     assert len(s_funcs) == 1
     assert set(s_funcs) == {func3}
 
-    s_funcs = ch.prepare(filter_functions=[splint.keep_levels([1,2])])
+    s_funcs = ch.prepare(filter_functions=[splint.keep_levels([1, 2])])
 
     assert len(s_funcs) == 2
-    assert set(s_funcs) == {func1,func2}
+    assert set(s_funcs) == {func1, func2}
+
 
 def test_builtin_filter_tags(func1, func2, func3):
     """Test exclude_ruids"""
@@ -202,15 +199,14 @@ def test_builtin_filter_tags(func1, func2, func3):
     # Functions in random order
     funcs = [func3, func1, func2]
 
-
     ch = splint.SplintChecker(functions=funcs)
     ch.pre_collect()
     s_funcs = ch.prepare(filter_functions=[splint.exclude_tags(['t1'])])
 
     assert len(s_funcs) == 2
-    assert set(s_funcs) == {func2,func3}
+    assert set(s_funcs) == {func2, func3}
 
-    s_funcs = ch.prepare(filter_functions=[splint.exclude_tags(['t1','t2'])])
+    s_funcs = ch.prepare(filter_functions=[splint.exclude_tags(['t1', 't2'])])
 
     assert len(s_funcs) == 1
     assert set(s_funcs) == {func3}
@@ -223,10 +219,12 @@ def test_builtin_filter_tags(func1, func2, func3):
     assert len(s_funcs) == 1
     assert set(s_funcs) == {func3}
 
-    s_funcs = ch.prepare(filter_functions=[splint.keep_tags(['t1','t2'])])
+    s_funcs = ch.prepare(filter_functions=[splint.keep_tags(['t1', 't2'])])
 
     assert len(s_funcs) == 2
-    assert set(s_funcs) == {func1,func2}
+    assert set(s_funcs) == {func1, func2}
+
+
 
 def test_null_check():
     """Test exclude_ruids"""

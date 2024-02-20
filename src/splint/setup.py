@@ -1,12 +1,11 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
-
-#Mostly AI generated setup.
+# Mostly AI generated setup.
 setup(
     name='splint',
     version='0.1.0',
     description='A tool for checking rules against filesystems, databases, and APIs',
-    long_description=open('README.md',encoding='utf-8').read(),
+    long_description=open('README.md', encoding='utf-8').read(),
     long_description_content_type='text/markdown',
     author='Chuck Bass',
     author_email='chuck@acrocad.net',

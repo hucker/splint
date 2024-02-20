@@ -1,4 +1,4 @@
-""" Test the pre and post hooks for the SplintResult"""
+""" Test the pre- and post-hooks for the SplintResult"""
 import src.splint as splint
 
 

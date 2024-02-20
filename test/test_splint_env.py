@@ -1,5 +1,5 @@
 """
-    Baseline tests for the envirnment module
+    Baseline tests for the environment module
 """
 import src.splint as splint
 

@@ -1,11 +1,28 @@
 """ This module contains the SplintResult class and some common result transformers. """
 
-from dataclasses import dataclass, field, asdict
-from functools import wraps
-from typing import Callable, List
+
 import itertools
-from operator import attrgetter
 from collections import Counter
+from dataclasses import asdict, dataclass, field
+from functools import wraps
+from operator import attrgetter
+from typing import Callable, List
+
+import splint
+
+
+def enforce_keyword_arguments(cls):
+    init = cls.__init__
+
+    @wraps(init)
+    def wrapper(self, *args, **kwargs):
+        if args:
+            raise TypeError(f"{cls.__name__} only accepts keyword arguments.")
+        init(self, **kwargs)
+
+    cls.__init__ = wrapper
+    return cls
+
 
 import splint
 
@@ -100,7 +117,8 @@ class SplintYield:
     has been fired and how many passes and fails have occurred.
 
     These internal counts allow top level code to NOT manage that
-    state at the rule level.  Instead you just report your passes
+    state at the rule level.  Instead, you just report your passes
+
     and fails and ask at the end how it played out.
 
     gen = SprintYield()
@@ -135,9 +153,10 @@ class SplintYield:
     @property
     def counts(self):
         """Return pass/fail/total yield counts"""
-        return self.pass_count,self.fail_count,self.count
+        return self.pass_count, self.fail_count, self.count
 
-    def __call__(self, results: SplintResult | List[SplintResult],fail_only: bool = False):
+    def __call__(self, results: SplintResult | List[SplintResult], fail_only: bool = False):
+
         if isinstance(results, SplintResult):
             results = [results]
         elif isinstance(results, list) and isinstance(results[0], SplintResult):
@@ -180,6 +199,7 @@ def remove_info(sr: SplintResult):
         SplintResult: The result if it has failed, otherwise None.
     """
     return None if sr.info_msg else sr
+
 
 def warn_as_fail(sr: SplintResult):
     """Treats results with a warning message as failures.

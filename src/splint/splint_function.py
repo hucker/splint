@@ -1,6 +1,11 @@
-import functools
+"""
+This class encapsulates the each of the discovered rule functions found in the system.  A greate
+deal of meta data is stored in the function and extracted from information about the function
+its signature, its generator status etc.  This information is used so users do not need to
+configure functions in multiple places.  Design elements from fastapi and pytest are obvious.
+"""
+
 import inspect
-import logging
 import re
 import time
 import traceback

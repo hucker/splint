@@ -22,7 +22,7 @@ def by_func_weights_with_skip():
 
 
 def test_score_by_result(by_func_weights_with_skip):
-    # Setup the 3 strategies
+    # Set up the 3 strategies
     by_result = splint.ScoreByResult()
 
     # By result, it is easy to just add with code

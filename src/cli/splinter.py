@@ -1,13 +1,16 @@
 """Trivial Typer App to run Splint checks on a given target."""
-import sys
-import pathlib
-import typer
 import json
+import pathlib
+import sys
+
+import typer
+import uvicorn
 
 s = pathlib.Path('./src').resolve()
-sys.path.insert(0,str(s))
+sys.path.insert(0, str(s))
 app = typer.Typer(add_completion=False)
 import splint
+
 
 def dump_results(results):
     """ Dump results to stdout """
@@ -17,28 +20,27 @@ def dump_results(results):
 
 @app.command()
 def run_checks(
-    module: str = typer.Option(None, '-m','--mod', help="The module to run rules against."),
-    pkg: str = typer.Option(None, '-p','--pkg', help="The package to run rules against."),
-    json_file: str = typer.Option(None, '-j','--json', help="The JSON file to write results to."),
-    flat: bool = typer.Option(True, '-f', '--flat', help="Should the output be flat or a hierarchy."),
-    score: bool = typer.Option(False, '-s', '--score', help="Print the score of the rules."),
-    verbose: bool = typer.Option(False, '-v', '--verbose', help="Enable verbose output.")
+        module: str = typer.Option(None, '-m', '--mod', help="The module to run rules against."),
+        pkg: str = typer.Option(None, '-p', '--pkg', help="The package to run rules against."),
+        json_file: str = typer.Option(None, '-j', '--json', help="The JSON file to write results to."),
+        flat: bool = typer.Option(True, '-f', '--flat', help="Should the output be flat or a hierarchy."),
+        score: bool = typer.Option(False, '-s', '--score', help="Print the score of the rules."),
+        api: bool = typer.Option(False, '-a', '--api', help="Start FastAPI."),
+        port: int = typer.Option(8000, '-p', '--port', help="FastAPI Port"),
+        verbose: bool = typer.Option(False, '-v', '--verbose', help="Enable verbose output.")
 ):
     """Run Splint checks on a given using a typer command line app."""
 
     options = {"module": module, "package": pkg}
 
-
     try:
-
+        mod = None
         if module:
             target_path = pathlib.Path(module)
             if target_path.is_file():
-                mod = splint.SplintModule(module_name=target_path.stem,module_file=str(target_path))
+                mod = splint.SplintModule(module_name=target_path.stem, module_file=str(target_path))
             else:
                 typer.echo(f"Invalid module: {module}")
-        else:
-            mod = None
 
         if pkg:
             folder = pathlib.Path(pkg)
@@ -46,15 +48,18 @@ def run_checks(
                 pkg = splint.SplintPackage(folder=folder)
             else:
                 typer.echo(f"Invalid package: {pkg}")
-        else:
-            pkg = None
 
         # If they supply 1 or both they are all run since the checker can handle arbitrary combinations
         if mod or pkg:
-            ch = splint.SplintChecker(modules=mod,packages=pkg)
+            ch = splint.SplintChecker(modules=mod, packages=pkg)
             ch.pre_collect()
             ch.prepare()
-            results = ch.run_all()
+            if api:
+                splint.set_splint_checker(ch)
+                uvicorn.run(splint.splint_api.app, host="0.0.0.0", port=port)
+                return
+            else:
+                results = ch.run_all()
         else:
             typer.echo("Please provide a module, package to run checks on.")
             return
@@ -64,7 +69,7 @@ def run_checks(
             return
 
         if not flat:
-            results = splint.splint_result.group_by(results,['pkg_name','module_name','func_name'])
+            results = splint.splint_result.group_by(results, ['pkg_name', 'module_name', 'func_name'])
 
         if verbose:
             dump_results(results)
@@ -77,7 +82,7 @@ def run_checks(
 
         if json_file:
             d = splint.splint_result.results_as_dict(results)
-            with open(json_file, 'w',encoding='utf-8') as f:
+            with open(json_file, 'w', encoding='utf-8') as f:
                 json.dump(d, f, indent=2)
 
 
@@ -87,6 +92,7 @@ def run_checks(
     # Crude
     except Exception as e:
         typer.echo(f"An error occurred: {e}")
+
 
 if __name__ == "__main__":
     app()

@@ -1,13 +1,13 @@
 import datetime as dt
-import random
 from typing import List
+
 from .splint_exception import SplintException
 from .splint_function import SplintFunction
 from .splint_module import SplintModule
 from .splint_package import SplintPackage
 from .splint_result import SplintResult
 from .splint_ruid import empty_ruids, ruid_issues, valid_ruids
-from .splint_score import ScoreStrategy, ScoreByResult
+from .splint_score import ScoreByResult, ScoreStrategy
 
 
 
@@ -100,7 +100,9 @@ def quiet_progress(msg=None, result=None):  # pylint: disable=unused-argument
 
 def orderby_tag():
     """Order collected list by tag"""
-    def sort_key(x:SplintFunction):
+
+    def sort_key(x: SplintFunction):
+
         return x.tag
 
     return sort_key
@@ -113,6 +115,7 @@ def orderby_ruid():
         return x.ruid
 
     return sort_key
+  
 
 class SplintChecker:
     """
@@ -166,14 +169,15 @@ class SplintChecker:
             raise SplintException("Modules must be a list of SplintModule objects.")
 
         if isinstance(functions, list) and len(functions) >= 1:
-            self.functions = functions
+            self.functions: List[SplintFunction] = functions
+
             for f in functions:
                 if not isinstance(f, SplintFunction):
                     raise SplintException(
                         "Functions must be a list of SplintFunction objects."
                     )
         elif not functions:
-            self.functions = []
+            self.functions: List[SplintFunction] = []
         else:
             raise SplintException("Functions must be a list of SplintFunction objects.")
 
@@ -267,15 +271,16 @@ class SplintChecker:
         # we can proceed.  If not then we need to raise an exception and show the issues.
         ruids = [f.ruid for f in self.collected]
 
-        # If the user decided to setup ruids for every function OR if they didn't configure
+        # If the user decided to set up ruids for every function OR if they didn't configure
         # any ruids then we can just run with the collected functions.
         if empty_ruids(ruids) or valid_ruids(ruids):
             return self.collected
 
         # Otherwise there is a problem.
         raise SplintException(
-                f"There are duplicate or missing RUIDS: {ruid_issues(ruids)}"
-            )
+            f"There are duplicate or missing RUIDS: {ruid_issues(ruids)}"
+        )
+
 
     def ruids(self):
         """
@@ -349,29 +354,39 @@ class SplintChecker:
     def package_count(self):
         return len(self.packages)
 
+    def get_header(self) -> dict:
+        header = {
+            "package_count": self.package_count,
+            "module_count": self.module_count,
+            "modules": [m.module_name for m in self.modules],
+            "function_count": self.function_count,
+            "tags": sorted(list(set(f.tag for f in self.collected))),
+            "levels": sorted(list(set(f.level for f in self.collected))),
+            "phases": sorted(list(set(f.phase for f in self.collected))),
+            "ruids": self.ruids(),
+        }
+        return header
+
 
     def as_dict(self):
         """
         Return a dictionary of the results.
         """
+        h = self.get_header()
+
         r = {
             "start_time": self.start_time,
             "end_time": self.end_time,
             "duration_seconds": (self.end_time - self.start_time).total_seconds(),
-            "package_count": self.package_count,
-            "module_count": self.module_count,
-            "modules": [m.module_name for m in self.modules],
-            "function_count": self.function_count ,
+
             "functions": [f.function_name for f in self.functions],
             "passed_count": self.pass_count,
             "failed_count": self.fail_count,
             "skip_count": self.skip_count,
-            "tags": sorted(list(set(r.tag for r in self.results))),
-            "levels": sorted(list(set(r.level for r in self.results))),
-            "phases": sorted(list(set(r.phase for r in self.results))),
             "total_count": self.total_count,
-            "ruids": self.ruids(),
+
+
             # the meat of the output livers here
             "results": [r.as_dict() for r in self.results],
         }
-        return r
+        return h | r

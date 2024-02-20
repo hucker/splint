@@ -6,13 +6,13 @@ start with a certain prefix and adding them to the list of functions to be manag
 
 from collections import Counter
 import importlib
-import sys
 import pathlib
-from itertools import count
+import sys
+from collections import Counter
+
 from typing import List
 
 from .splint_exception import SplintException
-from .splint_filter import filter_all
 from .splint_function import SplintFunction
 
 
@@ -38,7 +38,8 @@ class SplintModule:
         function = SplintFunction(module, function)
         self.functions.append(function)
 
-    def _add_sys_path(self,module_file):
+    def _add_sys_path(self, module_file):
+
         """Add a module's directory to sys.path if it's not already there."""
 
         # Construct a Path object from the provided file path and get its parent directory
@@ -79,19 +80,18 @@ class SplintModule:
                 continue
             self.add_function(module, obj)
 
-        dups = [item for item,count in Counter(self.ruids()).items() if count > 1 and item != '']
+        duplicate_ruids = [item for item, count in Counter(self.ruids()).items() if count > 1 and item != '']
 
-        if dups:
-            raise SplintException(f"Duplicate RUIDs found in module: {','.join(dups)}")
+        if duplicate_ruids:
+            raise SplintException(f"Duplicate RUIDs found in module: {','.join(duplicate_ruids)}")
+
 
     def ruids(self):
         """
-        Return a list of all of the RUIDs in the module.
+        Return a list of all the RUIDs in the module.
         Note that this can have duplicates.  The list is
         sorted to facilitate comparison.
 
         RUID = rule identifier
         """
         return sorted(function.ruid for function in self.functions)
-
-
