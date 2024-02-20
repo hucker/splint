@@ -31,6 +31,17 @@ def test_ruid1():
     assert splint.valid_ruids(ruids)
     assert splint.ruid_issues(ruids) == "No issues found."
 
+def test_ruids1_module():
+    """Make sure we can load modules individually and extract the ruids"""
+    module = splint.SplintModule(module_name="check_suid1_a",module_file='./ruid/check_suid1_a.py')
+    assert module.module_name == "check_suid1_a"
+    assert module.module_file == "./ruid/check_suid1_a.py"
+    assert module.ruids() == ["suid11", "suid12"]
+
+    module = splint.SplintModule(module_name="check_suid2_a",module_file='./ruid/check_suid2_a.py')
+    assert module.module_name == "check_suid2_a"
+    assert module.module_file == "./ruid/check_suid2_a.py"
+    assert module.ruids() == ["suid21", "suid22"]
 
 def test_ruids1_module():
     """Make sure we can load modules individually and extract the ruids"""
@@ -67,6 +78,7 @@ def test_ruid_dup():
     """Load up a package with duplicate RUIDS to verify exception"""
     with pytest.raises(splint.SplintException, match="Duplicate RUIDs found in module: suid12"):
         splint.SplintPackage(folder="./ruid_dup", name="ruid_dup")
+
 
 
 @pytest.mark.usefixtures("sys_path")

@@ -3,6 +3,7 @@ from typing import Generator, List, Tuple
 import numpy as np
 import pandas as pd
 
+
 from .splint_exception import SplintException
 from .splint_result import SplintResult as SR
 
@@ -151,6 +152,7 @@ def rule_validate_df_values_by_col(df: pd.DataFrame,
        and a message describing the result.
     """
 
+
     if df is None:
         raise SplintException("Data frame is None.")
 
@@ -177,6 +179,7 @@ def rule_validate_df_values_by_col(df: pd.DataFrame,
         for col in positive:
             if np.all(df[col] > 0):
                 yield SR(status=True, msg=f"All values in {col} are  a positive.")
+
             else:
                 yield SR(status=False, msg=f"Not all values in {col} are  a positive.")
 

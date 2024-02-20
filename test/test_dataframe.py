@@ -103,6 +103,7 @@ def df_val():
                         )
 
 
+
 def test_df_column_values_pass(df_val):
     df = df_val
     results = list(splint.rule_validate_df_values_by_col(df=df, non_negative=['E', 'F']))
@@ -139,6 +140,7 @@ def test_df_column_values_pass(df_val):
 
 
 def test_df_column_values_fail(df_val):
+
     df = df_val
 
     results = list(splint.rule_validate_df_values_by_col(df=df, non_negative='A'))

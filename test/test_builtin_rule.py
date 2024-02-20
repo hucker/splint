@@ -1,6 +1,7 @@
 import pathlib
 import time
 
+
 from src import splint
 
 
@@ -81,7 +82,7 @@ def test_urls():
     for result in check_rule1():
         assert result.status
 
-
+        
 def test_bad_urls():
     urls = ["https://www.google.com/doesnotexist", "https://www.yahooXXXXXX"]
 
@@ -115,7 +116,7 @@ def test_max_files():
     for result in check_rule3():
         assert result.status is False
 
-
+        
 def test_bad_web_api():
     @splint.attributes(tag="tag")
     def check_rule1():

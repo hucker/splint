@@ -10,6 +10,7 @@ from .splint_ruid import empty_ruids, ruid_issues, valid_ruids
 from .splint_score import ScoreByResult, ScoreStrategy
 
 
+
 def exclude_ruids(ruids: List[str]):
     """Return a filter function that will exclude the ruids from the list."""
 
@@ -101,6 +102,7 @@ def orderby_tag():
     """Order collected list by tag"""
 
     def sort_key(x: SplintFunction):
+
         return x.tag
 
     return sort_key
@@ -113,7 +115,7 @@ def orderby_ruid():
         return x.ruid
 
     return sort_key
-
+  
 
 class SplintChecker:
     """
@@ -168,6 +170,7 @@ class SplintChecker:
 
         if isinstance(functions, list) and len(functions) >= 1:
             self.functions: List[SplintFunction] = functions
+
             for f in functions:
                 if not isinstance(f, SplintFunction):
                     raise SplintException(
@@ -278,6 +281,7 @@ class SplintChecker:
             f"There are duplicate or missing RUIDS: {ruid_issues(ruids)}"
         )
 
+
     def ruids(self):
         """
         Return a list of all the RUIDs in the collected functions.
@@ -363,6 +367,7 @@ class SplintChecker:
         }
         return header
 
+
     def as_dict(self):
         """
         Return a dictionary of the results.
@@ -373,11 +378,13 @@ class SplintChecker:
             "start_time": self.start_time,
             "end_time": self.end_time,
             "duration_seconds": (self.end_time - self.start_time).total_seconds(),
+
             "functions": [f.function_name for f in self.functions],
             "passed_count": self.pass_count,
             "failed_count": self.fail_count,
             "skip_count": self.skip_count,
             "total_count": self.total_count,
+
 
             # the meat of the output livers here
             "results": [r.as_dict() for r in self.results],

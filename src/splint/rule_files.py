@@ -77,6 +77,7 @@ def rule_max_files(folders: list, max_files: int, pattern: str = '*', fail_only=
     if isinstance(max_files, int):
         max_files = [max_files] * len(folders)
 
+
     if len(folders) != len(max_files):
         raise SplintException("The number of folders and the number of max_files must be the same.")
 

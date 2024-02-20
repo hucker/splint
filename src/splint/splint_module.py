@@ -4,10 +4,12 @@ typically represents a file that is imported into the system by finding all func
 start with a certain prefix and adding them to the list of functions to be managed by splint.
 """
 
+from collections import Counter
 import importlib
 import pathlib
 import sys
 from collections import Counter
+
 from typing import List
 
 from .splint_exception import SplintException
@@ -37,6 +39,7 @@ class SplintModule:
         self.functions.append(function)
 
     def _add_sys_path(self, module_file):
+
         """Add a module's directory to sys.path if it's not already there."""
 
         # Construct a Path object from the provided file path and get its parent directory
@@ -81,6 +84,7 @@ class SplintModule:
 
         if duplicate_ruids:
             raise SplintException(f"Duplicate RUIDs found in module: {','.join(duplicate_ruids)}")
+
 
     def ruids(self):
         """
