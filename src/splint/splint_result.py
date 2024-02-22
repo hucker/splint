@@ -99,6 +99,7 @@ class SplintResult:
     phase: str = ""
     count: int = 0
     ruid: str = ""
+    ttl_minutes:float = 0.0
 
     # Mitigations
     mit_msg: str = ""

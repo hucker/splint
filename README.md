@@ -183,30 +183,27 @@ Each rule function can be assigned attributes that define metadata about the fun
     4. "weight" a positive number indicating the weight of a functions results.  The nominal weight is 100.
     5. "skip" indicates the function should be skipped.
     6. "ruid" or rule-id is a unique identifier for a rule. If one test as a rule all of them must.
+    7. "ttl_minutes" allow caching of results so expensive tests don't need to be rerun. 
 
 ## What are Rule Ids (RUIDS)?
 
-Tags and phases are generic information that is only present for filtering. The values don't have much meaning to the
-inner
-workings of splint.  `RUID`s are different. The purpose of an `RUID` is to tag every rul function with a unique value
-that
-is meaningful to the end USER. The only rule to the code is that they are unique. If you tag a single function with an
+Tags and phases are generic information that is only present for filtering. The values don't mean much to the inner
+workings of splint.  `RUID`s are different. The purpose of an `RUID` is to tag every rule function with a unique value
+that is meaningful to the user. The only rule to the code is that they are unique. If you tag a single function with an
 RUID the system will expect you to put a unique ID on every function. A `SplintException` is thrown if there are RUIDs
-that are
-not unique.
+that are not unique.  
 
 What do you get for this? You now have fine grain control to the function level AND the user level to enable/disable
 checks. A `pylint` analogy is that you can turn off-line width checks globally for you project setting values in 
 the `.lintrc` file. In the case of splint, perhaps part of your system has one set of rules and another part of 
-the system has a different set of rules.
-Or perhaps in an early phase development a subset of rules is applied, and at another a different set of rules is applied. RUIDS
-allow you to set this up with "simple" config files.
+the system has has the same set but some don't apply.
+Or perhaps in an early phase development a subset of rules is applied, and at another a different set of rules is applied. 
+RUIDS allow you to set this up with "simple" config files.
 
 RUIDs can be anything hashable (but comme on, they should be short strings). Smart-ish values like File-001, Fill-002, '
 smarter' or File-Required, File-Too-Old. Whatever makes sense on the project. As a general rule smart naming conventions 
 aren't smart, so beware of the bed you make for yourself.
 
-A `.splintrc` file can be provided in the toml format (or from code a dictionary) of the form
 
 ```python
 @attributes(suid="file_simple")
@@ -220,6 +217,12 @@ def check_file_age():
     f = pathlib.Path("/user/file2.txt")
     return SplintResult(status=f.exists(), msg=f"File {f.name}")
 ```
+
+A `.splintrc` file can be provided in the toml format (or from code a dictionary) of the form
+
+__WRITE DOCS HERE__
+
+
 
 This TOML file has a "simple" mode and a "complex" mode. In each case they run all the checks (based on to include) 
 and then anything in the exclude list is not reported. Note that this happens BEFORE the tests are run rather than 
@@ -235,18 +238,32 @@ include = ["*"]
 exclude = ["file_simple"]
 ```
 
+## TTL Time to Live Caching
+If you have time-consuming checks you can put a ttl on it to reduce the number of times it is run. All you need to
+do is tag the function with the `ttl_minutes` attribute, and it will use cached results if the call frequency is inside
+the ttl that was specified.
+
+```python
+@attributes(ttl_minutes="1.0hr")
+def check_file_age():
+    pic = make_black_hole_image()
+    yield(status=pic.black_hole_exists(),msg="Hourly cluster image generation check")
+```
+
 ## How can these rules be organized?
 
 Lots of ways.
 
-1) Just give it a bunch of functions in a list would work.
-2) Point it to a file and splint will find all the functions in that file and call them. (ScruffModule)
+1) Just give it a bunch of functions in a list would work.  Ideally the return SplintResults, but it works if they 
+   return booleans or lists of booleans.
+2) Point it to a file and `splint` will find all the functions in that file and call them. (ScruffModule)
 3) Point it to a folder (or pass it a bunch of filenames) and splint will load each module and collect all the tests (
    ScruffPackage)
 
 For me that is as deep as I want things to go.
 
 ## How are environments
+__WRITE ME__
 
 ## WTH does splint derive from?
 

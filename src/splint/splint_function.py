@@ -4,12 +4,12 @@ deal of meta data is stored in the function and extracted from information about
 its signature, its generator status etc.  This information is used so users do not need to
 configure functions in multiple places.  Design elements from fastapi and pytest are obvious.
 """
-
+import datetime as dt
 import inspect
 import re
 import time
 import traceback
-from typing import Generator
+from typing import Generator,List
 
 from .splint_attribute import get_attribute
 from .splint_exception import SplintException
@@ -78,6 +78,10 @@ class SplintFunction:
     Ideally people would just use generators everywhere, but this allows them to be lazy and just
     return a single result and have it be converted to a generator.
 
+    Note that splint functions are created with generators and those generators mark each function
+    with a bunch of attributes that the coder thought would be useful.  Those attributes are pulled
+    up from the lower level function into the splint function object.
+
     Attributes:
         module (ModuleType): The module that contains the function.
         function (Callable): The function to be called.
@@ -132,6 +136,14 @@ class SplintFunction:
         self.weight = get_attribute(function, "weight")
         self.skip = get_attribute(function, "skip")
         self.ruid = get_attribute(function, "ruid")
+        self.ttl_minutes = get_attribute(function, "ttl_minutes")
+
+        # Support Time To Live using the return value of time.time.  Resolution of this
+        # is on the order of 10e-6 depending on OS.  In my case this is WAY more than I
+        # need and I'm assuming you aren't building a trading system with this so you dont
+        # care about microseconds.
+        self.last_ttl_start = 0  # this will be compared to time.time() for ttl caching
+        self.last_results:List[SplintResult] = []
 
         if self.weight is None:
             self.weight = 100.0
@@ -168,6 +180,7 @@ class SplintFunction:
         """
         # Call the stored function and collect information about the result
         start_time = time.time()
+
         # Function returns a generator that needs to be iterated over
         args = self._get_parameter_values()
 
@@ -175,7 +188,14 @@ class SplintFunction:
         # so we need a value to be set for count.
         count = 1
 
+        # If they want caching this takes care of it.
+        if self.ttl_minutes*60 + self.last_ttl_start > time.time():
+            yield from self.last_results
+            return
+
         try:
+            self.last_results = []
+            self.last_ttl_start = start_time
 
             # This allows for returning a single result using return or
             # multiple results returning a list of results.
@@ -194,6 +214,10 @@ class SplintFunction:
                     r = self.load_result(r, start_time, end_time, count=1)
                     yield r
 
+                    # Cache if ttl
+                    if self.ttl_minutes:
+                        self.last_results.append(r)
+
             else:
                 # Functions can return multiple results, track them with a count attribute.
                 for count, result in enumerate(self.function(*args, **kwds), start=1):
@@ -209,6 +233,11 @@ class SplintFunction:
                     result = self.load_result(result, start_time, end_time, count)
 
                     yield result
+
+                    # Cache if ttl
+                    if self.ttl_minutes:
+                        self.last_results.append(result)
+
                     start_time = time.time()
 
         except self.allowed_exceptions as e:
@@ -257,10 +286,11 @@ class SplintFunction:
 
     def load_result(self, result: SplintResult, start_time, end_time, count=1):
         """
-        Provide a bunch of metadata about the function call.
+        Provide a bunch of metadata about the function call, mostly hoisting
+        parameters from the functon to the result.
 
         A design decision was made to make the result data flat since there are no more than
-        1 possible hierarchy.
+        1 possible hierarchy.  Tall-skinny.
         """
         # Use getattr to avoid repeating the same pattern of checking if self.module exists
         result.pkg_name = getattr(self.module, "__package__", "")
@@ -274,9 +304,10 @@ class SplintFunction:
         result.level = self.level
         result.phase = self.phase
         result.runtime_sec = end_time - start_time
+        result.ttl_minutes = self.ttl_minutes
         result.count = count
 
-        # Apply all the hooks to the result
+        # Apply all (usually 1 or 0) hooks to the result
         for hook in self.result_hooks:
             if result is not None:
                 result = hook(self, result)

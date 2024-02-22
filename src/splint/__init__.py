@@ -11,6 +11,7 @@ from .rule_webapi import rule_web_api  # noqa: F401
 from .splint_api import set_splint_checker
 from .splint_attribute import attributes  # noqa: F401
 from .splint_attribute import get_attribute  # noqa: F401
+#from .splint_attribute import _convert_to_minutes # noqa:F401
 from .splint_checker import SplintChecker  # noqa: F401
 from .splint_checker import debug_progress  # noqa: F401
 from .splint_checker import exclude_levels  # noqa: F401
