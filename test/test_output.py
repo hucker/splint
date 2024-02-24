@@ -9,7 +9,7 @@ def simple1():
     def func1():
         yield splint.SplintResult(status=True, msg="It works1")
 
-    return splint.SplintFunction(None, func1)
+    return splint.SplintFunction(func1)
 
 
 def test_json(simple1):

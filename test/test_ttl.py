@@ -43,7 +43,7 @@ def test_ttl_func(tmp_path):
         yield splint.SR(status=f.exists(), msg="Exist 2")
         yield splint.SR(status=f.exists(), msg="Exist 3")
 
-    splint_func = splint.SplintFunction("", func)
+    splint_func = splint.SplintFunction(func, "")
 
     ch = splint.SplintChecker(functions=[splint_func])
     ch.pre_collect()
@@ -72,7 +72,7 @@ def test_ttl_func(tmp_path):
     assert all(result.msg == f"Exist {i}" and not result.status for i, result in enumerate(results, start=1))
 
 
-@pytest.mark.skip(reason="Found bug that needs to be fixed in ch.run_all()")
+#@pytest.mark.skip(reason="Found bug that needs to be fixed in ch.run_all()")
 def test_ttl_func_boolean_return(tmp_path):
     """
     This is the same as the code above but using non generators.  This uses
@@ -86,12 +86,12 @@ def test_ttl_func_boolean_return(tmp_path):
     f = pathlib.Path(tmp_path) / "__bad_file__.txt"
     f.touch(exist_ok=True)
 
-    # This function checks if the file exists
+    # This function checks if the file exists and uses RETURN NOT YIELD
     @splint.attributes(ttl_minutes='1s')
     def func():
         return f.exists()
 
-    splint_func = splint.SplintFunction("", func)
+    splint_func = splint.SplintFunction(func, "")
 
     ch = splint.SplintChecker(functions=[splint_func])
     ch.pre_collect()
@@ -105,8 +105,8 @@ def test_ttl_func_boolean_return(tmp_path):
     # now we delete the file
     f.unlink()
 
-    # All 3 different messages and all pass even though the file DOES NOT EXIST
-    # this means that we got the cached messages
+    # All pass even though the file DOES NOT EXIST
+    # this means that we got the cached results
     results = ch.run_all()
     assert len(results) == 1
     assert all(result.status for i, result in enumerate(results, start=1))

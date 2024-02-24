@@ -10,7 +10,7 @@ def test_yielder_do_something():
         if not y.yielded:
             yield from y(splint.SR(status=True, msg="Nothing was to be done"))
 
-    s_func = splint.SplintFunction(None, func1)
+    s_func = splint.SplintFunction(func1)
 
     ch = splint.SplintChecker(functions=[s_func])
     ch.pre_collect()
@@ -51,7 +51,7 @@ def test_yielder_counts():
         p, f, t = y.counts
         yield from y(splint.SR(status=all((f == 2, p == 4, t == 6)), msg=f"Counts check {p}==1 and {f}==1 and {t}==5"))
 
-    s_func = splint.SplintFunction("", func1)
+    s_func = splint.SplintFunction(func1)
     results = list(s_func())
     assert len(results) == 7
     assert results[0].status is False  # Hardcoded false
@@ -77,7 +77,7 @@ def test_yielder_do_nothing():
         if not y.yielded:
             yield from y(splint.SR(status=True, msg="Nothing needed to be done."))
 
-    s_func = splint.SplintFunction(None, func)
+    s_func = splint.SplintFunction(func)
 
     ch = splint.SplintChecker(functions=[s_func])
     ch.pre_collect()

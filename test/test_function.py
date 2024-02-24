@@ -13,7 +13,7 @@ def test_weight_exception():
     func.weight = 0
     # Note this will fail if you say SplintException
     with pytest.raises(splint.SplintException):
-        splint.SplintFunction("", func)
+        splint.SplintFunction(func)
 
 
 def test_function_str():
@@ -21,7 +21,7 @@ def test_function_str():
     def func():
         yield splint.SR(status=True, msg="Hello")
 
-    splint_func = splint.SplintFunction("", func)
+    splint_func = splint.SplintFunction(func)
     assert (splint_func.function_name == "func")
 
 
@@ -46,7 +46,7 @@ def test_func_doc_string_extract():
         """
         return True
 
-    s_func = splint.SplintFunction(None, func)
+    s_func = splint.SplintFunction(func)
     for result in s_func():
         assert result.func_name == "func"
         assert result.status is True
@@ -116,7 +116,7 @@ def test_basic_func_call():
         """Test Function"""
         yield splint.SR(status=True, msg="It works")
 
-    sfunc = splint.SplintFunction(None, func)
+    sfunc = splint.SplintFunction(func)
 
     for result in sfunc():
         assert result.func_name == "func"
@@ -137,7 +137,7 @@ def test_basic_func_call_timing():
         time.sleep(1.1)
         yield splint.SR(status=True, msg="Timing works")
 
-    sfunc1 = splint.SplintFunction(None, func)
+    sfunc1 = splint.SplintFunction(func)
 
     @splint.attributes(tag="Timing")
     def fast_func():
@@ -145,7 +145,7 @@ def test_basic_func_call_timing():
         time.sleep(0.1)
         yield splint.SR(status=True, msg="Timing works")
 
-    sfunc2 = splint.SplintFunction(None, fast_func)
+    sfunc2 = splint.SplintFunction(fast_func)
 
     result: splint.SplintResult = next(sfunc1())
     assert result.status is True
@@ -168,7 +168,7 @@ def test_info_warning_func_call():
         """Test Complex Function"""
         yield splint.SR(status=True, msg="It still works", warn_msg="Warning")
 
-    sfunc = splint.SplintFunction(None, func)
+    sfunc = splint.SplintFunction(func)
 
     result: splint.SplintResult = next(sfunc())
     assert result.func_name == "func"
@@ -186,7 +186,7 @@ def test_divide_by_zero():
         """Test Exception Function"""
         return 1 / 0
 
-    sfunc = splint.SplintFunction(None, func)
+    sfunc = splint.SplintFunction(func)
 
     result: splint.SplintResult = next(sfunc())
     assert result.status is False
@@ -195,3 +195,31 @@ def test_divide_by_zero():
     assert result.skipped is False
     assert str(result.except_) == "division by zero"
     assert result.tag == "DivideByZero"
+
+def test_simplest_case_ever():
+    """
+    Test case where the users are the laziest possible people and use nothing in
+    the system.
+    """
+    def return_only():
+        return True
+
+    def yield_only():
+        yield True
+
+    # The above function requires all default cases to work correctly
+    s_func1 = splint.SplintFunction(return_only)
+    s_func2 = splint.SplintFunction(yield_only)
+    for s_func,name in ((s_func1,"return_only"),(s_func2,"yield_only")):
+        for result in s_func():
+            assert result.status is True
+            assert result.func_name == name
+            assert result.weight == 100
+            assert result.count == 1
+            assert result.ttl_minutes == 0
+            assert result.level == 1
+            assert result.module_name == ''
+            assert result.pkg_name == ''
+            assert result.owner_list == []
+            assert result.skipped is False
+            assert result.msg == f'Ran {name}.001 level=1'

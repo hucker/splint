@@ -17,8 +17,8 @@ def test_rule_file_exist():
     def check_rule2():
         yield from splint.rule_path_exists(path_="./rule_files_/my_file.dummy")
 
-    s_func1 = splint.SplintFunction('', check_rule1)
-    s_func2 = splint.SplintFunction('', check_rule2)
+    s_func1 = splint.SplintFunction(check_rule1, '')
+    s_func2 = splint.SplintFunction(check_rule2, '')
     for result in s_func1():
         assert result.status
 
@@ -39,11 +39,11 @@ def test_rule_large_files():
         for result in splint.rule_large_files(folder="./rule_files_", pattern="*.txt", max_size=50):
             yield result
 
-    s_func1 = splint.SplintFunction('', check_rule1)
+    s_func1 = splint.SplintFunction(check_rule1, '')
     for result in s_func1():
         assert result.status
 
-    s_func2 = splint.SplintFunction('', check_rule2)
+    s_func2 = splint.SplintFunction(check_rule2, '')
 
     for result in s_func2():
         assert result.status is False
@@ -61,7 +61,7 @@ def test_stale_file():
     # Touch the file
     pathlib.Path("./rule_files_/my_file.txt").touch()
 
-    s_func1 = splint.SplintFunction('', check_rule1)
+    s_func1 = splint.SplintFunction(check_rule1, '')
     for result in s_func1():
         assert result.status
 

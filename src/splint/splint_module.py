@@ -35,7 +35,7 @@ class SplintModule:
         return 0 if not self.functions else len(self.functions)
 
     def add_function(self, module, function):
-        function = SplintFunction(module, function)
+        function = SplintFunction(function, module)
         self.functions.append(function)
 
     def _add_sys_path(self, module_file):

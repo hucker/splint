@@ -18,12 +18,12 @@ def test_result_pre_hook_result_only():
         sr.msg = "Hooked msg"
         return sr
 
-    sp_func = splint.SplintFunction(None, hook_test, pre_sr_hooks=[result_hook1])
+    sp_func = splint.SplintFunction(hook_test, pre_sr_hooks=[result_hook1])
     for result in sp_func():
         assert result.status is False
         assert result.msg == "It works"
 
-    sp_func = splint.SplintFunction(None, hook_test, pre_sr_hooks=[result_hook2])
+    sp_func = splint.SplintFunction(hook_test, pre_sr_hooks=[result_hook2])
     for result in sp_func():
         assert result.msg == "Hooked msg"
         assert result.status is True
@@ -42,7 +42,7 @@ def test_result_pre_hook_use_class():
         sr.msg = self.doc
         return sr
 
-    sp_func = splint.SplintFunction(None, hook_test, pre_sr_hooks=[result_doc_string_to_msg])
+    sp_func = splint.SplintFunction(hook_test, pre_sr_hooks=[result_doc_string_to_msg])
     for result in sp_func():
         assert result.msg == "Hook Test Doc String"
         assert result.status is True
@@ -68,7 +68,7 @@ def test_verify_post_changes_pre():
         sr.status = True
         return sr
 
-    sp_func = splint.SplintFunction(None, hook_test, pre_sr_hooks=[result_pre], post_sr_hooks=[result_post])
+    sp_func = splint.SplintFunction(hook_test, pre_sr_hooks=[result_pre], post_sr_hooks=[result_post])
     for result in sp_func():
         assert result.msg == "Post Hook"
         assert result.status is True

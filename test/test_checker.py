@@ -9,7 +9,7 @@ def func1():
     def func1():
         yield splint.SplintResult(status=True, msg="It works1")
 
-    return splint.SplintFunction(None, func1)
+    return splint.SplintFunction(func1)
 
 
 @pytest.fixture
@@ -18,7 +18,7 @@ def func2():
     def func2():
         yield splint.SplintResult(status=True, msg="It works2")
 
-    return splint.SplintFunction(None, func2)
+    return splint.SplintFunction(func2)
 
 
 @pytest.fixture
@@ -28,7 +28,7 @@ def func3():
     def func3():
         yield splint.SplintResult(status=True, msg="It works3")
 
-    return splint.SplintFunction(None, func3)
+    return splint.SplintFunction(func3)
 
 
 def test_function_list(func1, func2):

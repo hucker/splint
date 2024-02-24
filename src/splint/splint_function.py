@@ -4,19 +4,18 @@ deal of meta data is stored in the function and extracted from information about
 its signature, its generator status etc.  This information is used so users do not need to
 configure functions in multiple places.  Design elements from fastapi and pytest are obvious.
 """
-import datetime as dt
 import inspect
 import re
 import time
 import traceback
-from typing import Generator,List
+from typing import Generator, List
 
 from .splint_attribute import get_attribute
 from .splint_exception import SplintException
 from .splint_result import SplintResult
 
 
-def result_hook_fix_blank_msg(sfunc, result: SplintResult) -> SplintResult:
+def result_hook_fix_blank_msg(sfunc: "SplintFunction", result: SplintResult) -> SplintResult:
     """Fix the message of a result if it is blank.
 
     This is an example of a result hook used by splint to write
@@ -31,7 +30,7 @@ def result_hook_fix_blank_msg(sfunc, result: SplintResult) -> SplintResult:
     # If the result has no message, then create a default one either
     # from the doc string or from the function name/module/package.
     if not result.msg:
-        if sfunc.doc.strip().count("\n") == 0 and sfunc.doc.strip():
+        if sfunc.doc and sfunc.doc.strip().count("\n") == 0 and sfunc.doc.strip():
             result.msg = f"{result.func_name}{sfunc.doc.strip()}"
         else:
             # Use a dictionary to store the optional parts of the message
@@ -46,7 +45,7 @@ def result_hook_fix_blank_msg(sfunc, result: SplintResult) -> SplintResult:
             msg_str = " ".join(
                 f"{key}={value}" for key, value in msg_parts.items() if value
             )
-            result.msg = f"Ran {msg_str} {sfunc.function}.{result.count:03d}"
+            result.msg = f"Ran {sfunc.function_name}.{result.count:03d} {msg_str}"
     return result
 
 
@@ -93,15 +92,7 @@ class SplintFunction:
         __call__(*args, **kwds): Calls the stored function and collects information about the result.
     """
 
-    def __init__(
-        self,
-        module,
-        function,
-        allowed_exceptions=None,
-        env=None,
-        pre_sr_hooks=None,
-        post_sr_hooks=None,
-    ):
+    def __init__(self, function, module='', allowed_exceptions=None, env=None, pre_sr_hooks=None, post_sr_hooks=None):
         self.env = env or {}
         self.module = module
         self.function = function
@@ -109,7 +100,7 @@ class SplintFunction:
         self.function_name = function.__name__
 
         # Using inspect gets the docstring without the python indent.
-        self.doc = inspect.getdoc(function)
+        self.doc = inspect.getdoc(function) or ""
 
         self.parameters = inspect.signature(function).parameters
         self.result_hooks = [result_hook_fix_blank_msg]
@@ -143,7 +134,7 @@ class SplintFunction:
         # need and I'm assuming you aren't building a trading system with this so you dont
         # care about microseconds.
         self.last_ttl_start = 0  # this will be compared to time.time() for ttl caching
-        self.last_results:List[SplintResult] = []
+        self.last_results: List[SplintResult] = []
 
         if self.weight is None:
             self.weight = 100.0
@@ -189,7 +180,7 @@ class SplintFunction:
         count = 1
 
         # If they want caching this takes care of it.
-        if self.ttl_minutes*60 + self.last_ttl_start > time.time():
+        if self.ttl_minutes * 60 + self.last_ttl_start > time.time():
             yield from self.last_results
             return
 
