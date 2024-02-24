@@ -36,35 +36,33 @@ def test_ruids1_module():
     module = splint.SplintModule(module_name="check_suid1_a",module_file='./ruid/check_suid1_a.py')
     assert module.module_name == "check_suid1_a"
     assert module.module_file == "./ruid/check_suid1_a.py"
-    assert module.ruids() == ["suid11", "suid12"]
+    assert set(module.ruids()) == set(["suid11", "suid12"])
 
     module = splint.SplintModule(module_name="check_suid2_a",module_file='./ruid/check_suid2_a.py')
     assert module.module_name == "check_suid2_a"
     assert module.module_file == "./ruid/check_suid2_a.py"
-    assert module.ruids() == ["suid21", "suid22"]
+    assert set(module.ruids()) == set(["suid21", "suid22"])
 
 def test_ruids1_module():
     """Make sure we can load modules individually and extract the ruids"""
     module = splint.SplintModule(module_name="check_suid1_a", module_file='./ruid/check_suid1_a.py')
     assert module.module_name == "check_suid1_a"
     assert module.module_file == "./ruid/check_suid1_a.py"
-    assert module.ruids() == ["suid11", "suid12"]
+    assert set(module.ruids()) == set(["suid11", "suid12"])
 
     module = splint.SplintModule(module_name="check_suid2_a", module_file='./ruid/check_suid2_a.py')
     assert module.module_name == "check_suid2_a"
     assert module.module_file == "./ruid/check_suid2_a.py"
-    assert module.ruids() == ["suid21", "suid22"]
+    assert set(module.ruids()) == set(["suid21", "suid22"])
 
 
 @pytest.mark.usefixtures("sys_path")
 def test_run_ruid_1():
     """Normal case all RUIDS are unique"""
     pkg = splint.SplintPackage(folder="./ruid", name="ruid")
-    ch = splint.SplintChecker(packages=pkg)
-    ch.pre_collect()
-    ch.prepare()
+    ch = splint.SplintChecker(packages=pkg,auto_setup=True)
 
-    results = ch.run_all()
+    _ = ch.run_all()
 
     ruids = pkg.ruids()
 

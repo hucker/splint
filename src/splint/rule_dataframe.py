@@ -3,7 +3,6 @@ from typing import Generator, List, Tuple
 import numpy as np
 import pandas as pd
 
-
 from .splint_exception import SplintException
 from .splint_result import SplintResult as SR
 
@@ -151,7 +150,6 @@ def rule_validate_df_values_by_col(df: pd.DataFrame,
    SR: A status report object containing the status of the validation (True if the condition is met, False otherwise)
        and a message describing the result.
     """
-
 
     if df is None:
         raise SplintException("Data frame is None.")

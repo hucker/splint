@@ -133,3 +133,25 @@ class ScoreByFunctionMean(ScoreStrategy):
 
         # The score should be the average of the scores for each function
         return (100.0 * sum_passed) / (sum_weights * 1.0)
+
+
+class ScoreBinaryFail(ScoreStrategy):
+    """Anything fails then the test is a fail.  Empty results fail."""
+    strategy_name = "by_binary_fail"
+
+    def score(self, results: List[SplintResult]) -> float:
+        if not results:
+            return 0.0
+        if any(not result.status for result in results if not result.skipped):
+            return 0.0
+        return 100.0
+
+
+class ScoreBinaryPass(ScoreStrategy):
+    """Anything passes then the test is a pass. Empty results fail. """
+    strategy_name = "by_binary_pass"
+
+    def score(self, results: List[SplintResult]) -> float:
+        if any(result.status for result in results if not result.skipped):
+            return 100.0
+        return 0.0

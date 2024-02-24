@@ -1,43 +1,12 @@
 """ This module contains the SplintResult class and some common result transformers. """
 
-
 import itertools
 from collections import Counter
 from dataclasses import asdict, dataclass, field
-from functools import wraps
 from operator import attrgetter
 from typing import Callable, List
 
 import splint
-
-
-def enforce_keyword_arguments(cls):
-    init = cls.__init__
-
-    @wraps(init)
-    def wrapper(self, *args, **kwargs):
-        if args:
-            raise TypeError(f"{cls.__name__} only accepts keyword arguments.")
-        init(self, **kwargs)
-
-    cls.__init__ = wrapper
-    return cls
-
-
-import splint
-
-
-def enforce_keyword_arguments(cls):
-    init = cls.__init__
-
-    @wraps(init)
-    def wrapper(self, *args, **kwargs):
-        if args:
-            raise TypeError(f"{cls.__name__} only accepts keyword arguments.")
-        init(self, **kwargs)
-
-    cls.__init__ = wrapper
-    return cls
 
 
 @dataclass
@@ -99,7 +68,7 @@ class SplintResult:
     phase: str = ""
     count: int = 0
     ruid: str = ""
-    ttl_minutes:float = 0.0
+    ttl_minutes: float = 0.0
 
     # Mitigations
     mit_msg: str = ""
@@ -189,6 +158,7 @@ def fail_only(sr: SplintResult):
         SplintResult: The result if it has failed, otherwise None.
     """
     return None if sr.status else sr
+
 
 def remove_info(sr: SplintResult):
     """Filter out messages tagged as informational

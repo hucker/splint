@@ -7,7 +7,6 @@ from .splint_result import SplintResult as SR
 def rule_url_200(urls, expected_status=200, timeout_sec=5):
     """Simple rule check to verify that URL is active."""
 
-
     for url in urls:
         try:
             response = requests.get(url, timeout=timeout_sec)

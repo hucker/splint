@@ -11,7 +11,7 @@ from .rule_webapi import rule_web_api  # noqa: F401
 from .splint_api import set_splint_checker
 from .splint_attribute import attributes  # noqa: F401
 from .splint_attribute import get_attribute  # noqa: F401
-#from .splint_attribute import _convert_to_minutes # noqa:F401
+# from .splint_attribute import _convert_to_minutes # noqa:F401
 from .splint_checker import SplintChecker  # noqa: F401
 from .splint_checker import debug_progress  # noqa: F401
 from .splint_checker import exclude_levels  # noqa: F401
@@ -60,6 +60,8 @@ from .splint_ruid import module_ruids  # noqa: F401
 from .splint_ruid import package_ruids  # noqa: F401
 from .splint_ruid import ruid_issues  # noqa: F401
 from .splint_ruid import valid_ruids  # noqa: F401
+from .splint_score import ScoreBinaryFail  # noqa: F401
+from .splint_score import ScoreBinaryPass  # noqa: F401
 from .splint_score import ScoreByFunctionBinary  # noqa: F401
 from .splint_score import ScoreByFunctionMean  # noqa: F401
 from .splint_score import ScoreByResult  # noqa: F401

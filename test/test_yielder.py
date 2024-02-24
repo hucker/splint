@@ -12,9 +12,7 @@ def test_yielder_do_something():
 
     s_func = splint.SplintFunction(func1)
 
-    ch = splint.SplintChecker(functions=[s_func])
-    ch.pre_collect()
-    ch.prepare()
+    ch = splint.SplintChecker(functions=[s_func],auto_setup=True)
     results = ch.run_all()
 
     assert len(results) == 3
@@ -79,9 +77,7 @@ def test_yielder_do_nothing():
 
     s_func = splint.SplintFunction(func)
 
-    ch = splint.SplintChecker(functions=[s_func])
-    ch.pre_collect()
-    ch.prepare()
+    ch = splint.SplintChecker(functions=[s_func],auto_setup=True)
     results = ch.run_all()
 
     assert len(results) == 1

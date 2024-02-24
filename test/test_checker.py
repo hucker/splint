@@ -36,9 +36,7 @@ def test_function_list(func1, func2):
 
     funcs = [func1, func2]
 
-    ch = splint.SplintChecker(functions=funcs)
-    ch.pre_collect()
-    ch.prepare()
+    ch = splint.SplintChecker(functions=funcs,auto_setup=True)
     results = ch.run_all()
 
     assert len(results) == 2
@@ -231,9 +229,7 @@ def test_null_check():
     with pytest.raises(splint.SplintException):
         funcs = []
 
-        ch = splint.SplintChecker(functions=funcs)
-        ch.pre_collect()
-        ch.prepare()
+        ch = splint.SplintChecker(functions=funcs,auto_setup=True)
 
         _ = ch.run_all()
 
@@ -270,10 +266,8 @@ def test_filter_all(func1, func2):
 
 
 def test_as_dict(func1, func2):
-    ch = splint.SplintChecker(functions=[func1, func2])
-    ch.pre_collect()
-    ch.prepare()
-    results = ch.run_all()
+    ch = splint.SplintChecker(functions=[func1, func2],auto_setup=True)
+    _ = ch.run_all()
     d = ch.as_dict()
     assert isinstance(d, dict)
 
@@ -289,9 +283,7 @@ def test_as_dict(func1, func2):
 
 def test_progress(capsys, func1, func2):
     funcs = [func1, func2]
-    ch = splint.SplintChecker(functions=funcs, progress_callback=splint.debug_progress)
-    ch.pre_collect()
-    ch.prepare()
+    ch = splint.SplintChecker(functions=funcs, progress_callback=splint.debug_progress,auto_setup=True)
     _ = ch.run_all()
     captured = capsys.readouterr()
     assert captured[

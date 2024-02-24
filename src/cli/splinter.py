@@ -51,9 +51,7 @@ def run_checks(
 
         # If they supply 1 or both they are all run since the checker can handle arbitrary combinations
         if mod or pkg:
-            ch = splint.SplintChecker(modules=mod, packages=pkg)
-            ch.pre_collect()
-            ch.prepare()
+            ch = splint.SplintChecker(modules=mod, packages=pkg,auto_setup=True)
             if api:
                 splint.set_splint_checker(ch)
                 uvicorn.run(splint.splint_api.app, host="0.0.0.0", port=port)

@@ -72,11 +72,10 @@ def rule_large_files(folder: str, pattern: str, max_size: float, fail_only=True)
 def rule_max_files(folders: list, max_files: int, pattern: str = '*', fail_only=True):
     """Rule to verify that the number of files in a list of folders does not exceed a given limit."""
 
-    if isinstance(folders, (str,pathlib.Path)):
+    if isinstance(folders, (str, pathlib.Path)):
         folders = [folders]
     if isinstance(max_files, int):
         max_files = [max_files] * len(folders)
-
 
     if len(folders) != len(max_files):
         raise SplintException("The number of folders and the number of max_files must be the same.")

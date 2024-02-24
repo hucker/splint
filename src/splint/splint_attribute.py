@@ -12,19 +12,18 @@ every attribute to a rule. Defaults are provided for all attributes. You can go
 along way never using an attribute...and once you learn them you will use them all
 the time.
 """
-from typing import Union,Tuple,Optional
-import re
+from typing import Optional, Tuple
 
 import splint
 
-
-DEFAULT_TAG = ""       # A string indicating the type of rule, used for grouping/filtering results
-DEFAULT_LEVEL = 1      #
-DEFAULT_PHASE = ""     # A string indicating what phase of the development process a rule is best suited for
-DEFAULT_WEIGHT = 100   # The nominal weight for a rule should be a positive number
-DEFAULT_SKIP = False   # Set to true to skip a rule
-DEFAULT_TTL_MIN=0      # Time to live for check functions.
+DEFAULT_TAG = ""  # A string indicating the type of rule, used for grouping/filtering results
+DEFAULT_LEVEL = 1  #
+DEFAULT_PHASE = ""  # A string indicating what phase of the development process a rule is best suited for
+DEFAULT_WEIGHT = 100  # The nominal weight for a rule should be a positive number
+DEFAULT_SKIP = False  # Set to true to skip a rule
+DEFAULT_TTL_MIN = 0  # Time to live for check functions.
 DEFAULT_RUID = ""
+
 
 def _parse_ttl_string(input_string: str) -> Tuple[Optional[float], Optional[str]]:
     """
@@ -40,18 +39,18 @@ def _parse_ttl_string(input_string: str) -> Tuple[Optional[float], Optional[str]
     units = " sec,1 second,1 min,60 minute,60 h,3600 hr,3600 hour,3600 hrs,3600 s,1 m,60"
     d = {}
     for pair in units.split():
-        key,value = pair.split(",")
+        key, value = pair.split(",")
         d[key] = float(value)
 
     # Drop through no units
     scale = 60.0
-    for key,value in d.items():
+    for key, value in d.items():
         if input_string.endswith(key):
             scale = value
             input_string = input_string[:-len(key)]
             break
 
-    minutes = float(input_string)*scale / 60.0
+    minutes = float(input_string) * scale / 60.0
 
     if minutes < 0.0:
         raise splint.SplintException("TTL must be greater than or equal to 0.0")
@@ -60,17 +59,16 @@ def _parse_ttl_string(input_string: str) -> Tuple[Optional[float], Optional[str]
 
 
 def attributes(
-    *,
-    tag=DEFAULT_TAG,
-    phase=DEFAULT_PHASE,
-    level=DEFAULT_LEVEL,
-    weight=DEFAULT_WEIGHT,
-    skip=DEFAULT_SKIP,
-    ruid=DEFAULT_RUID,
-    ttl_minutes=DEFAULT_TTL_MIN,
+        *,
+        tag=DEFAULT_TAG,
+        phase=DEFAULT_PHASE,
+        level=DEFAULT_LEVEL,
+        weight=DEFAULT_WEIGHT,
+        skip=DEFAULT_SKIP,
+        ruid=DEFAULT_RUID,
+        ttl_minutes=DEFAULT_TTL_MIN,
 
 ):
-
     """
     Decorator to add attributes to a Splint function.
     """

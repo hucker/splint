@@ -45,9 +45,7 @@ def test_ttl_func(tmp_path):
 
     splint_func = splint.SplintFunction(func, "")
 
-    ch = splint.SplintChecker(functions=[splint_func])
-    ch.pre_collect()
-    ch.prepare()
+    ch = splint.SplintChecker(functions=[splint_func],auto_setup=True)
     results = ch.run_all()
 
     # All 3 different messages and all pass
@@ -93,9 +91,7 @@ def test_ttl_func_boolean_return(tmp_path):
 
     splint_func = splint.SplintFunction(func, "")
 
-    ch = splint.SplintChecker(functions=[splint_func])
-    ch.pre_collect()
-    ch.prepare()
+    ch = splint.SplintChecker(functions=[splint_func],auto_setup=True)
     results = ch.run_all()
 
     # All 3 different messages and all pass

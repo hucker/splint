@@ -10,7 +10,6 @@ from .splint_ruid import empty_ruids, ruid_issues, valid_ruids
 from .splint_score import ScoreByResult, ScoreStrategy
 
 
-
 def exclude_ruids(ruids: List[str]):
     """Return a filter function that will exclude the ruids from the list."""
 
@@ -102,7 +101,6 @@ def orderby_tag():
     """Order collected list by tag"""
 
     def sort_key(x: SplintFunction):
-
         return x.tag
 
     return sort_key
@@ -115,7 +113,7 @@ def orderby_ruid():
         return x.ruid
 
     return sort_key
-  
+
 
 class SplintChecker:
     """
@@ -132,6 +130,7 @@ class SplintChecker:
             progress_callback=None,
             score_strategy: ScoreStrategy | None = None,
             env=None,
+            auto_setup: bool = False
     ):
         """
         User can provide a list of packages, modules and functions to check.
@@ -189,7 +188,7 @@ class SplintChecker:
         else:
             self.env = {}
 
-        # Install a default if needed.
+        # Install a default if needed (should this be a list?)
         self.progress_callback = progress_callback or quiet_progress
 
         self.collected = []
@@ -202,6 +201,13 @@ class SplintChecker:
             raise SplintException(
                 "You must provide at least one package, module or function to check."
             )
+
+        # For some use cases there is no need for special setup so just do auto setup
+        # to clean up the startup.  Real code will likely need to be sohisticated
+        # with prepare...
+        if auto_setup:
+            self.pre_collect()
+            self.prepare()
 
     def pre_collect(self) -> List[SplintFunction]:
         """
@@ -281,7 +287,6 @@ class SplintChecker:
             f"There are duplicate or missing RUIDS: {ruid_issues(ruids)}"
         )
 
-
     def ruids(self):
         """
         Return a list of all the RUIDs in the collected functions.
@@ -318,7 +323,7 @@ class SplintChecker:
         self.end_time = dt.datetime.now()
         self.progress_callback("Rule Check Complete.")
 
-    def run_all(self, env=None):
+    def run_all(self, env=None, auto_run=False):
         """
         List version of yield all.
         """
@@ -367,7 +372,6 @@ class SplintChecker:
         }
         return header
 
-
     def as_dict(self):
         """
         Return a dictionary of the results.
@@ -384,7 +388,6 @@ class SplintChecker:
             "failed_count": self.fail_count,
             "skip_count": self.skip_count,
             "total_count": self.total_count,
-
 
             # the meat of the output livers here
             "results": [r.as_dict() for r in self.results],
