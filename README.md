@@ -1,5 +1,10 @@
 # Splint
 
+Splint lets you create a lint like tool for anything you can write rules for using a declarative style similar to 
+`pytest`.  It takes just a few lines of simple code to write tests that can be made available via `FastAPI` or 
+`streamlit`.
+
+## Overview 
 Splint is a linting tool designed for tasks beyond traditional code analysis. Inspired by the effectiveness of `pylint`
 in identifying and rectifying issues in code,
 I envisioned a tool that could extend this functionality to various aspects of my workflows with just a button press. I
@@ -37,7 +42,7 @@ rigid system. If you all agree on the ruleset, people will work in peace driving
 
 Good question.  `Pytest` is big and complicated while `splint` is small and less complicated. `Pytest` is for code and 
 the ways that code can break, it is tied intricately to `python`. If you have a huge set of rules and have a team 
-managing them, pytest might be your answer, but probably not as it is really a code driven tool.
+managing them, `pytest` might be your answer, but probably not.  It solves a similar but different problem.
 
 ## Getting Started
 
@@ -50,9 +55,7 @@ various subsets of tests easily.
 From the most simple you could write rules like this...not even a reference to splint.
 
 ```python
-
-
-def check_boolean()
+def check_boolean():
     return get_drive_space('/foo') > 1_000_000_000
 
 
@@ -70,7 +73,7 @@ From the most simple you could write rules like this:
 from splint import SplintResult, SR
 
 
-def check_boolean()
+def check_boolean():
     return SplintResult(status=get_drive_space('/foo') > 1_000_000_000, msg="Drive space check for foo")
 
 
@@ -86,8 +89,6 @@ Now we can add more complexity. Tag a test functions with attributes.
 ```python
 from splint import SplintResult, attributes
 import pathlib
-import dt as datetime
-
 
 @attributes(tag="file")
 def check_file_exists():
@@ -116,7 +117,7 @@ fixtures.
 ```python
 
 @environment('module')
-def csv_file()
+def csv_file():
     return pathlib.Path("myfile.csv")
 
 
@@ -156,16 +157,31 @@ The rule functions that you write don't need to use generators. They can return 
 (e.g., Boolean, List of Boolean, SplintResult, List of SplintResult), or you can write a generator that yields results
 as they are checked.
 
+## Rule Integrations
+
+To simplify getting started there are some out of the box rules you can call to check files and folders on your file system
+dataframes and web pages.  These integrations make many common checks 1-liners.
+
+The rule shown below uses the rule_large_files function to look at all the files in a folder and report status on file
+sizes > 100k.
+
+```python
+    @splint.attributes(tag="tag")
+    def check_rule1():
+        for result in splint.rule_large_files(folder="./log_files", pattern="log*.txt", max_size=10000):
+            yield result
+```
+
 ## What is the output?
 
-The low level output of a SplintFunction are SplintResults. Each SplintResult is trivially converted to a json record,
-or a line in a CSV file
-for processing by other tools. It is very easy to connect things up to `Streamlit`, `FastAPI` or a `typer` CLI app.
+The low level output of a `SplintFunction` are `SplintResults`. Each `SplintResult` is trivially converted to a `json`
+record or a line in a CSV file for processing by other tools. It is very easy to connect things up to 
+`Streamlit`, `FastAPI` or a `typer` CLI app by json-ifying the results.
 
 ## What are scores?
 
-Scoring is very complicated, but of immense value. The idea of a score is to look at the results of all of your tests
-andcome up with a score from 0 to 100. A simple percentage of pass fail results can work...but what if some rules are "
+The idea of scoring is simple by the details are complex. Scores let you look at the results of all of your checks
+and reduce it to number from 0 to 100. A simple percentage of pass fail results can work...but what if some rules are "
 easy" while others are hard? What if some test have 100's of ways to fail (each line in a spreadsheet needs a comment) 
 but has only one result when there are no failures?  It turns out you need weights and ways to aggregate results to 
 make sense of these things.
@@ -175,15 +191,17 @@ but it is in work creating scoring by function.
 
 ## What are @attributes
 
-Each rule function can be assigned attributes that define metadata about the function
+Each rule function can be assigned attributes that define metadata about the rule function.  Attributes are at the heart
+of how `splint` allows you to filter, sort, select tests to run and view.
 
-    1. tag zero or more strings that can be used for filtering results.
-    2. phase a single string that indicates a phase of testing/development
-    3. "level" which is a numeric value that is better for greater than/less than
-    4. "weight" a positive number indicating the weight of a functions results.  The nominal weight is 100.
-    5. "skip" indicates the function should be skipped.
-    6. "ruid" or rule-id is a unique identifier for a rule. If one test as a rule all of them must.
-    7. "ttl_minutes" allow caching of results so expensive tests don't need to be rerun. 
+ 1. `tag` zero or more strings that can be used for filtering results.
+ 2. `phase` a single string that indicates a phase of testing/development
+ 3. `level` which is a numeric value that is better for greater than/less than tests
+ 4. `weight` a positive number indicating the weight of a functions results.  The nominal weight is 100.
+ 5. `skip` indicates the function should be skipped.
+ 6. `ruid` or rule-id is a unique identifier for a rule. If one test as a rule all of them must.
+ 7. `ttl_minutes` allow caching of results so expensive tests don't need to be rerun  which is only useful in cases where you run tests over and over
+
 
 ## What are Rule Ids (RUIDS)?
 
@@ -206,7 +224,7 @@ aren't smart, so beware of the bed you make for yourself.
 
 
 ```python
-@attributes(suid="file_simple")
+@attributes(ruid="file_simple")
 def check_file_age():
     f = pathlib.Path("/user/file1.txt")
     return SplintResult(status=f.exists(), msg=f"File {f.name}")
@@ -217,6 +235,8 @@ def check_file_age():
     f = pathlib.Path("/user/file2.txt")
     return SplintResult(status=f.exists(), msg=f"File {f.name}")
 ```
+
+## Splint RC
 
 A `.splintrc` file can be provided in the toml format (or from code a dictionary) of the form
 
@@ -241,7 +261,11 @@ exclude = ["file_simple"]
 ## TTL Time to Live Caching
 If you have time-consuming checks you can put a ttl on it to reduce the number of times it is run. All you need to
 do is tag the function with the `ttl_minutes` attribute, and it will use cached results if the call frequency is inside
-the ttl that was specified.
+the ttl that was specified.  This feature is useful in situations where you are splinting a system 
+in real time for things like dashboards or long running tasks.  When you need it, it is very
+useful.
+
+The status during the ttl period wil be the last result.
 
 ```python
 @attributes(ttl_minutes="1.0hr")
@@ -262,10 +286,10 @@ Lots of ways.
 
 For me that is as deep as I want things to go.
 
-## How are environments
+## How are environments used?
 __WRITE ME__
 
-## WTH does splint derive from?
+## WTH does `splint` derive from?
 
 Splint is just a name that sounds cool. When I started this I thought system-lint.
 
@@ -283,7 +307,6 @@ To run it against a folder and start a FastAPI endpoint do:
 `python -m splinter.py -p path/to/package_folder --api --port 8000`
 
 ```text
-Usage: splinter.py [OPTIONS]
 Usage: splinter.py [OPTIONS]
 
  Run Splint checks on a given using a typer command line app.
@@ -303,15 +326,33 @@ Usage: splinter.py [OPTIONS]
 
 ## FastAPI Interface
 
-If you want your rule checking results to be visible via a web API, you can use the `splinter.py` file to see how to
+If you want your rule checking results to be runnable via a web API, you can use the `splinter.py` file to see how to
 trivially create a fast API app from your code. There are no changes required from your code to support a
-FastAPI interface. If you created rule_ids for all of your rule functions then they are all accessible via the
-API. If you didn't use rule IDs then you can run the whole set of functions (todo, allow module/phase/tag based
-runs).
+FastAPI interface. If you created `rule_ids` for all of your rule functions then they are all accessible via the
+API. If you didn't use `ruids` then you can run the whole set of functions.  The sample command line app is meant to 
+be a trivial example of how to hook up a `splint` ruleset to the web.
 
 Because `splint` uses python dictionaries to move result data around, connecting to a FastAPI interface is trivial.
 The `splinter` demo tool shows that this can be done with just a few lines of code to create an FastAPI interface.
 
+Just run with the --api flag and you'll see `uvicorn` startup your  API.
+```
+/Users/chuck/splint/.venv/bin/python splinter.py --pkg . --api 
+INFO:     Started server process [3091]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:64116 - "GET / HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64116 - "GET /docs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64116 - "GET /openapi.json HTTP/1.1" 200 OK
+```
+
+And going to `localhost:8000/docs` gets you this:
+
+FastAPI swagger interiface:
+![FastAPI](./img/fastapi2.png)
+
+FastAPI example running some rules:
 ![FastAPI](./img/fastapi.png)
 
 ## TODO
