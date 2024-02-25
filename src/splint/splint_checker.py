@@ -182,6 +182,7 @@ class SplintChecker:
 
         # If the user has not provided a score strategy then use the simple one
         self.score_strategy = score_strategy or ScoreByResult()
+        self.score = 0.0
 
         if env:
             self.env = env
@@ -203,7 +204,7 @@ class SplintChecker:
             )
 
         # For some use cases there is no need for special setup so just do auto setup
-        # to clean up the startup.  Real code will likely need to be sohisticated
+        # to clean up the startup.  Real code will likely need to be sophisticated
         # with prepare...
         if auto_setup:
             self.pre_collect()
@@ -326,9 +327,11 @@ class SplintChecker:
     def run_all(self, env=None, auto_run=False):
         """
         List version of yield all.
+
         """
         self.results = list(self.yield_all(env=env))
-
+        self.score = self.score_strategy(self.results)
+        self.progress_callback("Score = {:.1f}".format(self.score))
         return self.results
 
     @property
@@ -369,6 +372,7 @@ class SplintChecker:
             "levels": sorted(list(set(f.level for f in self.collected))),
             "phases": sorted(list(set(f.phase for f in self.collected))),
             "ruids": self.ruids(),
+            "score": self.score,
         }
         return header
 

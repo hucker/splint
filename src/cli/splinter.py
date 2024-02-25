@@ -17,13 +17,34 @@ def dump_results(results):
     for result in results:
         typer.echo(result)
 
+def pretty_print_json(json_obj):
+    """
+    Pretty print a JSON object, converting non-string values to strings.
+
+    Args:
+        json_obj (dict): The JSON object to be pretty printed.
+
+    Returns:
+        str: The pretty printed JSON string.
+    """
+    def convert_non_strings(obj):
+        if isinstance(obj, dict):
+            return {k: convert_non_strings(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [convert_non_strings(elem) for elem in obj]
+        else:
+            return str(obj)
+
+    pretty_json = json.dumps(convert_non_strings(json_obj), indent=4)
+    return pretty_json
+
 
 @app.command()
 def run_checks(
         module: str = typer.Option(None, '-m', '--mod', help="The module to run rules against."),
         pkg: str = typer.Option(None, '-p', '--pkg', help="The package to run rules against."),
         json_file: str = typer.Option(None, '-j', '--json', help="The JSON file to write results to."),
-        flat: bool = typer.Option(True, '-f', '--flat', help="Should the output be flat or a hierarchy."),
+        flat: bool = typer.Option(False, '-f', '--flat', help="Should the output be flat or a hierarchy."),
         score: bool = typer.Option(False, '-s', '--score', help="Print the score of the rules."),
         api: bool = typer.Option(False, '-a', '--api', help="Start FastAPI."),
         port: int = typer.Option(8000, '-p', '--port', help="FastAPI Port"),
@@ -67,7 +88,11 @@ def run_checks(
             return
 
         if not flat:
+            # Show the results in a hierarchy rather than the flat version the data is stored as.
             results = splint.splint_result.group_by(results, ['pkg_name', 'module_name', 'func_name'])
+            pretty_data = pretty_print_json(results)
+            typer.echo(pretty_data)
+            return
 
         if verbose:
             dump_results(results)

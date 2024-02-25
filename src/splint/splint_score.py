@@ -58,7 +58,8 @@ class ScoreByResult(ScoreStrategy):
         # Remove any skipped results
         results = [result for result in results if not result.skipped]
         if not results:
-            raise SplintException("No results to score.")
+            return 0.0
+            #raise SplintException("No results to score.")
 
         for result in results:
             passed_sum += result.weight if result.status else 0
@@ -86,7 +87,7 @@ class ScoreByFunctionBinary(ScoreStrategy):
         # Remove any skipped results
         results = [result for result in results if not result.skipped]
         if not results:
-            raise SplintException("No results to score.")
+            return 0.0
 
         for key, results in score_functions.items():
             if not results:
@@ -111,7 +112,7 @@ class ScoreByFunctionMean(ScoreStrategy):
         # Remove any skipped results
         results = [result for result in results if not result.skipped]
         if not results:
-            raise SplintException("No results to score.")
+            return 0.0
 
         for result in results:
             key = f"{result.pkg_name}.{result.module_name}.{result.func_name}".lstrip(

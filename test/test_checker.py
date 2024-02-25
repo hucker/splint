@@ -42,6 +42,7 @@ def test_function_list(func1, func2):
     assert len(results) == 2
     assert results[0].status is True
     assert results[1].status is True
+    assert ch.score == 100.0
 
 
 def test_checker_tag_ordering(func1, func2, func3):
@@ -286,5 +287,4 @@ def test_progress(capsys, func1, func2):
     ch = splint.SplintChecker(functions=funcs, progress_callback=splint.debug_progress,auto_setup=True)
     _ = ch.run_all()
     captured = capsys.readouterr()
-    assert captured[
-               0] == 'Start Rule Check\nFunc Start func1\n+Func done.\nFunc Start func2\n+Func done.\nRule Check Complete.\n'
+    assert captured[0] == 'Start Rule Check\nFunc Start func1\n+Func done.\nFunc Start func2\n+Func done.\nRule Check Complete.\nScore = 100.0\n'

@@ -58,8 +58,7 @@ def test_score_by_result(by_func_weights_with_skip):
     score = 100.0 * (total_pass * 1.0 / total_weight * 1.0)
     assert by_result.score(by_func_weights_with_skip) == pytest.approx(score)
     assert by_result(by_func_weights_with_skip) == pytest.approx(score)
-    with pytest.raises(splint.SplintException):
-        by_result.score([])
+    assert by_result([]) == 0.0
 
 
 def test_score_by_function_binary(by_func_weights_with_skip):
@@ -72,9 +71,7 @@ def test_score_by_function_binary(by_func_weights_with_skip):
 
     assert by_function_binary.score(by_func_weights_with_skip) == pytest.approx(score)
     assert by_function_binary(by_func_weights_with_skip) == pytest.approx(score)
-
-    with pytest.raises(splint.SplintException):
-        by_function_binary.score([])
+    assert by_function_binary.score([]) == 0.0
 
 
 def test_score_by_function_mean(by_func_weights_with_skip):
@@ -86,9 +83,7 @@ def test_score_by_function_mean(by_func_weights_with_skip):
     score = 100.0 * (total_pass * 1.0 / total_weight * 1.0)
     assert by_function_mean.score(by_func_weights_with_skip) == pytest.approx(score)
     assert by_function_mean(by_func_weights_with_skip) == pytest.approx(score)
-
-    with pytest.raises(splint.SplintException):
-        by_function_mean.score([])
+    assert by_function_mean([]) == 0.0
 
 def test_score_binary_pass(all_pass,all_fail,half_pass):
     """Check that the full binary pass works"""
