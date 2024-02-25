@@ -47,5 +47,6 @@ def test_ttl_fail():
             for bad_time in bad_times:
                 for sep in seps:
                     with pytest.raises(splint.SplintException):
-                        splint_attribute._parse_ttl_string(f"{bad_time}{sep}{unit}")
+                        s = f"{bad_time}{sep}{unit}"
+                        splint_attribute._parse_ttl_string(s)
 

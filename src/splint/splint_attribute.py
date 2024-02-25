@@ -13,7 +13,7 @@ along way never using an attribute...and once you learn them you will use them a
 the time.
 """
 from typing import Optional, Tuple
-
+import re
 import splint
 
 DEFAULT_TAG = ""  # A string indicating the type of rule, used for grouping/filtering results
@@ -25,10 +25,11 @@ DEFAULT_TTL_MIN = 0  # Time to live for check functions.
 DEFAULT_RUID = ""
 DEFAULT_FINISH_ON_FAIL=False # If a splint function yields a fail result stop processing the function
 
-
-def _parse_ttl_string(input_string: str) -> Tuple[Optional[float], Optional[str]]:
+def _parse_ttl_string(input_string:str)->float:
     """
-    Parses a string containing a floating-point number followed by optional units.
+    Use regular expression to match a TTL string.  This pattern was a pain to figure out.  There
+    are soo many permutations that need to be handled that are subtle (like the order matters in the
+    list).
 
     Args:
         input_string (str): The input string to parse.
@@ -37,26 +38,18 @@ def _parse_ttl_string(input_string: str) -> Tuple[Optional[float], Optional[str]
         Tuple[Optional[float], Optional[str]]: A tuple containing the parsed floating-point number
         and optional units. Returns (None, None) if no match is found.
     """
-    units = " sec,1 second,1 min,60 minute,60 h,3600 hr,3600 hour,3600 hrs,3600 s,1 m,60"
-    d = {}
-    for pair in units.split():
-        key, value = pair.split(",")
-        d[key] = float(value)
-
-    # Drop through no units
-    scale = 60.0
-    for key, value in d.items():
-        if input_string.endswith(key):
-            scale = value
-            input_string = input_string[:-len(key)]
-            break
-
-    minutes = float(input_string) * scale / 60.0
-
-    if minutes < 0.0:
-        raise splint.SplintException("TTL must be greater than or equal to 0.0")
-
-    return minutes
+    scale = {"seconds":60,"second":60,"sec":60,"s":60,"m":1,"min":1,"minute":1,"minutes":1,"h":1/60.,"hr":1/60.,"hrs":1/60.,"hour":1/60.}
+    pattern = re.compile(r"([+-]?\d+\.\d*|\d*\.\d+|[-+]?\d+)\s*(hour|hr|h|minute|min|m|sec|second|sec|s)?")
+    matches = re.findall(pattern, input_string)
+    if len(matches) == 1 and len(matches[0]) == 2:
+        if matches[0][1]=='':
+            unit = "m"
+        else:
+            unit = matches[0][1]
+        number = float(matches[0][0])/scale[unit]
+        if number < 0.0:
+            raise splint.SplintException("TTL must be greater than or equal to 0.0")
+        return number
 
 
 def attributes(

@@ -208,7 +208,7 @@ async def check_phase(phases: str) -> dict:
 
     Using Python requests library:
     import requests
-    response = requests.get(f"http://<your_host>:<port>/splint/level_lt/{level}")
+    response = requests.get(f"http://<your_host>:<port>/splint/phases/{phases}")
     print(response.json())
     """
     prep_rules()
