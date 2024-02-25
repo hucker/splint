@@ -7,13 +7,13 @@ import src.splint.splint_attribute as splint_attribute
 def test_attr_ttl():
     tests = [
         ["0", ["m", "minute", "min"], 0],
-        ["0", ["s", "sec", "second"], 0],
+        ["0", ["s", "sec", "second","seconds"], 0],
         ["0", ["h", "hr", "hour"], 0],
         ["1", [""], 1.0],
         ["10.5", [""], 10.5],
         ["0.25", [""], 0.25],
         ["0.5", ["h", "hr", "hour"], 30],
-        ["1", ["h", "hr", "hour"], 60],
+        ["1", ["h", "hr", "hour","hours"], 60],
         ["2", ["h", "hr", "hour"], 120],
         ["30", ["s", "sec", "second"], .5],
         ["60", ["s", "sec", "second"], 1],
@@ -21,7 +21,7 @@ def test_attr_ttl():
         ["1", ["m", "minute", "min"], 1],
         [".5", ["m", "minute", "min"], 0.5],
         ["10", ["m", "minute", "min"], 10],
-        ["101.5", ["m", "minute", "min"], 101.5],
+        ["101.5", ["m", "minute", "min","minutes"], 101.5],
 
     ]
     seps = ['', ' ', '\t', '   ']
@@ -35,8 +35,8 @@ def test_attr_ttl():
 
 def test_ttl_fail():
     units = [
-        ["m", "minute", "min"],
-        ["s", "sec", "second"],
+        ["m", "minute", "min","minutes"],
+        ["s", "sec", "second","seconds"],
         ["h", "hr", "hour",'hrs'],
         [""]
     ]

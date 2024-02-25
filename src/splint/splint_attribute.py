@@ -39,7 +39,7 @@ def _parse_ttl_string(input_string:str)->float:
         and optional units. Returns (None, None) if no match is found.
     """
     scale = {"seconds":60,"second":60,"sec":60,"s":60,"m":1,"min":1,"minute":1,"minutes":1,"h":1/60.,"hr":1/60.,"hrs":1/60.,"hour":1/60.}
-    pattern = re.compile(r"([+-]?\d+\.\d*|\d*\.\d+|[-+]?\d+)\s*(hour|hr|h|minute|min|m|sec|second|sec|s)?")
+    pattern = re.compile(r"([+-]?\d+\.\d*|\d*\.\d+|[-+]?\d+)\s*(hour|hrs|hr|h|minutes|minute|min|m|seconds|second|sec|s)?")
     matches = re.findall(pattern, input_string)
     if len(matches) == 1 and len(matches[0]) == 2:
         if matches[0][1]=='':
