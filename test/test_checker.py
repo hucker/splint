@@ -31,6 +31,49 @@ def func3():
     return splint.SplintFunction(func3)
 
 
+@pytest.fixture
+def func4():
+    @splint.attributes(finish_on_fail=True)
+    def func():
+        """ Because finish on fail is set, this function will only yield 3 results."""
+        yield splint.SplintResult(status=True, msg="It works1")
+        yield splint.SplintResult(status=True, msg="It works2")
+        yield splint.SplintResult(status=False, msg="It works3")
+        yield splint.SplintResult(status=True, msg="It works4")
+
+    return splint.SplintFunction(func)
+
+def test_finish_on_fail(func4):
+    """ Because func4 has finish_on_fail is set, this function will only yield 3 results rather then 4"""
+    ch =  splint.SplintChecker(functions=[func4],auto_setup=True)
+    results = ch.run_all()
+    assert len(results) == 3
+    assert results[0].status is True
+    assert results[1].status is True
+    assert results[2].status is False
+
+
+def test_abort_on_fail(func4):
+    """
+    Abort on fail exits the whole rule checking engine.
+
+    """
+
+    # When we run the first case where the same function with finish on fail is called
+    # twice, this should return 3 results for each run, since the func is configured to
+    # return after the first false.  6 total results.
+    ch =  splint.SplintChecker(functions=[func4,func4],auto_setup=True)
+    results = ch.run_all()
+    assert len(results) == 3+3
+
+    # Now we'll set it up again with the abort on fail set to true.  This will fail out
+    # immediately on the whole test when the first fail occurs.
+    ch =  splint.SplintChecker(functions=[func4,func4],auto_setup=True,abort_on_fail=True)
+    results = ch.run_all()
+    assert len(results) == 3
+
+
+
 def test_function_list(func1, func2):
     """Test that run_all returns results"""
 

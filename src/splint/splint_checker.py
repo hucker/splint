@@ -130,7 +130,8 @@ class SplintChecker:
             progress_callback=None,
             score_strategy: ScoreStrategy | None = None,
             env=None,
-            auto_setup: bool = False
+            abort_on_fail=False,
+            auto_setup: bool = False,
     ):
         """
         User can provide a list of packages, modules and functions to check.
@@ -191,6 +192,9 @@ class SplintChecker:
 
         # Install a default if needed (should this be a list?)
         self.progress_callback = progress_callback or quiet_progress
+
+        # If any fail result occurs stop processing.
+        self.abort_on_fail = abort_on_fail
 
         self.collected = []
         self.pre_collected = []
@@ -308,19 +312,33 @@ class SplintChecker:
             _type_: SplintResult
         """
 
+        class AbortYieldException(Exception):
+            """Allow breaking out of multi level loop without state variables"""
+            pass
+
         # Note that it is possible for the collected list to be
         # empty.  This is not an error condition.  It is possible
         # that the filter functions have filtered out all the
         # functions.
         self.progress_callback("Start Rule Check")
         self.start_time = dt.datetime.now()
-        for function in self.collected:
-            function.env = env
-            self.progress_callback(f"Func Start {function.function_name}")
-            for result in function():
-                yield result
-                self.progress_callback("", result)
-            self.progress_callback("Func done.")
+        try:
+            for function in self.collected:
+                function.env = env
+                self.progress_callback(f"Func Start {function.function_name}")
+                for result in function():
+                    yield result
+                    if self.abort_on_fail and result.status is False:
+                        raise AbortYieldException()
+
+                    if function.finish_on_fail and result.status == False:
+                        self.progress_callback(f"Early exit. {function.function_name} failed.")
+                        break
+                    self.progress_callback("", result)
+                self.progress_callback("Func done.")
+        except AbortYieldException:
+            self.progress_callback(f"Abort on fail: {function.function_name}")
+
         self.end_time = dt.datetime.now()
         self.progress_callback("Rule Check Complete.")
 

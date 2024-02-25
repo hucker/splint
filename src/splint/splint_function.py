@@ -120,7 +120,7 @@ class SplintFunction:
         else:
             raise SplintException("post_sr_hooks must be a list")
 
-        # Get function attributes, using defaults if the user did not specify attributes.
+        # This really should be a class rather than having to repeat yourself.
         self.tag = get_attribute(function, "tag")
         self.level = get_attribute(function, "level")
         self.phase = get_attribute(function, "phase")
@@ -128,6 +128,7 @@ class SplintFunction:
         self.skip = get_attribute(function, "skip")
         self.ruid = get_attribute(function, "ruid")
         self.ttl_minutes = get_attribute(function, "ttl_minutes")
+        self.finish_on_fail = get_attribute(function, "finish_on_fail")
 
         # Support Time To Live using the return value of time.time.  Resolution of this
         # is on the order of 10e-6 depending on OS.  In my case this is WAY more than I

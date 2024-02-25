@@ -268,7 +268,7 @@ def group_by(results: List[SplintResult], keys: List[str]):
 
     Args:
         results (List[SplintResult]): The list of results to group.
-        keys (List[str]): The list of keys to group by.
+        keys (List[str]): The list of keys to group by.S
 
     """
 

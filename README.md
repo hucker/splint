@@ -19,7 +19,7 @@ independent tests, which are then managed by the framework. This led to the crea
 to run a set of rules against a system
 and get detailed results and a simple "score" for the run. If all tests pass you get 100% and a long list of passes. 
 
-If you there are failures you get detailed information about what failed as well as a score < 100%.
+If there are failures you get detailed information about what failed as well as a score < 100%.
 
 `Splint` generalizes this pattern.
 
@@ -38,11 +38,38 @@ need to be corrected to make your system pass.  It does so by checking the outpu
 your process.  Ideally these outputs are just the normal output of your daily work flow, rather than abiding by a
 rigid system. If you all agree on the ruleset, people will work in peace driving he error count to 0.
 
-## Why not pytest?
+## Why not pytest or great expectations?
 
-Good question.  `Pytest` is big and complicated while `splint` is small and less complicated. `Pytest` is for code and 
-the ways that code can break, it is tied intricately to `python`. If you have a huge set of rules and have a team 
-managing them, `pytest` might be your answer, but probably not.  It solves a similar but different problem.
+Good question.
+
+`pytest` is:  
+
+1. big and complicated, 
+2. consumed by developers,
+2. code first, and tied to `python`,
+3. made to be integrated into IDEs.
+
+`ge` is:
+1. big and complicated,
+2. consumed by data scientists,
+3. data first,
+4. is and integrated in data pipelines and notebooks.
+
+`splint` is:
+1. smaller and less complicated,
+2. consumed by end users,
+2. tests any rules,
+3. provides detailed information about the testing results,
+4. supports scoring of rule sets,
+5. has included common building block rules.
+
+The intent of `splint` is to make rules for everything for your team, project, or your company's order system, so 
+you can `lint` your task.  I want to see that all of our log files have changed in the last hr, 
+that queuing folders have files no more than 2 minutes old, that X transactions have hit our database, that log 
+files have no Critical errors, that the data in a result CSV file has 10 correct columns and was updated on Monday,
+and that my streamlit and FastAPI apps are accepting requests.  I want to show it on a web page so the whole team
+can see the status, filter the results for Fails have your action items for the day.
+
 
 ## Getting Started
 
@@ -159,10 +186,10 @@ as they are checked.
 
 ## Rule Integrations
 
-To simplify getting started there are some out of the box rules you can call to check files and folders on your file system
+To simplify getting started, there are included rules you can call to check files and folders on your file system
 dataframes and web pages.  These integrations make many common checks 1-liners.
 
-The rule shown below uses the rule_large_files function to look at all the files in a folder and report status on file
+The rule shown below uses the `rule_large_files` function to look at all the files in a folder and report status on file
 sizes > 100k.
 
 ```python
@@ -176,11 +203,41 @@ sizes > 100k.
 
 The low level output of a `SplintFunction` are `SplintResults`. Each `SplintResult` is trivially converted to a `json`
 record or a line in a CSV file for processing by other tools. It is very easy to connect things up to 
-`Streamlit`, `FastAPI` or a `typer` CLI app by json-ifying the results.
+`Streamlit`, `FastAPI` or a `typer` CLI app by json-ifying the results.  Each test can have a lot of data attached
+to it, if needed, but from the end user perspective the `msg` and `status` are what is important.
+
+```json
+{
+  "result": {
+    "status": true,
+    "func_name": "check_result_1_1",
+    "pkg_name": "",
+    "module_name": "check_1",
+    "msg": "Result for test 1.1",
+    "info_msg": "",
+    "warn_msg": "",
+    "doc": "Check result 1.1 docstring",
+    "runtime_sec": 0.00027108192443847656,
+    "except_": "None",
+    "traceback": "",
+    "skipped": false,
+    "weight": 100,
+    "tag": "tag1",
+    "level": 1,
+    "phase": "prototype",
+    "count": 1,
+    "ruid": "1_1",
+    "ttl_minutes": 0,
+    "mit_msg": "",
+    "owner_list": []
+  }
+}
+```
+
 
 ## What are scores?
 
-The idea of scoring is simple by the details are complex. Scores let you look at the results of all of your checks
+The idea of scoring is simple but the details are complex. Scores let you look at the results of all of your checks
 and reduce it to number from 0 to 100. A simple percentage of pass fail results can work...but what if some rules are "
 easy" while others are hard? What if some test have 100's of ways to fail (each line in a spreadsheet needs a comment) 
 but has only one result when there are no failures?  It turns out you need weights and ways to aggregate results to 
@@ -192,7 +249,7 @@ but it is in work creating scoring by function.
 ## What are @attributes
 
 Each rule function can be assigned attributes that define metadata about the rule function.  Attributes are at the heart
-of how `splint` allows you to filter, sort, select tests to run and view.
+of how `splint` allows you to filter, sort, select tests to run and view by adding decorators to your check funcitons.
 
  1. `tag` zero or more strings that can be used for filtering results.
  2. `phase` a single string that indicates a phase of testing/development
@@ -201,6 +258,7 @@ of how `splint` allows you to filter, sort, select tests to run and view.
  5. `skip` indicates the function should be skipped.
  6. `ruid` or rule-id is a unique identifier for a rule. If one test as a rule all of them must.
  7. `ttl_minutes` allow caching of results so expensive tests don't need to be rerun  which is only useful in cases where you run tests over and over
+8.  `finish_on_fail` aborts processing of splint function on the first failure
 
 
 ## What are Rule Ids (RUIDS)?
@@ -214,9 +272,9 @@ that are not unique.
 What do you get for this? You now have fine grain control to the function level AND the user level to enable/disable
 checks. A `pylint` analogy is that you can turn off-line width checks globally for you project setting values in 
 the `.lintrc` file. In the case of splint, perhaps part of your system has one set of rules and another part of 
-the system has has the same set but some don't apply.
+the system has the same set but some don't apply.
 Or perhaps in an early phase development a subset of rules is applied, and at another a different set of rules is applied. 
-RUIDS allow you to set this up with "simple" config files.
+RUIDS allow you to set function level granularity with "simple" config files.
 
 RUIDs can be anything hashable (but comme on, they should be short strings). Smart-ish values like File-001, Fill-002, '
 smarter' or File-Required, File-Too-Old. Whatever makes sense on the project. As a general rule smart naming conventions 

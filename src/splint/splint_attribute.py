@@ -23,6 +23,7 @@ DEFAULT_WEIGHT = 100  # The nominal weight for a rule should be a positive numbe
 DEFAULT_SKIP = False  # Set to true to skip a rule
 DEFAULT_TTL_MIN = 0  # Time to live for check functions.
 DEFAULT_RUID = ""
+DEFAULT_FINISH_ON_FAIL=False # If a splint function yields a fail result stop processing the function
 
 
 def _parse_ttl_string(input_string: str) -> Tuple[Optional[float], Optional[str]]:
@@ -67,6 +68,7 @@ def attributes(
         skip=DEFAULT_SKIP,
         ruid=DEFAULT_RUID,
         ttl_minutes=DEFAULT_TTL_MIN,
+        finish_on_fail=DEFAULT_FINISH_ON_FAIL,
 
 ):
     """
@@ -87,6 +89,7 @@ def attributes(
         func.skip = skip
         func.ruid = ruid
         func.ttl_minutes = ttl_minutes
+        func.finish_on_fail = finish_on_fail
         return func
 
     return decorator
@@ -104,6 +107,7 @@ def get_attribute(func, attr, default_value=None):
         "skip": DEFAULT_SKIP,
         "ruid": DEFAULT_RUID,
         "ttl_minutes": DEFAULT_TTL_MIN,
+        "finish_on_fail": DEFAULT_FINISH_ON_FAIL,
     }
 
     default = default_value or defs[attr]
