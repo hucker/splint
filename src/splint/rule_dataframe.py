@@ -95,16 +95,14 @@ def rule_validate_df_schema(df: pd.DataFrame,
         if min_rows > max_rows:
             raise SplintException("min_rows must be less than or equal to max_rows.")
 
-        if len(df) >= min_rows and len(df) <= max_rows:
-            yield SR(status=True,
-                     msg=f"Data frame has {len(df)} rows. Range = {min_rows} - {max_rows} rows.")
+        if min_rows <= len(df) <= max_rows:
+            yield SR(status=True, msg=f"Data frame has {len(df)} rows. Range = {min_rows} - {max_rows} rows.")
         else:
-            yield SR(status=False,
-                     msg=f"Data frame has {len(df)} rows. Range = {min_rows} - {max_rows} rows.")
+            yield SR(status=False, msg=f"Data frame has {len(df)} rows. Range = {min_rows} - {max_rows} rows.")
 
     if not any([columns, no_null_columns, int_columns, float_columns, str_columns, row_min_max, allowed_values]):
         yield SR(status=False,
-                 msg="There are no columns to check")
+                 msg="There are no columns to check.")
 
 
 def rule_validate_df_values_by_col(df: pd.DataFrame,
@@ -151,8 +149,8 @@ def rule_validate_df_values_by_col(df: pd.DataFrame,
        and a message describing the result.
     """
 
-    if df is None:
-        raise SplintException("Data frame is None.")
+    if df is None or df.empty:
+        raise SplintException("Dataframe is empty or None")
 
     # Let lazy people specify a columns by string
     positive = positive.split(',') if isinstance(positive, str) else positive
@@ -163,10 +161,11 @@ def rule_validate_df_values_by_col(df: pd.DataFrame,
     correlation = correlation.split(',') if isinstance(correlation, str) else correlation
     probability = probability.split(',') if isinstance(probability, str) else probability
 
+    # min_/max_ are (float,str) or (float,list),
     if min_:
-        min_ = (min[0], min_[1].split(',')) if isinstance(min_[1], str) else min_
+        min_ = (min_[0], min_[1].split(',')) if isinstance(min_[1], str) else min_
     if max_:
-        max_ = (max[0], max_[1].split(',')) if isinstance(max_[1], str) else max_
+        max_ = (max_[0], max_[1].split(',')) if isinstance(max_[1], str) else max_
 
     conditions = [positive, non_negative, negative, non_positive, percent, min_, max_, probability, correlation]
 
@@ -219,6 +218,7 @@ def rule_validate_df_values_by_col(df: pd.DataFrame,
                 yield SR(status=True, msg=f"All values in {col} are > {val}")
             else:
                 yield SR(status=False, msg=f"Not all values in {col} are > {val}")
+
     if max_:
         val, cols = max_
         for col in cols:
@@ -239,4 +239,4 @@ def rule_validate_df_values_by_col(df: pd.DataFrame,
             if np.all(df[col] <= 0):
                 yield SR(status=True, msg=f"All values in {col} are non-positive.")
             else:
-                yield SR(status=False, msg=f"Not all valus in {col} are non-positive.")
+                yield SR(status=False, msg=f"Not all values in {col} are non-positive.")
