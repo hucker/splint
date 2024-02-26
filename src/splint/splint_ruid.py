@@ -11,7 +11,7 @@ from .splint_package import SplintPackage
 
 def module_ruids(module: SplintModule) -> List[str]:
     """get a list of all the RUIDS in a module"""
-    return [function.ruid for function in module.functions]
+    return [function.ruid for function in module.check_functions]
 
 
 def package_ruids(package: SplintPackage) -> List[str]:
