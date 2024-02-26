@@ -24,7 +24,7 @@ def simple2():
 
 def test_json(simple1,simple2):
     """Test that the as_dict method serializes  nicely"""
-    ch = splint.SplintChecker(functions=[simple1,simple2],auto_setup=True)
+    ch = splint.SplintChecker(check_functions=[simple1, simple2], auto_setup=True)
     results = ch.run_all()
     d = ch.as_dict()
     assert d['function_count'] == 2

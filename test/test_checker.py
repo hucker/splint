@@ -45,7 +45,7 @@ def func4():
 
 def test_finish_on_fail(func4):
     """ Because func4 has finish_on_fail is set, this function will only yield 3 results rather then 4"""
-    ch =  splint.SplintChecker(functions=[func4],auto_setup=True)
+    ch =  splint.SplintChecker(check_functions=[func4], auto_setup=True)
     results = ch.run_all()
     assert len(results) == 3
     assert results[0].status is True
@@ -62,13 +62,13 @@ def test_abort_on_fail(func4):
     # When we run the first case where the same function with finish on fail is called
     # twice, this should return 3 results for each run, since the func is configured to
     # return after the first false.  6 total results.
-    ch =  splint.SplintChecker(functions=[func4,func4],auto_setup=True)
+    ch =  splint.SplintChecker(check_functions=[func4, func4], auto_setup=True)
     results = ch.run_all()
     assert len(results) == 3+3
 
     # Now we'll set it up again with the abort on fail set to true.  This will fail out
     # immediately on the whole test when the first fail occurs.
-    ch =  splint.SplintChecker(functions=[func4,func4],auto_setup=True,abort_on_fail=True)
+    ch =  splint.SplintChecker(check_functions=[func4, func4], auto_setup=True, abort_on_fail=True)
     results = ch.run_all()
     assert len(results) == 3
 
@@ -79,7 +79,7 @@ def test_function_list(func1, func2):
 
     funcs = [func1, func2]
 
-    ch = splint.SplintChecker(functions=funcs,auto_setup=True)
+    ch = splint.SplintChecker(check_functions=funcs, auto_setup=True)
     results = ch.run_all()
 
     assert len(results) == 2
@@ -93,7 +93,7 @@ def test_checker_tag_ordering(func1, func2, func3):
 
     # should end up func1,func2,func3
     funcs = [func3, func1, func2]
-    ch = splint.SplintChecker(functions=funcs)
+    ch = splint.SplintChecker(check_functions=funcs)
     ch.pre_collect()
     run_list = ch.prepare(order_function=splint.splint_checker.orderby_tag())
     assert run_list == [func1, func2, func3]
@@ -103,7 +103,7 @@ def test_checker_ruid_ordering(func1, func2, func3):
     """Verify we can order tests by lambda over ruids"""
 
     funcs = [func3, func1, func2]
-    ch = splint.SplintChecker(functions=funcs)
+    ch = splint.SplintChecker(check_functions=funcs)
     ch.pre_collect()
     run_list = ch.prepare(order_function=splint.splint_checker.orderby_ruid())
     assert run_list == [func1, func2, func3]
@@ -112,7 +112,7 @@ def test_checker_ruid_ordering(func1, func2, func3):
 def test_filtered_function_list(func1, func2):
     """Test building a custom filter function"""
 
-    ch = splint.SplintChecker(functions=[func1, func2])
+    ch = splint.SplintChecker(check_functions=[func1, func2])
 
     def filter1(f: splint.SplintFunction):
         return f.ruid == "suid_1"
@@ -145,7 +145,7 @@ def test_builtin_filter_ruids(func1, func2, func3):
     # Functions in random order
     funcs = [func3, func1, func2]
 
-    ch = splint.SplintChecker(functions=funcs)
+    ch = splint.SplintChecker(check_functions=funcs)
     ch.pre_collect()
     s_funcs = ch.prepare(filter_functions=[splint.exclude_ruids(["suid_1"])])
 
@@ -157,7 +157,7 @@ def test_builtin_filter_ruids(func1, func2, func3):
     assert len(s_funcs) == 1
     assert set(s_funcs) == {func3}
 
-    ch = splint.SplintChecker(functions=funcs)
+    ch = splint.SplintChecker(check_functions=funcs)
     ch.pre_collect()
     s_funcs = ch.prepare(filter_functions=[splint.keep_ruids(["suid_3"])])
 
@@ -178,7 +178,7 @@ def test_builtin_filter_phase(func1, func2, func3):
     # Functions in random order
     funcs = [func3, func1, func2]
 
-    ch = splint.SplintChecker(functions=funcs)
+    ch = splint.SplintChecker(check_functions=funcs)
     ch.pre_collect()
     s_funcs = ch.prepare(filter_functions=[splint.exclude_phases(["p1"])])
 
@@ -191,7 +191,7 @@ def test_builtin_filter_phase(func1, func2, func3):
     assert set(s_funcs) == {func3}
 
 
-    ch = splint.SplintChecker(functions=funcs)
+    ch = splint.SplintChecker(check_functions=funcs)
     ch.pre_collect()
     s_funcs = ch.prepare(filter_functions=[splint.keep_phases(["p3"])])
 
@@ -210,7 +210,7 @@ def test_builtin_filter_level(func1, func2, func3):
     # Functions in random order
     funcs = [func3, func1, func2]
 
-    ch = splint.SplintChecker(functions=funcs)
+    ch = splint.SplintChecker(check_functions=funcs)
     ch.pre_collect()
     s_funcs = ch.prepare(filter_functions=[splint.exclude_levels([1])])
 
@@ -222,7 +222,7 @@ def test_builtin_filter_level(func1, func2, func3):
     assert len(s_funcs) == 1
     assert set(s_funcs) == {func3}
 
-    ch = splint.SplintChecker(functions=funcs)
+    ch = splint.SplintChecker(check_functions=funcs)
     ch.pre_collect()
     s_funcs = ch.prepare(filter_functions=[splint.keep_levels([3])])
 
@@ -241,7 +241,7 @@ def test_builtin_filter_tags(func1, func2, func3):
     # Functions in random order
     funcs = [func3, func1, func2]
 
-    ch = splint.SplintChecker(functions=funcs)
+    ch = splint.SplintChecker(check_functions=funcs)
     ch.pre_collect()
     s_funcs = ch.prepare(filter_functions=[splint.exclude_tags(['t1'])])
 
@@ -254,7 +254,7 @@ def test_builtin_filter_tags(func1, func2, func3):
     assert set(s_funcs) == {func3}
 
 
-    ch = splint.SplintChecker(functions=funcs)
+    ch = splint.SplintChecker(check_functions=funcs)
     ch.pre_collect()
     s_funcs = ch.prepare(filter_functions=[splint.keep_tags(['t3'])])
 
@@ -273,7 +273,7 @@ def test_null_check():
     with pytest.raises(splint.SplintException):
         funcs = []
 
-        ch = splint.SplintChecker(functions=funcs,auto_setup=True)
+        ch = splint.SplintChecker(check_functions=funcs, auto_setup=True)
 
         _ = ch.run_all()
 
@@ -282,14 +282,14 @@ def test_null_checker_types():
     bad_list_type = [1]
     bad_value_type = 1
     with pytest.raises(splint.SplintException):
-        _ = splint.SplintChecker(functions=bad_list_type)
+        _ = splint.SplintChecker(check_functions=bad_list_type)
     with pytest.raises(splint.SplintException):
         _ = splint.SplintChecker(modules=bad_list_type)
     with pytest.raises(splint.SplintException):
         _ = splint.SplintChecker(packages=bad_list_type)
 
     with pytest.raises(splint.SplintException):
-        _ = splint.SplintChecker(functions=bad_value_type)
+        _ = splint.SplintChecker(check_functions=bad_value_type)
     with pytest.raises(splint.SplintException):
         _ = splint.SplintChecker(modules=bad_value_type)
     with pytest.raises(splint.SplintException):
@@ -301,7 +301,7 @@ def test_filter_all(func1, func2):
 
     filters = [splint.exclude_ruids(["suid_1", "suid_2"])]
 
-    ch = splint.SplintChecker(functions=[func1, func2])
+    ch = splint.SplintChecker(check_functions=[func1, func2])
     ch.pre_collect()
     ch.prepare(filter_functions=filters)
 
@@ -310,7 +310,7 @@ def test_filter_all(func1, func2):
 
 
 def test_as_dict(func1, func2):
-    ch = splint.SplintChecker(functions=[func1, func2],auto_setup=True)
+    ch = splint.SplintChecker(check_functions=[func1, func2], auto_setup=True)
     _ = ch.run_all()
     d = ch.as_dict()
     assert isinstance(d, dict)
@@ -327,7 +327,7 @@ def test_as_dict(func1, func2):
 
 def test_progress(capsys, func1, func2):
     funcs = [func1, func2]
-    ch = splint.SplintChecker(functions=funcs, progress_callback=splint.debug_progress,auto_setup=True)
+    ch = splint.SplintChecker(check_functions=funcs, progress_callback=splint.debug_progress, auto_setup=True)
     _ = ch.run_all()
     captured = capsys.readouterr()
     assert captured[0] == 'Start Rule Check\nFunc Start func1\n+Func done.\nFunc Start func2\n+Func done.\nRule Check Complete.\nScore = 100.0\n'

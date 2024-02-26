@@ -126,7 +126,7 @@ class SplintChecker:
             self,
             packages: List[SplintPackage] | None = None,
             modules: List[SplintModule] | None = None,
-            functions: List[SplintFunction] | None = None,
+            check_functions: List[SplintFunction] | None = None,
             progress_callback=None,
             score_strategy: ScoreStrategy | None = None,
             env=None,
@@ -155,7 +155,7 @@ class SplintChecker:
             raise SplintException("Packages must be a list of SplintPackage objects.")
 
         if isinstance(modules, list) and len(modules) >= 1:
-            self.modules = modules
+            self.modules:List[SplintModule] = modules
             for m in modules:
                 if not isinstance(m, SplintModule):
                     raise SplintException(
@@ -168,16 +168,16 @@ class SplintChecker:
         else:
             raise SplintException("Modules must be a list of SplintModule objects.")
 
-        if isinstance(functions, list) and len(functions) >= 1:
-            self.functions: List[SplintFunction] = functions
+        if isinstance(check_functions, list) and len(check_functions) >= 1:
+            self.check_functions: List[SplintFunction] = check_functions
 
-            for f in functions:
+            for f in check_functions:
                 if not isinstance(f, SplintFunction):
                     raise SplintException(
                         "Functions must be a list of SplintFunction objects."
                     )
-        elif not functions:
-            self.functions: List[SplintFunction] = []
+        elif not check_functions:
+            self.check_functions: List[SplintFunction] = []
         else:
             raise SplintException("Functions must be a list of SplintFunction objects.")
 
@@ -202,7 +202,7 @@ class SplintChecker:
         self.end_time = dt.datetime.now()
         self.results = []
 
-        if not self.packages and not self.modules and not self.functions:
+        if not self.packages and not self.modules and not self.check_functions:
             raise SplintException(
                 "You must provide at least one package, module or function to check."
             )
@@ -227,14 +227,14 @@ class SplintChecker:
 
         for pkg in self.packages:
             for module in pkg.modules:
-                for function in module.functions:
+                for function in module.check_functions:
                     self.pre_collected.append(function)
 
         for module in self.modules:
-            for function in module.functions:
+            for function in module.check_functions:
                 self.pre_collected.append(function)
 
-        for function in self.functions:
+        for function in self.check_functions:
             self.pre_collected.append(function)
 
         # List of all possible functions that could be run
@@ -292,6 +292,19 @@ class SplintChecker:
             f"There are duplicate or missing RUIDS: {ruid_issues(ruids)}"
         )
 
+    def load_environments(self):
+
+        # Prime the environment with top level config
+        # This should be json-able things
+        full_env = self.env.copy()
+
+        for m in self.modules:
+            for env_func in m.env_functions:
+                # TODO: There should be exceptions on collisions
+                full_env.update(env_func(full_env))
+        return full_env
+
+
     def ruids(self):
         """
         Return a list of all the RUIDs in the collected functions.
@@ -322,15 +335,26 @@ class SplintChecker:
         # functions.
         self.progress_callback("Start Rule Check")
         self.start_time = dt.datetime.now()
+
+
         try:
+
+
+            env = self.load_environments()
+
             for function in self.collected:
+
+                # Lots of magic here
                 function.env = env
+
                 self.progress_callback(f"Func Start {function.function_name}")
                 for result in function():
                     yield result
                     if self.abort_on_fail and result.status is False:
+                        # Stop the entire test
                         raise AbortYieldException()
 
+                    # Stop yielding from a function
                     if function.finish_on_fail and result.status == False:
                         self.progress_callback(f"Early exit. {function.function_name} failed.")
                         break
@@ -405,7 +429,7 @@ class SplintChecker:
             "end_time": self.end_time,
             "duration_seconds": (self.end_time - self.start_time).total_seconds(),
 
-            "functions": [f.function_name for f in self.functions],
+            "functions": [f.function_name for f in self.check_functions],
             "passed_count": self.pass_count,
             "failed_count": self.fail_count,
             "skip_count": self.skip_count,
