@@ -413,16 +413,19 @@ Usage: splinter.py [OPTIONS]
 
 ## FastAPI Interface
 
-If you want your rule checking results to be runnable via a web API, you can use the `splinter.py` file to see how to
-trivially create a fast API app from your code. There are no changes required from your code to support a
-FastAPI interface. If you created `rule_ids` for all of your rule functions then they are all accessible via the
-API. If you didn't use `ruids` then you can run the whole set of functions.  The sample command line app is meant to 
-be a trivial example of how to hook up a `splint` ruleset to the web.
+To integrate your rule checking results with a web API using `FastAPI`, you can refer to the `splinter.py` file for a
+straightforward approach to creating a `FastAPI` app from your existing code. No changes are required in your code to 
+support a `FastAP`I interface. If you have created rule_ids for all of your rule functions, they will all be accessible
+via the API. Alternatively, if you haven't used rule_ids, you can run the entire set of functions or filter by 
+`tag`, `level` or `phase`. The sample command-line app serves as a simple example of how to connect a `splint` 
+ruleset to the web.
 
-Because `splint` uses python dictionaries to move result data around, connecting to a FastAPI interface is trivial.
-The `splinter` demo tool shows that this can be done with just a few lines of code to create an FastAPI interface.
+Integration with `FastAPI` is simple since it utilizes Python dicts for result data. 
+The splinter demo tool demonstrates that this can be achieved with just a few lines of code to 
+create a FastAPI interface.
 
-Just run with the --api flag and you'll see `uvicorn` startup your API.
+Simply run the command with the `--api` flag, and you'll see `uvicorn` startup your API.
+
 ```
 /Users/chuck/splint/.venv/bin/python splinter.py --pkg . --api 
 INFO:     Started server process [3091]
@@ -445,9 +448,10 @@ FastAPI example running some rules:
 ## TODO
 
 1. Implement `.splintrc` file and toml interface.
-2. Impliment the setup/teardown mechanism for enviroments.
+2. Implement the setup/teardown mechanism for environments using generators
 3. Clean up exceptions in rule functions
 4. Add streamlit example.
 5. Make pip installable.
 6. Fix issue with module having the same name.
 7. By function scoring
+8. the webapi check needs to verify nested data. 

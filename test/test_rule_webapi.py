@@ -1,6 +1,6 @@
 
 from src import splint
-
+from src.splint.rule_webapi import is_mismatch, verify_dicts
 
 
 def test_urls():
@@ -25,7 +25,6 @@ def test_bad_urls():
         assert not result.status
 
 
-        
 def test_bad_web_api():
     @splint.attributes(tag="tag")
     def check_rule1():
@@ -65,3 +64,41 @@ def test_web_api():
 
     for result in check_rule_bad_mass():
         assert not result.status
+
+
+
+
+def convert_integers_to_strings(d):
+    """This takes my integer test dictionaries and turns them into strings for test purposees"""
+    if not d:
+        return d
+    for key, value in d.items():
+        if isinstance(value, int):
+            d[key] = str(value)
+        elif isinstance(value, dict):
+            convert_integers_to_strings(value)
+    return d
+
+def test_get_difference():
+
+    tests = [
+        ({},{},None,'Null Test'),
+        ({'a':1},{'a':1},None,'Simple pass'),
+        ({'a':1},{'a':2},{'a':1},'Simple fail'),
+        ({'a':1},{'A':1},{'a':1},'Simple fail'),
+        ({'a':1},{'b':1},{'a':1},'Simple no key'),
+        ({'a': 1, 'b': 2, 'c': {'d': 3, 'e': 4}},{'a': 1, 'b': 2, 'c': {'d': 3, 'e': 5}},  {'c': {'e': 4}},"Nest diff"),
+        ({'a': 1, 'b': 2, 'c': {'d': 3, 'e': 4}}, {'a': 1, 'b': 2, 'c': {'d': 3, 'e': 4}, 'f': 6},None,'Nested diff'),
+    ]
+
+    for sub_set,main_set,expected_result,msg in tests:
+        result = is_mismatch(sub_set, main_set)
+        assert result == expected_result
+
+    # now convert to string values
+    for sub_set,main_set,expected_result,msg in tests:
+        sub_set = convert_integers_to_strings(sub_set)
+        main_set = convert_integers_to_strings(main_set)
+        expected_result = convert_integers_to_strings(expected_result)
+        result = is_mismatch(sub_set, main_set)
+        assert result == expected_result
