@@ -155,7 +155,7 @@ class SplintChecker:
             raise SplintException("Packages must be a list of SplintPackage objects.")
 
         if isinstance(modules, list) and len(modules) >= 1:
-            self.modules:List[SplintModule] = modules
+            self.modules: List[SplintModule] = modules
             for m in modules:
                 if not isinstance(m, SplintModule):
                     raise SplintException(
@@ -292,6 +292,7 @@ class SplintChecker:
             f"There are duplicate or missing RUIDS: {ruid_issues(ruids)}"
         )
 
+
     def load_environments(self):
 
         # Prime the environment with top level config
@@ -304,7 +305,6 @@ class SplintChecker:
                 full_env.update(env_func(full_env))
         return full_env
 
-
     def ruids(self):
         """
         Return a list of all the RUIDs in the collected functions.
@@ -313,6 +313,24 @@ class SplintChecker:
             _type_: _description_
         """
         return sorted(set(f.ruid for f in self.collected))
+
+    def tags(self):
+        """
+        Return a list of all the tags in the collected functions.
+
+        Returns:
+            _type_: _description_
+        """
+        return sorted(set(f.tag for f in self.collected))
+
+    def phases(self):
+        """
+        Return a list of all the phases in the collected functions.
+
+        Returns:
+            _type_: _description_
+        """
+        return sorted(set(f.tag for f in self.collected))
 
     def yield_all(self, env=None):
         """
@@ -336,9 +354,7 @@ class SplintChecker:
         self.progress_callback("Start Rule Check")
         self.start_time = dt.datetime.now()
 
-
         try:
-
 
             env = self.load_environments()
 
@@ -382,7 +398,7 @@ class SplintChecker:
 
     @property
     def pass_count(self):
-        return len([r for r in self.results if r])
+        return len([r for r in self.results if r.status])
 
     @property
     def fail_count(self):
@@ -398,7 +414,23 @@ class SplintChecker:
 
     @property
     def module_count(self):
-        return len(self.modules)
+        cnt = len(self.modules)
+        for pkg in self.packages:
+            for m in pkg.modules:
+                cnt += 1
+
+        return cnt
+
+    @property
+    def module_names(self):
+        names = []
+        for module in self.modules:
+            names.append(module.name)
+        for pkg in self.packages:
+            for m in pkg.modules:
+                names.append(m.module_name)
+        return names
+
 
     @property
     def package_count(self):
@@ -408,7 +440,7 @@ class SplintChecker:
         header = {
             "package_count": self.package_count,
             "module_count": self.module_count,
-            "modules": [m.module_name for m in self.modules],
+            "modules": self.module_names,
             "function_count": self.function_count,
             "tags": sorted(list(set(f.tag for f in self.collected))),
             "levels": sorted(list(set(f.level for f in self.collected))),

@@ -1,6 +1,6 @@
 
 from src import splint
-from src.splint.rule_webapi import is_mismatch, verify_dicts
+from src.splint.rule_webapi import is_mismatch
 
 
 def test_urls():
