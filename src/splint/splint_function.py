@@ -161,6 +161,12 @@ class SplintFunction:
     def __call__(self, *args, **kwds) -> Generator[SplintResult, None, None]:
         """Call the user provided function and collect information about the result.
 
+        This is the heart of the system.  Each of these functions checks something
+        in the system using the provided function and feedback.  Each function is
+        a generator (or just a function that pretends to be a generator). This code
+        manages the details that we'd prefer to handle in the core of the system
+        rather than inside the check functions.
+
         Raises:
             SplintException: Exceptions are remapped to SplintExceptions for easier handling
 
@@ -180,7 +186,7 @@ class SplintFunction:
         # so we need a value to be set for count.
         count = 1
 
-        # If they want caching this takes care of it.
+        # If they want cacheing this takes care of it.
         if self.ttl_minutes * 60 + self.last_ttl_start > time.time():
             yield from self.last_results
             return
@@ -233,6 +239,7 @@ class SplintFunction:
                     start_time = time.time()
 
         except self.allowed_exceptions as e:
+            # Generically handle exceptions here so we can keep running.
             result = SplintResult(status=False)
             result = self.load_result(result, 0, 0, count)
             result.except_ = e
@@ -259,7 +266,7 @@ class SplintFunction:
         text = text or self.doc
 
         # Split the docstring into sections
-        sections = re.split(r"(\w+:)", self.doc)
+        sections = re.split(r"(^\w+:)", text,flags=re.MULTILINE)
 
         # Just return the first line of the header
         if not header:

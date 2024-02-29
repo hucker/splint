@@ -36,6 +36,7 @@ The distinction between Splint, `pytest`, and Great Expectations lies in their s
 - **Scope**: Primarily focused on code testing within the Python ecosystem.
 - **Complexity**: Comprehensive and feature-rich, tailored for developers and integrated into IDEs.
 - **Audience**: Consumed by developers, requiring a code-first approach.
+- **Visibility**: Limited to `assert True, msg='...'` while most messages are meant to be hidden.
 
 ### Great Expectations (ge):
 - **Scope**: Centered around data validation and expectation testing in data pipelines and notebooks.
@@ -46,6 +47,7 @@ The distinction between Splint, `pytest`, and Great Expectations lies in their s
 - **Scope**: Offers comprehensive linting and testing capabilities for any task or system.
 - **Complexity**: Lightweight and straightforward, designed for end users with detailed testing results and scoring.
 - **Audience**: Consumed by end users across various domains, facilitating rule-based testing with clear insights into testing results.
+- **Visibility**: Splint allows you to document each function and propagate standard doc strings into the results for detailed test information.
 
 Splint aims to democratize linting and testing by providing a tool that caters to teams, projects, or company systems,
 enabling easy linting across diverse domains. Whether it's monitoring log file changes, validating queuing 
@@ -240,11 +242,11 @@ Each rule function can be assigned attributes that define metadata about the rul
 of how `splint` allows you to filter, sort, select tests to run and view by adding decorators to your check funcitons.
 
  1. `tag` zero or more strings that can be used for filtering results.
- 2. `phase` a single string that indicates a phase of testing/development
+ 2. `phase` a single string that indicates a project phase like testing or development.
  3. `level` which is a numeric value that is better for greater than/less than tests
  4. `weight` a positive number indicating the weight of a functions results.  The nominal weight is 100.
  5. `skip` indicates the function should be skipped.
- 6. `ruid` or rule-id is a unique identifier for a rule. If one test as a rule all of them must.
+ 6. `ruid` or rule-id is a unique identifier for a rule. If one test has a rule-id all of them must id's.
  7. `ttl_minutes` allow caching of results so expensive tests don't need to be rerun  which is only useful in cases where you run tests over and over
 8.  `finish_on_fail` aborts processing of splint function on the first failure
 
@@ -351,6 +353,7 @@ Note that the variable names in the dictionary are the parameters that are passe
 
 ```python
 import splint
+import pandas as pd
 
 def env_setup(_:dict)->dict:
     # Auto-detected function that starts with "env_".  This function

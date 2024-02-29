@@ -1,6 +1,7 @@
 import datetime as dt
 from typing import List
 
+import splint
 from .splint_exception import SplintException
 from .splint_function import SplintFunction
 from .splint_module import SplintModule
@@ -82,8 +83,7 @@ def keep_phases(phases: List[str]):
     return filter_func
 
 
-def debug_progress(
-        msg=None, result: SplintResult = None
+def debug_progress(count, msg=None, result: SplintResult = None
 ):  # pylint: disable=unused-argument
     """Print a debug message."""
     if msg:
@@ -92,8 +92,27 @@ def debug_progress(
         print("+" if result.status else "-", end="")
 
 
-def quiet_progress(msg=None, result=None):  # pylint: disable=unused-argument
-    """Do nothing."""
+def quiet_progress(step=0,msg=None, result=None):  # pylint: disable=unused-argument
+    """
+    Updates and prints the progress in a quiet mode...as in does nothing in this case.
+
+    A real progress bar will use the step number to determine the progress compared
+    to the total number of split functions (not results).  A message is provided for
+    easy progress bars, while the last result is provided to allow streaming info.
+
+    Args:
+        steps (int): Total number of steps for the progress.
+        msg: Informational message for the current step in the process
+
+    Returns:
+        None
+
+    Example:
+        quiet_progress(10, 0.5)
+
+    This will do nothing since this function just shows the signature.
+    """
+    # Your function's code here
     pass
 
 
@@ -131,6 +150,7 @@ class SplintChecker:
             score_strategy: ScoreStrategy | None = None,
             env=None,
             abort_on_fail=False,
+            abort_on_exception=False,
             auto_setup: bool = False,
     ):
         """
@@ -170,12 +190,14 @@ class SplintChecker:
 
         if isinstance(check_functions, list) and len(check_functions) >= 1:
             self.check_functions: List[SplintFunction] = check_functions
-
+            f:SplintFunction = None
             for f in check_functions:
                 if not isinstance(f, SplintFunction):
                     raise SplintException(
                         "Functions must be a list of SplintFunction objects."
                     )
+                # Since we are building up a module from nothing we give it a generic name
+                f.module = "adhoc"
         elif not check_functions:
             self.check_functions: List[SplintFunction] = []
         else:
@@ -196,11 +218,14 @@ class SplintChecker:
         # If any fail result occurs stop processing.
         self.abort_on_fail = abort_on_fail
 
+        # If any exception occurs stop processing
+        self.abort_on_exception = abort_on_exception
+
         self.collected = []
         self.pre_collected = []
         self.start_time = dt.datetime.now()
         self.end_time = dt.datetime.now()
-        self.results = []
+        self.results:List[splint.SplintResult] = []
 
         if not self.packages and not self.modules and not self.check_functions:
             raise SplintException(
@@ -305,6 +330,7 @@ class SplintChecker:
                 full_env.update(env_func(full_env))
         return full_env
 
+    @property
     def ruids(self):
         """
         Return a list of all the RUIDs in the collected functions.
@@ -312,8 +338,20 @@ class SplintChecker:
         Returns:
             _type_: _description_
         """
-        return sorted(set(f.ruid for f in self.collected))
+        r = sorted(set(f.ruid for f in self.collected))
+        return r
 
+    @property
+    def levels(self):
+        """
+        Return a list of all the levls in the collected functions.
+
+        Returns:
+            _type_: _description_
+        """
+        return sorted(set(f.level for f in self.collected))
+
+    @property
     def tags(self):
         """
         Return a list of all the tags in the collected functions.
@@ -323,6 +361,7 @@ class SplintChecker:
         """
         return sorted(set(f.tag for f in self.collected))
 
+    @property
     def phases(self):
         """
         Return a list of all the phases in the collected functions.
@@ -330,7 +369,7 @@ class SplintChecker:
         Returns:
             _type_: _description_
         """
-        return sorted(set(f.tag for f in self.collected))
+        return sorted(set(f.phase for f in self.collected))
 
     def yield_all(self, env=None):
         """
@@ -351,58 +390,83 @@ class SplintChecker:
         # empty.  This is not an error condition.  It is possible
         # that the filter functions have filtered out all the
         # functions.
-        self.progress_callback("Start Rule Check")
+        count = 0
+        self.progress_callback(count,"Start Rule Check")
         self.start_time = dt.datetime.now()
 
         try:
 
             env = self.load_environments()
 
-            for function in self.collected:
+            result: splint.SplintResult=None
+
+            # Count here to enable progress bars
+            for count,function in enumerate(self.collected,start=1):
 
                 # Lots of magic here
                 function.env = env
 
-                self.progress_callback(f"Func Start {function.function_name}")
+                self.progress_callback(count,f"Func Start {function.function_name}")
                 for result in function():
                     yield result
+
+                    # Check early exits
                     if self.abort_on_fail and result.status is False:
-                        # Stop the entire test
+                        raise AbortYieldException()
+
+                    if self.abort_on_exception and result.except_:
                         raise AbortYieldException()
 
                     # Stop yielding from a function
                     if function.finish_on_fail and result.status == False:
-                        self.progress_callback(f"Early exit. {function.function_name} failed.")
+                        self.progress_callback(count,f"Early exit. {function.function_name} failed.")
                         break
-                    self.progress_callback("", result)
-                self.progress_callback("Func done.")
+                    self.progress_callback(count,"", result)
+                self.progress_callback(count,"Func done.")
+
         except AbortYieldException:
-            self.progress_callback(f"Abort on fail: {function.function_name}")
+            if self.abort_on_fail:
+                self.progress_callback(count,f"Abort on fail: {function.function_name}")
+            if self.abort_on_exception:
+                self.progress_callback(count,f"Abort on exception: {function.function_name}")
 
         self.end_time = dt.datetime.now()
-        self.progress_callback("Rule Check Complete.")
+        self.progress_callback(count,"Rule Check Complete.")
 
-    def run_all(self, env=None, auto_run=False):
+    def run_all(self, env=None):
         """
         List version of yield all.
 
         """
         self.results = list(self.yield_all(env=env))
         self.score = self.score_strategy(self.results)
-        self.progress_callback("Score = {:.1f}".format(self.score))
+        self.progress_callback(self.function_count,f"Score = {self.score:.1f}")
         return self.results
 
     @property
+    def clean_run(self):
+        """ No exceptions """
+        return all(not r.except_ for r in self.results)
+
+    @property
+    def perfect_run(self):
+        """No fails or skips"""
+        return all(r.status and not r.skipped for r in self.results)
+
+    @property
     def skip_count(self):
+        """Number of skips"""
         return len([r for r in self.results if r.skipped])
 
     @property
     def pass_count(self):
-        return len([r for r in self.results if r.status])
+        """Number of passes"""
+        return len([r for r in self.results if r.status and not r.skipped])
 
     @property
     def fail_count(self):
-        return len([r for r in self.results if not r.status])
+        """Number of fails"""
+        return len([r for r in self.results if not r.status and not r.skipped])
 
     @property
     def total_count(self):
@@ -445,7 +509,7 @@ class SplintChecker:
             "tags": sorted(list(set(f.tag for f in self.collected))),
             "levels": sorted(list(set(f.level for f in self.collected))),
             "phases": sorted(list(set(f.phase for f in self.collected))),
-            "ruids": self.ruids(),
+            "ruids": self.ruids,
             "score": self.score,
         }
         return header
