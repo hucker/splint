@@ -448,6 +448,13 @@ FastAPI swagger interiface:
 FastAPI example running some rules:
 ![FastAPI](./img/fastapi.png)
 
+## Streamlit Demo
+Integrating with the goodness of streamlit is a breeze.
+
+![Streamlit](./img/streamlit_setup.png)
+
+![Streamlit](./img/streamlit_results.png)
+
 ## TODO
 
 1. Implement `.splintrc` file and toml interface.
