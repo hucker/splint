@@ -379,9 +379,7 @@ def check_env2(number_config):
     yield splint.SR(status=number_config==42, msg=f"Got number {42}")
 ```
 
-## WTH does `splint` derive from?
 
-Splint is just a name that sounds cool. When I started this I thought system-lint.
 
 ## Command Line Demo App For `splinter`:
 
@@ -449,19 +447,24 @@ FastAPI example running some rules:
 ![FastAPI](./img/fastapi.png)
 
 ## Streamlit Demo
-Integrating with the goodness of streamlit is a breeze.
+Integrating with the goodness of `streamlit` is a breeze.  Here is a non-trivial example
+showing many of the features of `splint` in a `streamlit` app.
 
+Here is the setup using a couple of modules in a package folder:
 ![Streamlit](./img/streamlit_setup.png)
 
+And here are the results!
+
 ![Streamlit](./img/streamlit_results.png)
+
+## WTH does `splint` derive from?
+
+Splint is just a name that sounds cool. When I started this I thought system-lint.
 
 ## TODO
 
 1. Implement `.splintrc` file and toml interface.
 2. Implement the setup/teardown mechanism for environments using generators
-3. Clean up exceptions in rule functions
-4. Add streamlit example.
 5. Make pip installable.
 6. Fix issue with module having the same name.
 7. By function scoring
-8. the webapi check needs to verify nested data. 

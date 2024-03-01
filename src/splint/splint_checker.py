@@ -317,6 +317,32 @@ class SplintChecker:
             f"There are duplicate or missing RUIDS: {ruid_issues(ruids)}"
         )
 
+    def exclude_by_attribute(self, tags:List=None, ruids:List=None, levels:List=None, phases:List=None):
+        """ Run everything except the ones that match these attributes """
+
+        # Reference variables in a list
+        values = [tags, ruids, levels, phases]
+        # Handle mutable parameters
+        tags, ruids, levels, phases = [value or [] for value in values]
+
+        # Exclude attributes that don't match
+        self.collected =  [f for f in self.collected if f.tag not in tags and
+                                                        f.ruid not in ruids and
+                                                        f.level not in levels and
+                                                        f.phase not in phases]
+
+    def include_by_attribute(self, tags:List=None, ruids:List=None, levels:List=None, phases:List=None):
+        """ Run everything that matches these attributes """
+
+        values = [tags, ruids, levels, phases]
+        # Handle mutable parameters
+        tags, ruids, levels, phases = [value or [] for value in values]
+
+        # Only include the attributes that match
+        self.collected = [f for f in self.collected if (f.tag in tags) or
+                          (f.ruid in ruids) or
+                          (f.level in levels) or
+                          (f.phase in phases)]
 
     def load_environments(self):
 
