@@ -1,6 +1,6 @@
 import datetime as dt
-from typing import List
 from abc import ABC, abstractmethod
+from typing import List
 
 import splint
 from .splint_exception import SplintException
@@ -15,24 +15,29 @@ from .splint_score import ScoreByResult, ScoreStrategy
 class SplintProgress(ABC):
     def __init__(self):
         pass
+
     @abstractmethod
-    def __call__(self, current_iteration: int,max_iterations, text: str, result=None):
+    def __call__(self, current_iteration: int, max_iterations, text: str, result=None):
         pass
 
+
 class SplintNoProgress(SplintProgress):
-    def __call__(self, current_iteration: int,max_iterations, text: str, result=None):
+    def __call__(self, current_iteration: int, max_iterations, text: str, result=None):
         """Don't do anyting for progress.  THis is usful for testing."""
         pass
 
+
 class SplintDebugProgress(SplintProgress):
-    def __call__(self, current_iteration: int,max_iteration:int, msg: str, result=None):  # pylint: disable=unused-argument
+    def __call__(self, current_iteration: int, max_iteration: int, msg: str,
+                 result=None):  # pylint: disable=unused-argument
         """Print a debug message."""
         if msg:
             print(msg)
         if result:
             print("+" if result.status else "-", end="")
 
-def _param_str_list(params: List[str]|str,disallowed=' ,!@#$%^&*(){}[]<>~`-+=\t\n\'"') -> List[str]:
+
+def _param_str_list(params: List[str] | str, disallowed=' ,!@#$%^&*(){}[]<>~`-+=\t\n\'"') -> List[str]:
     """
     Allow user to specify "foo fum" instead of ["foo","fum"] or slightly more
     shady "foo" instead of ["foo"].  This is strictly for reducting friction
@@ -48,23 +53,23 @@ def _param_str_list(params: List[str]|str,disallowed=' ,!@#$%^&*(){}[]<>~`-+=\t\
 
     # Null case...on could argue they meant the empty string as a name
     # not gonna do that
-    if isinstance(params,str) and params.strip() == '':
+    if isinstance(params, str) and params.strip() == '':
         return []
 
     if isinstance(params, str):
         params = [p for p in params.split()]
 
     for param in params:
-        if not isinstance(param,str):
+        if not isinstance(param, str):
             raise SplintException(f"Invalid parameter list {param}")
         bad_chars = [c for c in disallowed if c in param]
         if bad_chars:
             raise SplintException(f"Parameter '{bad_chars}' has a space in it.  ")
 
-
     return params
 
-def _param_int_list(params: List[str]|int|str) -> List[int]:
+
+def _param_int_list(params: List[str] | int | str) -> List[int]:
     """
     Allow user to specify "1 2 3" instead of [1,2,3] or slightly more
     shady 1 instead of [1].  For small numbers this is a wash but for
@@ -79,19 +84,20 @@ def _param_int_list(params: List[str]|int|str) -> List[int]:
 
     """
 
-    if isinstance(params,str) and params.strip()=='':
+    if isinstance(params, str) and params.strip() == '':
         return []
 
     if isinstance(params, int):
         params = [params]
-    if isinstance(params, str) :
-        sparams =  params.split()
+    if isinstance(params, str):
+        sparams = params.split()
         try:
             params = [int(sparam) for sparam in sparams]
         except ValueError:
             raise SplintException(f"Invalid integer parameter in {params}")
 
     return params
+
 
 def exclude_ruids(ruids: List[str]):
     """Return a filter function that will exclude the ruids from the list."""
@@ -165,9 +171,8 @@ def keep_phases(phases: List[str]):
     return filter_func
 
 
-
 def debug_progress(count, msg=None, result: SplintResult = None
-):  # pylint: disable=unused-argument
+                   ):  # pylint: disable=unused-argument
     """Print a debug message."""
     if msg:
         print(msg)
@@ -175,8 +180,7 @@ def debug_progress(count, msg=None, result: SplintResult = None
         print("+" if result.status else "-", end="")
 
 
-
-def quiet_progress(step=0,msg=None, result=None):  # pylint: disable=unused-argument
+def quiet_progress(step=0, msg=None, result=None):  # pylint: disable=unused-argument
     """
     Updates and prints the progress in a quiet mode...as in does nothing in this case.
 
@@ -200,29 +204,20 @@ def quiet_progress(step=0,msg=None, result=None):  # pylint: disable=unused-argu
     pass
 
 
-def orderby_tag():
-    """Order collected list by tag"""
-
-    def sort_key(x: SplintFunction):
-        return x.tag
-
-    return sort_key
-
-
-def orderby_ruid():
-    """Order collected list by tag"""
-
-    def sort_key(x: SplintFunction):
-        return x.ruid
-
-    return sort_key
-
-
 class SplintChecker:
     """
-    Collect all the rule functions and order them if need be and then run them.
+    A checker object is what manages running rules against a system.
 
-    Calling yield_all or run_all will iterate over the rules and return all the results.
+    THe life cycle of a checker object is
+
+    1) Load what ever packages/modules/functions are associated with a system as
+       a collection of functions that coulde be run.
+    2) Load any environment that may be needed for the rules.
+    2) Optionally filter those functions based on any of the function attributes.
+    3) Check all the rules and collect the results while providing status using
+       a user specified progress object.
+    4) Score the results based on the scoring strategy.
+    5) Return the result object as object data or json data.
     """
 
     def __init__(
@@ -230,7 +225,7 @@ class SplintChecker:
             packages: List[SplintPackage] | None = None,
             modules: List[SplintModule] | None = None,
             check_functions: List[SplintFunction] | None = None,
-            progress_object:SplintProgress=None,
+            progress_object: SplintProgress = None,
             score_strategy:
             ScoreStrategy | None = None,
             env=None,
@@ -239,54 +234,28 @@ class SplintChecker:
             auto_setup: bool = False,
     ):
         """
-        User can provide a list of packages, modules and functions to check.
+        
+        
+        
+        Args:
+            packages: A list of SplintPackage objects to check. If not provided, defaults to an empty list.
+            modules: A list of SplintModule objects to check. If not provided, defaults to an empty list.
+            check_functions: A list of SplintFunction objects to check. If not provided, defaults to an empty list.
+            progress_object: A SplintProgress object for tracking progress. If not provided, defaults to SplintNoProgress.
+            score_strategy: A ScoreStrategy object for scoring the results. If not provided, defaults to ScoreByResult.
+            env: A dictionary containing additional environment variables. If not provided, defaults to an empty dictionary.
+            abort_on_fail: A boolean flag indicating whether to abort processing if any fail result occurs. Defaults to False.
+            abort_on_exception: A boolean flag indicating whether to abort processing if any exception occurs. Defaults to False.
+            auto_setup: A boolean flag indicating whether to automatically invoke the pre_collect and prepare methods. Defaults to False.
 
-        If rule functions take parameters then the user can provide an environment to be used
-        for the rule functions
+        Raises:
+            SplintException: If the provided packages, modules, or check_functions are not in the correct format.
 
         """
 
-        if isinstance(packages, list) and len(packages) >= 1:
-            self.packages = packages
-            if not all(isinstance(p, SplintPackage) for p in packages):
-                raise SplintException(
-                    "Packages must be a list of SplintPackage objects."
-                )
-        elif isinstance(packages, SplintPackage):
-            self.packages = [packages]
-        elif not packages:
-            self.packages = []
-        else:
-            raise SplintException("Packages must be a list of SplintPackage objects.")
-
-        if isinstance(modules, list) and len(modules) >= 1:
-            self.modules: List[SplintModule] = modules
-            for m in modules:
-                if not isinstance(m, SplintModule):
-                    raise SplintException(
-                        "Modules must be a list of SplintModule objects."
-                    )
-        elif isinstance(modules, SplintModule):
-            self.modules = [modules]
-        elif not modules:
-            self.modules = []
-        else:
-            raise SplintException("Modules must be a list of SplintModule objects.")
-
-        if isinstance(check_functions, list) and len(check_functions) >= 1:
-            self.check_functions: List[SplintFunction] = check_functions
-            f:SplintFunction = None
-            for f in check_functions:
-                if not isinstance(f, SplintFunction):
-                    raise SplintException(
-                        "Functions must be a list of SplintFunction objects."
-                    )
-                # Since we are building up a module from nothing we give it a generic name
-                f.module = "adhoc"
-        elif not check_functions:
-            self.check_functions: List[SplintFunction] = []
-        else:
-            raise SplintException("Functions must be a list of SplintFunction objects.")
+        self.packages = self._process_packages(packages)
+        self.modules = self._process_modules(modules)
+        self.check_functions = self._process_check_functions(check_functions)
 
         # If the user has not provided a score strategy then use the simple one
         self.score_strategy = score_strategy or ScoreByResult()
@@ -297,9 +266,9 @@ class SplintChecker:
         else:
             self.env = {}
 
-        # Connect the progress output to the checker object.  This is imporant
-        # because the pro
-        self.progress_callback:SplintProgress = progress_object or SplintNoProgress()
+        # Connect the progress output to the checker object.  The NoProgress
+        # class is a dummy class that does no progress reporting.
+        self.progress_callback: SplintProgress = progress_object or SplintNoProgress()
 
         # If any fail result occurs stop processing.
         self.abort_on_fail = abort_on_fail
@@ -311,7 +280,7 @@ class SplintChecker:
         self.pre_collected = []
         self.start_time = dt.datetime.now()
         self.end_time = dt.datetime.now()
-        self.results:List[splint.SplintResult] = []
+        self.results: List[splint.SplintResult] = []
 
         if not self.packages and not self.modules and not self.check_functions:
             raise SplintException(
@@ -324,6 +293,42 @@ class SplintChecker:
         if auto_setup:
             self.pre_collect()
             self.prepare()
+
+    def _process_packages(self, packages: List[SplintPackage] | None) -> List[SplintPackage]:
+        """ Allow packages to be in various forms"""
+        if not packages:
+            return []
+        if isinstance(packages, SplintPackage):
+            return [packages]
+        if isinstance(packages, list) and all(isinstance(p, SplintPackage) for p in packages):
+            return packages
+        raise SplintException('Packages must be a list of SplintPackage objects.')
+
+    def _process_modules(self, modules: List[SplintModule] | None) -> List[SplintModule]:
+        """ Allow modules to be in various forms"""
+        if not modules:
+            return []
+        if isinstance(modules, SplintModule):
+            return [modules]
+        if isinstance(modules, list) and all(isinstance(m, SplintModule) for m in modules):
+            return modules
+        raise SplintException('Modules must be a list of SplintModule objects.')
+
+    def _process_check_functions(self, check_functions: List[SplintFunction] | None) -> List[SplintFunction]:
+        """ Load up an arbitrary list of splint functions.  These functions are tagged with adhoc for module"""
+        if isinstance(check_functions, list) and len(check_functions) >= 1:
+            for f in check_functions:
+                if not isinstance(f, SplintFunction):
+                    raise SplintException(
+                        "Functions must be a list of SplintFunction objects."
+                    )
+                # Since we are building up a module from nothing we give it a generic name
+                f.module = "adhoc"
+            return check_functions
+        elif not check_functions:
+            return []
+        else:
+            raise SplintException("Functions must be a list of SplintFunction objects.")
 
     def pre_collect(self) -> List[SplintFunction]:
         """
@@ -351,7 +356,7 @@ class SplintChecker:
         # List of all possible functions that could be run
         return self.pre_collected
 
-    def prepare(self, filter_functions=None, order_function=None):
+    def prepare(self, filter_functions=None):
         """
         Prepare the collected functions for running checks.
 
@@ -359,11 +364,8 @@ class SplintChecker:
         A list of filter functions may be provided to filter the functions. Filter
         functions must return True if the function should be kept.
 
-        An order function may be provided to sort the functions before running them
-
         Args:
             filter_functions (_type_, optional): _description_. Defaults to None.
-            order_function (_type_, optional): _description_. Defaults to None.
 
         Returns:
             _type_: _description_
@@ -379,12 +381,6 @@ class SplintChecker:
         for splint_func in self.pre_collected:
             if all(f(splint_func) for f in filter_functions):
                 self.collected.append(splint_func)
-
-        # If an order function is provided then sort the collected functions,
-        # you could sort by tag, level, ruid etc.  Not sure if this will ever be
-        # used, but it's here.
-        if order_function:
-            self.collected = sorted(self.collected, key=order_function)
 
         # The collected list has the functions that will be run to verify operation
         # of the system.
@@ -403,7 +399,7 @@ class SplintChecker:
             f"There are duplicate or missing RUIDS: {ruid_issues(ruids)}"
         )
 
-    def exclude_by_attribute(self, tags:List=None, ruids:List=None, levels:List=None, phases:List=None):
+    def exclude_by_attribute(self, tags: List = None, ruids: List = None, levels: List = None, phases: List = None):
         """ Run everything except the ones that match these attributes """
 
         # Make everything nice lists
@@ -413,12 +409,16 @@ class SplintChecker:
         levels = _param_int_list(levels)
 
         # Exclude attributes that don't match
-        self.collected =  [f for f in self.collected if f.tag not in tags and
-                                                        f.ruid not in ruids and
-                                                        f.level not in levels and
-                                                        f.phase not in phases]
+        self.collected = [f for f in self.collected if f.tag not in tags and
+                          f.ruid not in ruids and
+                          f.level not in levels and
+                          f.phase not in phases]
 
-    def include_by_attribute(self, tags:List|str=None, ruids:List|str=None, levels:List|str=None, phases:List|str=None):
+    def include_by_attribute(self,
+                             tags: List | str = None,
+                             ruids: List | str = None,
+                             levels: List | str = None,
+                             phases: List | str = None):
         """ Run everything that matches these attributes """
 
         # Make everything nice lists
@@ -490,6 +490,8 @@ class SplintChecker:
         """
         Yield all the results from the collected functions
 
+        This is where the rule engine does its work.
+
         Args:
             env: The environment to use for the rule functions
 
@@ -506,22 +508,23 @@ class SplintChecker:
         # that the filter functions have filtered out all the
         # functions.
         count = 0
-        self.progress_callback(count,self.function_count,"Start Rule Check")
+        self.progress_callback(count, self.function_count, "Start Rule Check")
         self.start_time = dt.datetime.now()
 
         try:
 
             env = self.load_environments()
 
-            result: splint.SplintResult=None
+            # Shuts up linter
+            result: splint.SplintResult = None
 
             # Count here to enable progress bars
-            for count,function in enumerate(self.collected,start=1):
+            for count, function in enumerate(self.collected, start=1):
 
                 # Lots of magic here
                 function.env = env
 
-                self.progress_callback(count,self.function_count,f"Func Start {function.function_name}")
+                self.progress_callback(count, self.function_count, f"Func Start {function.function_name}")
                 for result in function():
                     yield result
 
@@ -534,19 +537,20 @@ class SplintChecker:
 
                     # Stop yielding from a function
                     if function.finish_on_fail and result.status == False:
-                        self.progress_callback(count,self.function_count,f"Early exit. {function.function_name} failed.")
+                        self.progress_callback(count, self.function_count,
+                                               f"Early exit. {function.function_name} failed.")
                         break
-                    self.progress_callback(count,self.function_count,"", result)
-                self.progress_callback(count,self.function_count,"Func done.")
+                    self.progress_callback(count, self.function_count, "", result)
+                self.progress_callback(count, self.function_count, "Func done.")
 
         except AbortYieldException:
             if self.abort_on_fail:
-                self.progress_callback(count,self.function_count,f"Abort on fail: {function.function_name}")
+                self.progress_callback(count, self.function_count, f"Abort on fail: {function.function_name}")
             if self.abort_on_exception:
-                self.progress_callback(count,self.function_count,f"Abort on exception: {function.function_name}")
+                self.progress_callback(count, self.function_count, f"Abort on exception: {function.function_name}")
 
         self.end_time = dt.datetime.now()
-        self.progress_callback(count,self.function_count, "Rule Check Complete.")
+        self.progress_callback(count, self.function_count, "Rule Check Complete.")
 
     def run_all(self, env=None):
         """
@@ -555,7 +559,7 @@ class SplintChecker:
         """
         self.results = list(self.yield_all(env=env))
         self.score = self.score_strategy(self.results)
-        self.progress_callback(self.function_count, self.function_count,f"Score = {self.score:.1f}")
+        self.progress_callback(self.function_count, self.function_count, f"Score = {self.score:.1f}")
         return self.results
 
     @property
@@ -584,7 +588,7 @@ class SplintChecker:
         return len([r for r in self.results if not r.status and not r.skipped])
 
     @property
-    def total_count(self):
+    def result_count(self):
         return len(self.results)
 
     @property
@@ -610,7 +614,6 @@ class SplintChecker:
                 names.append(m.module_name)
         return names
 
-
     @property
     def package_count(self):
         return len(self.packages)
@@ -621,9 +624,9 @@ class SplintChecker:
             "module_count": self.module_count,
             "modules": self.module_names,
             "function_count": self.function_count,
-            "tags": sorted(list(set(f.tag for f in self.collected))),
-            "levels": sorted(list(set(f.level for f in self.collected))),
-            "phases": sorted(list(set(f.phase for f in self.collected))),
+            "tags": self.tags,
+            "levels": self.levels,
+            "phases": self.phases,
             "ruids": self.ruids,
             "score": self.score,
         }
@@ -644,9 +647,9 @@ class SplintChecker:
             "passed_count": self.pass_count,
             "failed_count": self.fail_count,
             "skip_count": self.skip_count,
-            "total_count": self.total_count,
+            "total_count": self.result_count,
 
-            # the meat of the output livers here
+            # the meat of the output lives here
             "results": [r.as_dict() for r in self.results],
         }
         return h | r

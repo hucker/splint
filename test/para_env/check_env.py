@@ -65,3 +65,5 @@ def check_order_doesnt_matter(number_config,data_frame,db_config,global_env):
     yield splint.SplintResult(status=isinstance(data_frame, pd.DataFrame), msg="Data_frame is actually a dataframe.")
     yield splint.SplintResult(status=data_frame.empty==True, msg="Dataframe is empty")
     yield splint.SplintResult(status = global_env=="hello",msg=f"Got global env={global_env}")
+
+

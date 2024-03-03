@@ -14,7 +14,9 @@ to use most of the majore feature groups including:
 """
 
 from typing import List
+
 import streamlit as st
+
 import src.splint as splint
 
 st.set_page_config(layout='wide')
@@ -36,11 +38,11 @@ def display_overview(checker: splint.SplintChecker) -> None:
         f"| :green[**PASS**] | {checker.pass_count} |",
         f"| :red[**FAIL**] | {checker.fail_count} |",
         f"| :orange[**SKIP**] | {checker.skip_count} |",
-        f"| :blue[**Total**] | {checker.total_count} |",
+        f"| :blue[**Total**] | {checker.result_count} |",
     ]
 
-    # Combine the headers, separators, and rows to form the full table
-    markdown_table = "\n".join([table_headers, table_separators] + table_rows)
+    # Join headers, separators, and rows to form a complete Markdown table
+    markdown_table = "\n".join([table_headers, table_separators, *table_rows])
 
     # Display the Markdown table in Streamlit
     st.markdown(markdown_table)
@@ -48,31 +50,29 @@ def display_overview(checker: splint.SplintChecker) -> None:
 
 def display_results(results: List[splint.SplintResult]):
     """
-    Display the results in a markdowntable
+    Display the results in a markdown table
 
     Args:
         results: List of splint results
     """
     headers = ['Count', 'Status', 'Tag', 'Level', 'Phase', 'RUID', 'Module Name', 'Function Name', 'Message']
 
-    # Create the table headers
-    table_headers = f"| {' | '.join(headers)} |"
-    table_separators = f"|:----:|{':----:|' * (len(headers) - 1)}"
-
-    # Initialize the Markdown table with headers
-    markdown_table = f"{table_headers}\n{table_separators}"
+    # Start with the table headers and separators created as f-strings
+    table = [
+        f"| {' | '.join(headers)} |",
+        f"|{' :----: |' * len(headers)}"
+    ]
 
     for count, r in enumerate(results, start=1):
         # Determine the status
         status = "Skipped" if r.skipped else "Pass" if r.status else "Fail"
 
-        # Create a table row
-        row_data = [str(item) for item in
-                    [count, status, r.tag, r.level, r.phase, r.ruid, r.module_name, r.func_name, r.msg]]
-        table_row = "| " + " | ".join(row_data) + " |"
+        # Append each row directly to the table
+        table.append(
+            f"| {count} | {status} | {r.tag} | {r.level} | {r.phase} | {r.ruid} | {r.module_name} | {r.func_name} | {r.msg} |")
 
-        # Append the row to the Markdown table
-        markdown_table += f"\n{table_row}"
+    # Convert the list of rows into a single string with line breaks
+    markdown_table = "\n".join(table)
 
     st.markdown(markdown_table)
 
@@ -124,6 +124,7 @@ def display_json_results(checker: splint.SplintChecker):
 
 class SplintStreamlitProgressBar(splint.SplintProgress):
     """ Implimentation of a progress bar for streamlit. """
+
     def __init__(self, progress_bar: st.progress):
         """ Store streamlit progress bar in global state"""
         self.progress_bar = progress_bar
@@ -137,13 +138,12 @@ class SplintStreamlitProgressBar(splint.SplintProgress):
         would watch the results.
         """
         if max_count <= 0:
-            max_count =  1
+            max_count = 1
         if current_count > max_count:
             current_count = max_count
         percent = current_count / float(max_count)
-        percent = max(0,min(1.0,percent))
+        percent = max(0, min(1.0, percent))
         self.progress_bar.progress(percent, msg)
-
 
 
 def main():
@@ -191,8 +191,7 @@ def main():
         else:
             prog_bar = st.progress(0, text=f"Rule checking status 0 of {checker.function_count}")
 
-            # Note that make progress bar returns a function
-            #checker.progress_callback = make_progress_bar(prog_bar, checker.function_count)
+            # INstall progress bar that is nice for splint.
             checker.progress_callback = SplintStreamlitProgressBar(prog_bar)
 
             # Magic happens here

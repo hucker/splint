@@ -74,6 +74,10 @@ class SplintResult:
     mit_msg: str = ""
     owner_list: List[str] = field(default_factory=list)
 
+    #Bad parameters
+    skip_on_none: bool = False
+    fail_on_none: bool = False
+
     def as_dict(self):
         """Convert the SplintResult instance to a dictionary."""
         d = asdict(self)

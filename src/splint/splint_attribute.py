@@ -24,6 +24,8 @@ DEFAULT_SKIP = False  # Set to true to skip a rule
 DEFAULT_TTL_MIN = 0  # Time to live for check functions.
 DEFAULT_RUID = ""
 DEFAULT_FINISH_ON_FAIL=False # If a splint function yields a fail result stop processing the function
+DEFAULT_SKIP_ON_NONE = False
+DEFAULT_FAIL_ON_NONE = False
 
 def _parse_ttl_string(input_string:str)->float:
     """
@@ -62,6 +64,8 @@ def attributes(
         ruid=DEFAULT_RUID,
         ttl_minutes=DEFAULT_TTL_MIN,
         finish_on_fail=DEFAULT_FINISH_ON_FAIL,
+        skip_on_none=DEFAULT_SKIP_ON_NONE,
+        fail_on_none=DEFAULT_FAIL_ON_NONE,
 
 ):
     """
@@ -83,6 +87,8 @@ def attributes(
         func.ruid = ruid
         func.ttl_minutes = ttl_minutes
         func.finish_on_fail = finish_on_fail
+        func.skip_on_none = skip_on_none
+        func.fail_on_none = fail_on_none
         return func
 
     return decorator
@@ -101,6 +107,8 @@ def get_attribute(func, attr, default_value=None):
         "ruid": DEFAULT_RUID,
         "ttl_minutes": DEFAULT_TTL_MIN,
         "finish_on_fail": DEFAULT_FINISH_ON_FAIL,
+        "skip_on_none": DEFAULT_SKIP_ON_NONE,
+        "fail_on_none": DEFAULT_FAIL_ON_NONE,
     }
 
     default = default_value or defs[attr]

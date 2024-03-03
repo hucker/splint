@@ -57,10 +57,11 @@ team-wide visibility.
 ## Getting Started with Splint
 
 If you're familiar with `pytest`, getting started with `splint` is a breeze. Similar to `pytest`, `splint` allows
-you to write independent rules that verify the state of your system. These rules should be atomic and can be run in 
+you to write independent rules that verify the state of your system. These rules should be atomic and able to run in 
 any order. If you're accustomed to writing tests with modules starting with "test" and functions beginning with "test",
 transitioning to `splint` will feel natural. Additionally, if you understand fixtures, you'll find that the concept is 
-also available through environments. Rules are tagged with attributes, making it easy to run various subsets of tests.
+also available through environments. Every rule can be tagged with various attributes to allow filtering which rules
+to run and organization when reporting results.
 
 ### Simple Rules
 
@@ -102,6 +103,7 @@ Now we can add more complexity. Tag a test functions with attributes.
 
 ```python
 from splint import SplintResult, attributes
+import datetime as dt
 import pathlib
 
 @attributes(tag="file")
@@ -115,10 +117,9 @@ def check_file_exists():
 def check_file_age():
     file = pathlib.Path("myfile.csv")
     modification_time = file.stat().st_mtime
-    current_time = dt.now().timestamp()
+    current_time = dt.datetime.now().timestamp()
     file_age_in_seconds = current_time - modification_time
     file_age_in_hours = file_age_in_seconds / 3600
-    status = file_age_in_hours < 24.0
     if file_age_in_hours < 24:
         return SplintResult(status=True, msg="The file age is OK {file_age_in_hours}")
     else:
@@ -129,6 +130,7 @@ And even a bit more complexity pass values to these functions using environments
 fixtures.
 
 ```python
+import datetime as dt
 import pathlib
 from splint import attributes,  SplintResult
 
@@ -145,10 +147,9 @@ def check_file_exists(csv_file):
 @attributes(tag="file")
 def check_file_age(csv_file):
     modification_time = csv_file.stat().st_mtime
-    current_time = dt.now().timestamp()
+    current_time = dt.datetime.now().timestamp()
     file_age_in_seconds = current_time - modification_time
     file_age_in_hours = file_age_in_seconds / 3600
-    status = file_age_in_hours < 24.0
     if file_age_in_hours < 24:
         return SplintResult(status=True, msg="The file age is OK {file_age_in_hours}")
     else:
@@ -183,7 +184,7 @@ sizes > 100k.
 TODO: MORE INFO ON OUT OF THE BOX RULES
 
 ```python
-from splint import attributes
+import splint
 
  @splint.attributes(tag="tag")
  def check_rule1():
@@ -241,14 +242,18 @@ but it is in work creating scoring by function.
 Each rule function can be assigned attributes that define metadata about the rule function.  Attributes are at the heart
 of how `splint` allows you to filter, sort, select tests to run and view by adding decorators to your check funcitons.
 
- 1. `tag` zero or more strings that can be used for filtering results.
- 2. `phase` a single string that indicates a project phase like testing or development.
- 3. `level` which is a numeric value that is better for greater than/less than tests
- 4. `weight` a positive number indicating the weight of a functions results.  The nominal weight is 100.
- 5. `skip` indicates the function should be skipped.
- 6. `ruid` or rule-id is a unique identifier for a rule. If one test has a rule-id all of them must id's.
- 7. `ttl_minutes` allow caching of results so expensive tests don't need to be rerun  which is only useful in cases where you run tests over and over
-8.  `finish_on_fail` aborts processing of splint function on the first failure
+| Attribute        | Description                                                                                                                         |
+|------------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| `tag`            | Zero or more strings that can be used for filtering results.                                                                        |
+| `phase`          | A single string that indicates a project phase like testing or development.                                                         |
+| `level`          | A numeric value that is better for greater than/less than tests.                                                                    |
+| `weight`         | A positive number indicating the weight of a functions results. The nominal weight is 100.                                          |
+| `skip`           | Indicates the function should be skipped.                                                                                           |
+| `ruid`           | Rule-ID is a unique identifier for a rule. If one test has a rule-id all of them must have ids.                                     |
+| `ttl_minutes`    | Allow caching of results so expensive tests don't need to be rerun which is only useful in cases where you run tests over and over. |
+| `finish_on_fail` | Aborts processing of splint function on the first failure.                                                                          |
+| `skip_on_none `  | If an environment parameter has a None value then the function will be skipped.                                                     |
+| `fail_on_none`   | If an invironment paramter has a None value then the function will be failed.                                                       |
 
 ## What are Rule Ids (RUIDS)?
 
@@ -355,28 +360,31 @@ Note that the variable names in the dictionary are the parameters that are passe
 import splint
 import pandas as pd
 
-def env_setup(_:dict)->dict:
-    # Auto-detected function that starts with "env_".  This function
-    # should return a dictionary of values that can be used as parameters
-    # to functions in this (and other) modules.
 
-    module_env = {}
-    module_env['db_config'] = 'sqlite.sql'
-    module_env['number_config'] = 42
-    module_env['data_frame'] = pd.DataFrame()
-    return module_env
+def env_setup(_: dict) -> dict:
+   # Auto-detected function that starts with "env_".  This function
+   # should return a dictionary of values that can be used as parameters
+   # to functions in this (and other) modules.
+
+   module_env = {'db_config': 'sqlite.sql', 
+                 'number_config': 42, 
+                 'data_frame': pd.DataFrame()}
+   return module_env
+
 
 def check_global(global_env):
-    """This value is pulled from another module """
-    yield splint.SR(status = global_env=="hello",msg=f"Got global env={global_env}")
-    
+   """This value is pulled from another module """
+   yield splint.SR(status=global_env == "hello", msg=f"Got global env={global_env}")
+
+
 def check_env1(db_config):
-    """Should pick up db config from local env"""
-    yield splint.SR(status=db_config=='sqlite.sql', msg=f"Got db_config as string {db_config}")    
+   """Should pick up db config from local env"""
+   yield splint.SR(status=db_config == 'sqlite.sql', msg=f"Got db_config as string {db_config}")
+
 
 def check_env2(number_config):
-    """Should pick up db config from local env"""
-    yield splint.SR(status=number_config==42, msg=f"Got number {42}")
+   """Should pick up db config from local env"""
+   yield splint.SR(status=number_config == 42, msg=f"Got number {42}")
 ```
 
 
@@ -464,7 +472,7 @@ Splint is just a name that sounds cool. When I started this I thought system-lin
 ## TODO
 
 1. Implement `.splintrc` file and toml interface.
-2. Implement the setup/teardown mechanism for environments using generators
+2. Implement the teardown mechanism for environments using generators (will be done when SQL connections are created.)
 5. Make pip installable.
 6. Fix issue with module having the same name.
 7. By function scoring

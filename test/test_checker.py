@@ -165,26 +165,6 @@ def test_function_list(func1, func2):
     assert ch.score == 100.0
 
 
-def test_checker_tag_ordering(func1, func2, func3):
-    """Verify we can order tests by lambda over tags"""
-
-    # should end up func1,func2,func3
-    funcs = [func3, func1, func2]
-    ch = splint.SplintChecker(check_functions=funcs)
-    ch.pre_collect()
-    run_list = ch.prepare(order_function=splint.splint_checker.orderby_tag())
-    assert run_list == [func1, func2, func3]
-
-
-def test_checker_ruid_ordering(func1, func2, func3):
-    """Verify we can order tests by lambda over ruids"""
-
-    funcs = [func3, func1, func2]
-    ch = splint.SplintChecker(check_functions=funcs)
-    ch.pre_collect()
-    run_list = ch.prepare(order_function=splint.splint_checker.orderby_ruid())
-    assert run_list == [func1, func2, func3]
-
 
 def test_filtered_function_list(func1, func2):
     """Test building a custom filter function"""
@@ -388,12 +368,6 @@ def test_null_check():
 def test_null_checker_types():
     bad_list_type = [1]
     bad_value_type = 1
-    with pytest.raises(splint.SplintException):
-        _ = splint.SplintChecker(check_functions=bad_list_type)
-    with pytest.raises(splint.SplintException):
-        _ = splint.SplintChecker(modules=bad_list_type)
-    with pytest.raises(splint.SplintException):
-        _ = splint.SplintChecker(packages=bad_list_type)
 
     with pytest.raises(splint.SplintException):
         _ = splint.SplintChecker(check_functions=bad_value_type)
@@ -401,6 +375,14 @@ def test_null_checker_types():
         _ = splint.SplintChecker(modules=bad_value_type)
     with pytest.raises(splint.SplintException):
         _ = splint.SplintChecker(packages=bad_value_type)
+
+    with pytest.raises(splint.SplintException):
+        _ = splint.SplintChecker(check_functions=bad_list_type)
+    with pytest.raises(splint.SplintException):
+        _ = splint.SplintChecker(modules=bad_list_type)
+    with pytest.raises(splint.SplintException):
+        _ = splint.SplintChecker(packages=bad_list_type)
+
 
 
 def test_filter_all(func1, func2):

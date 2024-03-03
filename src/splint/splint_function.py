@@ -127,6 +127,8 @@ class SplintFunction:
         self.weight = get_attribute(function, "weight")
         self.skip = get_attribute(function, "skip")
         self.ruid = get_attribute(function, "ruid")
+        self.skip_on_none = get_attribute(function, "skip_on_none")
+        self.fail_on_none = get_attribute(function, "fail_on_none")
         self.ttl_minutes = get_attribute(function, "ttl_minutes")
         self.finish_on_fail = get_attribute(function, "finish_on_fail")
 
@@ -181,6 +183,17 @@ class SplintFunction:
 
         # Function returns a generator that needs to be iterated over
         args = self._get_parameter_values()
+
+        # If any arguments are None that is a bad thing.  That means that
+        # a file could not be opened or other data is not available.
+        for count, arg in enumerate([arg for arg in args if arg is None],start=1):
+            if self.fail_on_none:
+                yield SplintResult(status=False, msg=f"Failed due to None argument {count} in {self.function_name}")
+                return
+            if self.skip_on_none:
+                yield SplintResult(status=None, skipped=True,
+                                   msg=f"Skipped due to None argument {count} in {self.function_name}")
+                return
 
         # It is possible for an exception to occur before the generator is created.
         # so we need a value to be set for count.
@@ -266,7 +279,7 @@ class SplintFunction:
         text = text or self.doc
 
         # Split the docstring into sections
-        sections = re.split(r"(^\w+:)", text,flags=re.MULTILINE)
+        sections = re.split(r"(^\w+:)", text, flags=re.MULTILINE)
 
         # Just return the first line of the header
         if not header:
