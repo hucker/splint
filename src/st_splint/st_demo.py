@@ -14,21 +14,13 @@ to use most of the majore feature groups including:
 """
 
 from typing import List
-
 import streamlit as st
-
 import src.splint as splint
 
 st.set_page_config(layout='wide')
 
-DEMO_TITLE = "Splint Demo"
-TITLE_SPLINT_SETUP = "Splint Demo"
-RESULT_MESSAGES = "Result Messages"
-JSON_RESULTS = "JSON Results"
-OVERVIEW_HEADER = "### Overview"
 
-
-def display_overview(checker:splint.SplintChecker) -> None:
+def display_overview(checker: splint.SplintChecker) -> None:
     """
     Display the results from the checker in a scoreboard format.
 
@@ -40,11 +32,11 @@ def display_overview(checker:splint.SplintChecker) -> None:
 
     # Define the data rows
     table_rows = [
-        "| :green[**SCORE**] | " + str(checker.score) + " |",
-        "| :green[**PASS**] | " + str(checker.pass_count) + " |",
-        "| :red[**FAIL**] | " + str(checker.fail_count) + " |",
-        "| :orange[**SKIP**] | " + str(checker.skip_count) + " |",
-        "| :blue[**Total**] | " + str(checker.total_count) + " |",
+        f"| :green[**SCORE**] | {checker.score:0.1f}% |",
+        f"| :green[**PASS**] | {checker.pass_count} |",
+        f"| :red[**FAIL**] | {checker.fail_count} |",
+        f"| :orange[**SKIP**] | {checker.skip_count} |",
+        f"| :blue[**Total**] | {checker.total_count} |",
     ]
 
     # Combine the headers, separators, and rows to form the full table
@@ -53,7 +45,8 @@ def display_overview(checker:splint.SplintChecker) -> None:
     # Display the Markdown table in Streamlit
     st.markdown(markdown_table)
 
-def display_results(results:List[splint.SplintResult]):
+
+def display_results(results: List[splint.SplintResult]):
     """
     Display the results in a markdowntable
 
@@ -63,8 +56,8 @@ def display_results(results:List[splint.SplintResult]):
     headers = ['Count', 'Status', 'Tag', 'Level', 'Phase', 'RUID', 'Module Name', 'Function Name', 'Message']
 
     # Create the table headers
-    table_headers = "| " + " | ".join(headers) + " |"
-    table_separators = "|:----:|" * len(headers)
+    table_headers = f"| {' | '.join(headers)} |"
+    table_separators = f"|:----:|{':----:|' * (len(headers) - 1)}"
 
     # Initialize the Markdown table with headers
     markdown_table = f"{table_headers}\n{table_separators}"
@@ -74,14 +67,14 @@ def display_results(results:List[splint.SplintResult]):
         status = "Skipped" if r.skipped else "Pass" if r.status else "Fail"
 
         # Create a table row
-        row_data = [str(item) for item in [count, status, r.tag, r.level, r.phase, r.ruid, r.module_name, r.func_name, r.msg]]
+        row_data = [str(item) for item in
+                    [count, status, r.tag, r.level, r.phase, r.ruid, r.module_name, r.func_name, r.msg]]
         table_row = "| " + " | ".join(row_data) + " |"
 
         # Append the row to the Markdown table
         markdown_table += f"\n{table_row}"
 
     st.markdown(markdown_table)
-
 
 
 def display_package_info(pkg, checker):
@@ -93,22 +86,22 @@ def display_package_info(pkg, checker):
         checker: The checker setup for validating the package.
     """
 
-    st.title(DEMO_TITLE)
+    st.title('Splint Demo')
 
     # Define the table headers
-    table_headers = "| **Metric** | **Value** |"
+    table_headers = "| **Item** | **Value** |"
     table_separators = "|:----:|:----:|"
 
     # Define the data rows
     table_rows = [
-                     "| **Package** | " + str(pkg.name) + " |",
-                     "| **Module Count** | " + str(pkg.module_count) + " |",
-                     "| **Function Count** | " + str(checker.function_count) + " |",
-                     "| **Tags Found** | " + str(checker.tags) + " |",
-                     "| **Rule IDs Found** | " + str(checker.ruids) + " |",
-                     "| **Levels** | " + str(checker.levels) + " |",
-                     "| **Phases** | " + str(checker.phases) + " |",
-                 ]
+        f"| **Package** | {pkg.name} |",
+        f"| **Module Count** | {pkg.module_count} |",
+        f"| **Function Count** | {checker.function_count} |",
+        f"| **Tags** | {checker.tags} |",
+        f"| **Rule IDs** | {checker.ruids} |",
+        f"| **Levels** | {checker.levels} |",
+        f"| **Phases** | {checker.phases} |",
+    ]
 
     # Combine all parts to form the full table
     markdown_table = "\n".join([table_headers, table_separators] + table_rows)
@@ -116,57 +109,91 @@ def display_package_info(pkg, checker):
     # Display the table
     st.markdown(markdown_table)
 
-def display_json_results(checker:splint.SplintChecker):
-    """ Show the raw data from the json"""
-    st.write(JSON_RESULTS)
+
+def display_json_results(checker: splint.SplintChecker):
+    """
+    Display the JSON results of the given `splint.SplintChecker` object.
+
+    Args:
+        checker: An instance of `splint.SplintChecker` containing the JSON results to be displayed.
+    """
+    st.write("JSON Results")
     with st.expander("Results:", expanded=True):
         st.json(checker.as_dict())
 
-def make_progress_bar(pb: st.progress, count):
-    """ Progress bar to support streamlit notion of progress"""
-    def progress(index, text, result=None):
-        if count <= 0:
-            value = 0
-        else:
-            value = float(index) / float(count)
-        # make sure we are in range
-        value = max(0.0, min(value,1.0))
-        pb.progress(value, text)
 
-    return progress
+class SplintStreamlitProgressBar(splint.SplintProgress):
+    """ Implimentation of a progress bar for streamlit. """
+    def __init__(self, progress_bar: st.progress):
+        """ Store streamlit progress bar in global state"""
+        self.progress_bar = progress_bar
+
+    def __call__(self, current_count: int, max_count: int, msg: str, result=None):
+        """
+        Display a status message/progress update.  The progress bar goes from 0 to full
+        scale as a percentage of the number of function that have run, that is whey
+        we get current/max.  We also have a message which can be anything as well
+        as a result which is the detailed results.  Presumably some  progress systems
+        would watch the results.
+        """
+        if max_count <= 0:
+            max_count =  1
+        if current_count > max_count:
+            current_count = max_count
+        percent = current_count / float(max_count)
+        percent = max(0,min(1.0,percent))
+        self.progress_bar.progress(percent, msg)
+
+
 
 def main():
-    pkg =  splint.SplintPackage(folder="./my_package")
+    """
+    Main method for running the Splint package checker.
+
+    Usage:
+        Run this method to run the Splint package checker. It prompts the user to select options for including or
+        excluding functions based on tags, rule IDs, levels, and phases. After selecting the options,
+        click the "Run Splint" button to start the rule checking process. The results will be displayed in the UI.
+
+    Example:
+        main()
+    """
+    pkg = splint.SplintPackage(folder="./my_package")
     checker = splint.SplintChecker(packages=[pkg], auto_setup=True)
 
     with st.container(border=True):
         with st.container(border=True):
             display_package_info(pkg, checker)
-        include_ui = st.checkbox("Select Function to Run By Including Items")
+        include_ui = st.checkbox("Select Function to Run By Including Items", value=True)
 
         if include_ui:
+            st.write(
+                "All of these options are AND'ed together, if you select everything from 1 of the lists all functions will be run.")
             tags = st.multiselect("Include These Tags", options=checker.tags, default=checker.tags)
-            ruids = st.multiselect("Include These Rule Ids", options=checker.ruids, default=checker.ruids)
-            levels = st.multiselect('Include These Levels', options=checker.levels, default=checker.levels)
-            phases = st.multiselect('Include These Phases', options=checker.phases, default=checker.phases)
+            ruids = st.multiselect("Include These Rule Ids", options=checker.ruids, default=[])
+            levels = st.multiselect('Include These Levels', options=checker.levels, default=[])
+            phases = st.multiselect('Include These Phases', options=checker.phases, default=[])
         else:
-            tags = st.multiselect("Exclude These Tags", options=checker.tags,default=None)
-            ruids = st.multiselect("Exclude These Rule Ids", options=checker.ruids,default=None)
-            levels = st.multiselect('Exclude These Levels', options=checker.levels,default=None)
-            phases = st.multiselect('Exclude These Phases', options=checker.phases,default=None)
+            st.write(
+                "All of these options are AND'ed together, if you select everything from 1 of the lists no functions will be run.")
+            tags = st.multiselect("Exclude These Tags", options=checker.tags, default=None)
+            ruids = st.multiselect("Exclude These Rule Ids", options=checker.ruids, default=None)
+            levels = st.multiselect('Exclude These Levels', options=checker.levels, default=None)
+            phases = st.multiselect('Exclude These Phases', options=checker.phases, default=None)
 
     if st.button("Run Splint"):
         if include_ui:
-            checker.include_by_attribute(tags=tags, ruids=ruids,levels=levels, phases=phases)
+            checker.include_by_attribute(tags=tags, ruids=ruids, levels=levels, phases=phases)
         else:
-            checker.exclude_by_attribute(tags=tags, ruids=ruids,levels=levels, phases=phases)
+            checker.exclude_by_attribute(tags=tags, ruids=ruids, levels=levels, phases=phases)
         if len(checker.collected) == 0:
             st.warning("No rule functions found. It appears that you have filtered everything out.")
         else:
             prog_bar = st.progress(0, text=f"Rule checking status 0 of {checker.function_count}")
 
             # Note that make progress bar returns a function
-            checker.progress_callback = make_progress_bar(prog_bar, checker.function_count)
+            #checker.progress_callback = make_progress_bar(prog_bar, checker.function_count)
+            checker.progress_callback = SplintStreamlitProgressBar(prog_bar)
 
             # Magic happens here
             results: List[splint.SplintResult] = checker.run_all()
@@ -179,6 +206,7 @@ def main():
 
             with st.container(border=True):
                 display_json_results(checker)
+
 
 if __name__ == "__main__":
     main()

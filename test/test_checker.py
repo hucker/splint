@@ -434,7 +434,120 @@ def test_as_dict(func1, func2):
 
 def test_progress(capsys, func1, func2):
     funcs = [func1, func2]
-    ch = splint.SplintChecker(check_functions=funcs, progress_callback=splint.debug_progress, auto_setup=True)
+    ch = splint.SplintChecker(check_functions=funcs, progress_object=splint.SplintDebugProgress(), auto_setup=True)
     _ = ch.run_all()
     captured = capsys.readouterr()
     assert captured[0] == 'Start Rule Check\nFunc Start func1\n+Func done.\nFunc Start func2\n+Func done.\nRule Check Complete.\nScore = 100.0\n'
+
+@pytest.fixture()
+def attr_functions():
+    def func_a():
+        @splint.attributes(tag="t1", level=1, phase='p1', ruid="ruid_1")
+        def func():
+            yield splint.SplintResult(status=True, msg="It works1")
+        return splint.SplintFunction(func)
+    def func_b():
+        @splint.attributes(tag="t2", level=2, phase='p2', ruid="ruid_2")
+        def func():
+            yield splint.SplintResult(status=True, msg="It works2")
+        return splint.SplintFunction(func)
+    def func_c():
+        @splint.attributes(tag="t3", level=3, phase='p3', ruid="ruid_3")
+        def func():
+            yield splint.SplintResult(status=True, msg="It works3")
+        return splint.SplintFunction(func)
+    def func_d():
+        @splint.attributes(tag="t4", level=4, phase='p4', ruid="ruid_4")
+        def func():
+            yield splint.SplintResult(status=True, msg="It works4")
+        return splint.SplintFunction(func)
+
+
+    return [func_a(),func_b(),func_c(),func_d()]
+
+@pytest.mark.parametrize('tags,levels,phases,ruids,expected_count,msg', [
+    (['t1'], [], [], [], 1, "Single tag match."),
+    (['t1'], 1, [], [], 1, "Duplicated matches give 1 output."),
+    (['t1'], 1, 'p1', [], 1, "Duplicated matches give 1 output."),
+    (['t1'], 1, 'p1', 'ruid_1', 1, "Duplicated matches give 1 output."),
+    ([], [], 'p1 p2 p3 p4', 'ruid_1', 4, "All parameters empty except 'phases' and 'ruids'."),
+    (['t4'], 3, 'p2', ['ruid_1'], 4, "Single function 't4' with level, phase, and 'ruids'"),
+    ('t1 t2 t3 t4', [], [], [], 4, "All different functions."),
+    (['t1'], 2, ['p3'], ['ruid_4'], 4, "Single function with level, phase array and 'ruids'."),
+    ('t1 t2 t3 t4', [], [], [], 4, "All different tags without extra parameters."),
+    ([], [1, 2, 3, 4], [], [], 4, "All levels and no functions."),
+    ([], [], 'p1 p2 p3 p4', [], 4, "All phases and no functions."),
+    ([], [], [], 'ruid_1 ruid_2 ruid_3 ruid_4', 4, "All 'ruids' and no functions."),
+    (['t1'], [2], [], [], 2, "Single function 't1' with level 2."),
+    (['t1'], 2, [], [], 2, "Same function with level."),
+    (['t1'], 2, 'p1', [], 2, "Same function with level and single phase."),
+    (['t1'], 2, 'p1', 'ruid_1', 2, "Same function with level, phase and 'ruid_1'."),
+    (['t1'], 2, [], 'ruid_3', 3, "Single function array, with level and 'ruid_3'."),
+    (['t1'], 2, 'p1', 'ruid_3', 3, "Single function array, with level, phase and 'ruid_3'."),
+    (['t1'], 2, 'p4', 'ruid_1', 3, "Single function array, with level, phase and 'ruid_1'."),
+])
+def test_include_by_attribute(attr_functions, tags, levels, phases, ruids, expected_count, msg):
+    ch = splint.SplintChecker(check_functions=attr_functions, auto_setup=True)
+    ch.include_by_attribute(tags=tags, levels=levels, phases=phases, ruids=ruids)
+    assert len(ch.collected) == expected_count, msg
+    assert ch.collected[0].tag == 't1', msg
+
+
+
+@pytest.mark.parametrize('tags,levels,phases,ruids,expected_count,msg', [
+    (['t1'], [], [], [], 3,"Tag only"),
+    (['t1'], 1, [], [], 3,'Tag and level'),
+    (['t1'], 1, 'p1', [], 3,'Tag level and phase'),
+    (['t1'], 1, 'p1', 'ruid_1',3,'Tag level phase and ruid'),
+    ([], [], 'p1 p2 p3 p4', [], 0,"all phases leave none"),
+    (['t4'], 3, 'p2', ['ruid_1'], 0,"all phases leave none"),
+    (['t1'], 2, ['p3'], ['ruid_4'], 0,"one of each leave none"),
+    ('t1 t2 t3 t4', [], [], [], 0,'All tags leave none'),
+    ([], [1, 2, 3, 4], [], [], 0,'All levels leave none.'),
+    ([], [], 'p1 p2 p3 p4', [], 0,'All phases leave none.'),
+    ([], [], [], 'ruid_1 ruid_2 ruid_3 ruid_4', 0,"All ruids leave none."),
+    (['t1'], [2], [], [], 2,'Tag level leave 2'),
+    (['t1'], 2, [], [], 2,'Tag level leave 2'),
+    (['t1'], 2, 'p1', [], 2,'Tag level and redundant phase leave 2'),
+    (['t1'], 2, 'p1', 'ruid_1', 2,'Tag Level Phase and Ruid with 2 redundant leave 2'),
+    (['t1'], 2, [], 'ruid_3', 1,"Tag level ruid leave 1"),
+    (['t1'], 2, 'p1', ['ruid_3'], 1,"Tag level phase with redundant tag/phase leave 1"),
+    (['t1'], 2, 'p4', 'ruid_1', 1,"Tag, level phase, ruid  with redundant tag/ruid leave 1"),
+])
+def test_exclude_by_attribute(attr_functions, tags, levels, phases, ruids, expected_count,msg):
+    ch = splint.SplintChecker(check_functions=attr_functions, auto_setup=True)
+    ch.exclude_by_attribute(tags=tags, levels=levels, phases=phases, ruids=ruids)
+    assert len(ch.collected) == expected_count,msg
+
+@pytest.mark.parametrize('params, expect, msg', [
+    ("", [], "String with no values."),
+    ("p1", ["p1"], "String with one value."),
+    ("p1 p2 p3", ["p1", "p2", "p3"], "String with multiple values"),
+    ([], [], "List with no values."),
+    (["p1"], ["p1"], "List with one value."),
+    (["p1", "p2", "p3"], ["p1", "p2", "p3"], "List with multiple values"),
+])
+def test__get_str_list(params, expect, msg):
+    assert splint.splint_checker._param_str_list(params) == expect, msg
+
+def test_bad_tag_phase_ruid_strings():
+    """Strings used in attributes can't have illegal characters
+
+    This isn't very strict
+    """
+    disallowed = r""",!@#$%^&*(){}[]<>~`-+=\/'"""
+    for c in disallowed:
+        for tag in [c,f"a-{c}",f"{c}-a",f"a-{c}-a"]:
+            with pytest.raises(splint.SplintException):
+                splint.splint_checker._param_str_list(tag,disallowed=disallowed)
+
+@pytest.mark.parametrize('params, expect, msg', [
+    ("", [], "String with no values."),
+    ("1", [1], "String with one value."),
+    ("1 2 3", [1, 2, 3], "String with multiple values"),
+    ([], [], "List with no values."),
+    ([1], [1], "List with one value."),
+    ([1, 2, 3], [1, 2, 3], "List with multiple values"),
+])
+def test__get_int_list(params, expect, msg):
+    assert splint.splint_checker._param_int_list(params) == expect, msg

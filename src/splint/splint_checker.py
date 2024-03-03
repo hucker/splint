@@ -1,5 +1,6 @@
 import datetime as dt
 from typing import List
+from abc import ABC, abstractmethod
 
 import splint
 from .splint_exception import SplintException
@@ -10,6 +11,87 @@ from .splint_result import SplintResult
 from .splint_ruid import empty_ruids, ruid_issues, valid_ruids
 from .splint_score import ScoreByResult, ScoreStrategy
 
+
+class SplintProgress(ABC):
+    def __init__(self):
+        pass
+    @abstractmethod
+    def __call__(self, current_iteration: int,max_iterations, text: str, result=None):
+        pass
+
+class SplintNoProgress(SplintProgress):
+    def __call__(self, current_iteration: int,max_iterations, text: str, result=None):
+        """Don't do anyting for progress.  THis is usful for testing."""
+        pass
+
+class SplintDebugProgress(SplintProgress):
+    def __call__(self, current_iteration: int,max_iteration:int, msg: str, result=None):  # pylint: disable=unused-argument
+        """Print a debug message."""
+        if msg:
+            print(msg)
+        if result:
+            print("+" if result.status else "-", end="")
+
+def _param_str_list(params: List[str]|str,disallowed=' ,!@#$%^&*(){}[]<>~`-+=\t\n\'"') -> List[str]:
+    """
+    Allow user to specify "foo fum" instead of ["foo","fum"] or slightly more
+    shady "foo" instead of ["foo"].  This is strictly for reducting friction
+    for the programmer.
+
+    Returns: List of Strings
+
+    Args:
+        params: "foo fum" or ["foo","fum"]
+
+
+    """
+
+    # Null case...on could argue they meant the empty string as a name
+    # not gonna do that
+    if isinstance(params,str) and params.strip() == '':
+        return []
+
+    if isinstance(params, str):
+        params = [p for p in params.split()]
+
+    for param in params:
+        if not isinstance(param,str):
+            raise SplintException(f"Invalid parameter list {param}")
+        bad_chars = [c for c in disallowed if c in param]
+        if bad_chars:
+            raise SplintException(f"Parameter '{bad_chars}' has a space in it.  ")
+
+
+    return params
+
+def _param_int_list(params: List[str]|int|str) -> List[int]:
+    """
+    Allow user to specify "1 2 3" instead of [1,2,3] or slightly more
+    shady 1 instead of [1].  For small numbers this is a wash but for
+    symmetry with str_list it included it.
+
+    NOTE: The separator is the default for split...whitespace
+
+    Args:
+        params: "1 2" or [1,2]
+
+    Returns: List of Integers
+
+    """
+
+    if isinstance(params,str) and params.strip()=='':
+        return []
+
+    if isinstance(params, int):
+        params = [params]
+    if isinstance(params, str) :
+        sparams =  params.split()
+        try:
+            params = [int(sparam) for sparam in sparams]
+        except ValueError:
+            raise SplintException(f"Invalid integer parameter in {params}")
+
+    return params
 
 def exclude_ruids(ruids: List[str]):
     """Return a filter function that will exclude the ruids from the list."""
@@ -83,6 +165,7 @@ def keep_phases(phases: List[str]):
     return filter_func
 
 
+
 def debug_progress(count, msg=None, result: SplintResult = None
 ):  # pylint: disable=unused-argument
     """Print a debug message."""
@@ -90,6 +173,7 @@ def debug_progress(count, msg=None, result: SplintResult = None
         print(msg)
     if result:
         print("+" if result.status else "-", end="")
+
 
 
 def quiet_progress(step=0,msg=None, result=None):  # pylint: disable=unused-argument
@@ -146,8 +230,9 @@ class SplintChecker:
             packages: List[SplintPackage] | None = None,
             modules: List[SplintModule] | None = None,
             check_functions: List[SplintFunction] | None = None,
-            progress_callback=None,
-            score_strategy: ScoreStrategy | None = None,
+            progress_object:SplintProgress=None,
+            score_strategy:
+            ScoreStrategy | None = None,
             env=None,
             abort_on_fail=False,
             abort_on_exception=False,
@@ -212,8 +297,9 @@ class SplintChecker:
         else:
             self.env = {}
 
-        # Install a default if needed (should this be a list?)
-        self.progress_callback = progress_callback or quiet_progress
+        # Connect the progress output to the checker object.  This is imporant
+        # because the pro
+        self.progress_callback:SplintProgress = progress_object or SplintNoProgress()
 
         # If any fail result occurs stop processing.
         self.abort_on_fail = abort_on_fail
@@ -320,10 +406,11 @@ class SplintChecker:
     def exclude_by_attribute(self, tags:List=None, ruids:List=None, levels:List=None, phases:List=None):
         """ Run everything except the ones that match these attributes """
 
-        # Reference variables in a list
-        values = [tags, ruids, levels, phases]
-        # Handle mutable parameters
-        tags, ruids, levels, phases = [value or [] for value in values]
+        # Make everything nice lists
+        tags = _param_str_list(tags)
+        ruids = _param_str_list(ruids)
+        phases = _param_str_list(phases)
+        levels = _param_int_list(levels)
 
         # Exclude attributes that don't match
         self.collected =  [f for f in self.collected if f.tag not in tags and
@@ -331,12 +418,14 @@ class SplintChecker:
                                                         f.level not in levels and
                                                         f.phase not in phases]
 
-    def include_by_attribute(self, tags:List=None, ruids:List=None, levels:List=None, phases:List=None):
+    def include_by_attribute(self, tags:List|str=None, ruids:List|str=None, levels:List|str=None, phases:List|str=None):
         """ Run everything that matches these attributes """
 
-        values = [tags, ruids, levels, phases]
-        # Handle mutable parameters
-        tags, ruids, levels, phases = [value or [] for value in values]
+        # Make everything nice lists
+        tags = _param_str_list(tags)
+        ruids = _param_str_list(ruids)
+        phases = _param_str_list(phases)
+        levels = _param_int_list(levels)
 
         # Only include the attributes that match
         self.collected = [f for f in self.collected if (f.tag in tags) or
@@ -417,7 +506,7 @@ class SplintChecker:
         # that the filter functions have filtered out all the
         # functions.
         count = 0
-        self.progress_callback(count,"Start Rule Check")
+        self.progress_callback(count,self.function_count,"Start Rule Check")
         self.start_time = dt.datetime.now()
 
         try:
@@ -432,7 +521,7 @@ class SplintChecker:
                 # Lots of magic here
                 function.env = env
 
-                self.progress_callback(count,f"Func Start {function.function_name}")
+                self.progress_callback(count,self.function_count,f"Func Start {function.function_name}")
                 for result in function():
                     yield result
 
@@ -445,19 +534,19 @@ class SplintChecker:
 
                     # Stop yielding from a function
                     if function.finish_on_fail and result.status == False:
-                        self.progress_callback(count,f"Early exit. {function.function_name} failed.")
+                        self.progress_callback(count,self.function_count,f"Early exit. {function.function_name} failed.")
                         break
-                    self.progress_callback(count,"", result)
-                self.progress_callback(count,"Func done.")
+                    self.progress_callback(count,self.function_count,"", result)
+                self.progress_callback(count,self.function_count,"Func done.")
 
         except AbortYieldException:
             if self.abort_on_fail:
-                self.progress_callback(count,f"Abort on fail: {function.function_name}")
+                self.progress_callback(count,self.function_count,f"Abort on fail: {function.function_name}")
             if self.abort_on_exception:
-                self.progress_callback(count,f"Abort on exception: {function.function_name}")
+                self.progress_callback(count,self.function_count,f"Abort on exception: {function.function_name}")
 
         self.end_time = dt.datetime.now()
-        self.progress_callback(count,"Rule Check Complete.")
+        self.progress_callback(count,self.function_count, "Rule Check Complete.")
 
     def run_all(self, env=None):
         """
@@ -466,7 +555,7 @@ class SplintChecker:
         """
         self.results = list(self.yield_all(env=env))
         self.score = self.score_strategy(self.results)
-        self.progress_callback(self.function_count,f"Score = {self.score:.1f}")
+        self.progress_callback(self.function_count, self.function_count,f"Score = {self.score:.1f}")
         return self.results
 
     @property

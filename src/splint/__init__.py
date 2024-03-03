@@ -13,7 +13,9 @@ from .splint_attribute import attributes  # noqa: F401
 from .splint_attribute import get_attribute  # noqa: F401
 # from .splint_attribute import _convert_to_minutes # noqa:F401
 from .splint_checker import SplintChecker  # noqa: F401
-from .splint_checker import debug_progress  # noqa: F401
+from .splint_checker import SplintProgress # noqa: F401
+from .splint_checker import SplintNoProgress # noqa; F401
+from .splint_checker import SplintDebugProgress # noqa; F401
 from .splint_checker import exclude_levels  # noqa: F401
 from .splint_checker import exclude_phases  # noqa: F401
 from .splint_checker import exclude_ruids  # noqa: F401
