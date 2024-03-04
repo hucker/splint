@@ -8,6 +8,7 @@ It also doesn't have support for environment variables at this time.
 import re
 
 from fastapi import FastAPI, HTTPException, Query
+from starlette.responses import FileResponse
 
 import splint.splint_checker
 
@@ -215,3 +216,8 @@ async def check_phase(phases: str) -> dict:
     phases = [phase.strip() for phase in phases.replace(" ", "").split(",")]
     matched_funcs = [func for func in __splint_checker.collected if func.phase in phases]
     return run_matched(matched_funcs, f"{phases=}")
+
+@app.get("/apple-touch-icon-precomposed.png")
+@app.get("/apple-touch-icon.png")
+def get_apple_touch_icon():
+    return FileResponse('apple_touch_icon.png')  # assumes you have an "images" directory your icon is located there

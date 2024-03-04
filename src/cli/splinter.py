@@ -75,7 +75,7 @@ def run_checks(
             ch = splint.SplintChecker(modules=mod, packages=pkg,auto_setup=True)
             if api:
                 splint.set_splint_checker(ch)
-                uvicorn.run(splint.splint_api.app, host="0.0.0.0", port=port)
+                uvicorn.run(splint.splint_api.app, host="localhost", port=port)
                 return
             else:
                 results = ch.run_all()
