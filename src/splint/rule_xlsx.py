@@ -1,4 +1,5 @@
 import openpyxl
+import pandas as pd
 
 from .splint_exception import SplintException
 from .splint_result import SplintResult as SR
@@ -27,10 +28,41 @@ def _column_to_number(column: str) -> int:
     return number
 
 
+def _get_sheet(wb, sheet_name=None):
+    """Ensure a valid sheet is selected based on sheet_name parameter"""
+    if sheet_name is None:
+        return wb["Sheet1"]
+    elif sheet_name in wb.sheetnames:
+        return wb[sheet_name]
+    elif len(wb.sheetnames) == 1:
+        return wb[wb.sheetnames[0]]
+    elif "Sheet1" in wb.sheetnames:
+        return wb["Sheet1"]
+    else:
+        raise SplintException(f'A sheet name was not specified and sheet1 could not be found.')
 
+def _ensure_row_params(row_end, row_start: int):
+    """Ensure the start and end rows parameters are consistent"""
+    auto = False
 
+    if row_end is None:
+        return row_start, row_start, auto
 
-def rule_xlsx_a1_pass_fail(wb:openpyxl.workbook, sheet=None, desc_col='A', val_col='B', row_start='1',row_end=None):
+    if isinstance(row_end, str):
+        if row_end.isdigit() and int(row_end) < row_start:
+            raise SplintException(
+                f'The value for the end row must be larger than the start row {row_start=} {row_end=}')
+        elif row_end.lower() == AUTO:
+            auto = True
+            row_end = 1000
+    try:
+        row_end = int(row_end)
+    except ValueError:
+        raise SplintException("row_end was not a valid integer value")
+
+    return row_start, row_end, auto
+
+def rule_xlsx_a1_pass_fail(wb:openpyxl.workbook, sheet_name=None, desc_col='A', val_col='B', row_start='1',row_end=None):
     """ This is a very blunt instrument that pulls a true/false value out of
         a specfic sheet/row/col of an Excel workbook.  It is very unforgiving
         to format changes in the work book
@@ -39,36 +71,12 @@ def rule_xlsx_a1_pass_fail(wb:openpyxl.workbook, sheet=None, desc_col='A', val_c
         end is set to 'auto' it will run until the first blank is detected in the value column.
 
         """
-    auto = False
+    sheet = _get_sheet(wb,sheet_name)
 
-    if sheet is None:
-        if len(wb.sheetnames) == 1:
-           sheet = wb.sheetnames[0]
-        else:
-            if "Sheet1" in wb.sheetnames:
-                sheet = "Sheet1"
-            else:
-                raise SplintException(f'A sheet name was not specified and Sheet1 could not be found.')
-    elif sheet not in wb.sheetnames:
-        raise SplintException(f'The sheet {sheet} was not found in the workbook.')
-
-    if val_col is None:
-        val_col = 'B'
-
-    # Convert the name into a sheet
-    sheet = wb[sheet]
-    row_start = int(row_start)
-
-    if row_end is None:
-        row_end = row_start
-    elif isinstance(row_end, str) and row_end.isdigit():
-        row_end = int(row_end)
-        if row_end < row_start:
-            raise SplintException(f'The value for the end row must be larger than the start row {row_start=} {row_end=}.')
-    elif isinstance(row_end,str) and row_end.lower() == 'auto':
-        auto = True
-        row_end = 1000
-
+    # Hendle Nones.  Presumably this should not be reqiured
+    row_start = row_start or '1'
+    val_col = val_col or 'B'
+    row_start,row_end,auto = _ensure_row_params(row_end, int(row_start))
     val_col = _column_to_number(val_col)
 
     if desc_col is not None:
@@ -92,3 +100,43 @@ def rule_xlsx_a1_pass_fail(wb:openpyxl.workbook, sheet=None, desc_col='A', val_c
             yield SR(status=True,msg=f"{desc}-Passed")
         else:
             yield SR(status=False,msg=f"{desc}-Failed")
+
+
+def rule_xlsx_df_pass_fail(df:pd.DataFrame,desc_col:str,val_col:str,skip_on_null=False):
+    """
+    One could argue this is really a dataframe tool, but it is assumed that the end
+    user will load an Excel spreadsheet into a dataframe and then process it.  This
+    guy looks at two columns assuming the first row is the column header
+    """
+
+    for row in df.values:
+        row_dict = dict(zip(df.columns, row))
+
+        if pd.isnull(row_dict[val_col]):
+            if skip_on_null:
+                yield SR(status=None,skipped=True, msg=f"Null value detected in column={val_col}")
+            else:
+                yield SR(status=False, msg=f"Null value detected in column={val_col}")
+            continue
+        if pd.isnull(row_dict[desc_col]):
+            if skip_on_null:
+                yield SR(status=None, skipped=True, msg=f"Null description detected in column={desc_col}")
+            else:
+                yield SR(status=False, msg=f"Null description detected in column={desc_col}")
+            continue
+
+        # Very lenient boolean values
+        status = _str_to_bool(row_dict[val_col])
+
+        if desc_col:
+            description = '' if pd.isnull(row_dict[desc_col]) else row_dict[desc_col]
+        else:
+            description = ""
+
+        if status:
+            yield SR(status=True, msg=f"{description}-Passed")
+        else:
+            yield SR(status=False, msg=f"{description}-Failed")
+
+
+

@@ -81,6 +81,8 @@ except ImportError:
 try:
     import openpyxl
     from .rule_xlsx import rule_xlsx_a1_pass_fail
+    from .rule_xlsx import rule_xlsx_df_pass_fail
+
 except:
     pass
 

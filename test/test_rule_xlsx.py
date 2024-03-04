@@ -12,6 +12,7 @@ The BaseCase.xlsx file contains:
 import pytest
 from openpyxl import load_workbook
 import src.splint as splint
+import pandas as pd
 
 
 testdata = [
@@ -29,7 +30,6 @@ testdata = [
     (None, None, None, 3, True, '-Passed'),
     (None, None, None, 4, False, '-Failed'),
     (None, None, None, 5, False, '-Failed'),
-
 ]
 
 
@@ -38,7 +38,7 @@ def test_row_col_pass_fail_with_sheet(sheet, desc_col, val_col, row_start, expec
     @splint.attributes(tag='foo')
     def check_pass_fail():
         wb = load_workbook('./rule_xlsx/BaseCase.xlsx')
-        yield from splint.rule_xlsx_a1_pass_fail(wb, sheet=sheet, val_col=val_col, row_start=str(row_start), desc_col=desc_col)
+        yield from splint.rule_xlsx_a1_pass_fail(wb, sheet_name=sheet, val_col=val_col, row_start=str(row_start), desc_col=desc_col)
 
     s_func = splint.SplintFunction(check_pass_fail)
     ch = splint.SplintChecker(check_functions=[s_func], auto_setup=True)
@@ -54,7 +54,7 @@ def test_row_col_pass_fail_with_sheet(sheet, desc_col, val_col, row_start, expec
 def test_row_col_pass_fail_with_sheet_from_env(sheet, desc_col, val_col, row, expected_status, expected_msg):
     @splint.attributes(tag='foo')
     def check_pass_fail(wb):
-        yield from splint.rule_xlsx_a1_pass_fail(wb, sheet=sheet, val_col=val_col, row_start=str(row), desc_col=desc_col)
+        yield from splint.rule_xlsx_a1_pass_fail(wb, sheet_name=sheet, val_col=val_col, row_start=str(row), desc_col=desc_col)
 
     # Test that we can load workbooks from the environment.  Same test as above.
     s_func = splint.SplintFunction(check_pass_fail)
@@ -70,7 +70,7 @@ def test_row_col_pass_fail_with_sheet_from_env(sheet, desc_col, val_col, row, ex
 def test_row_col_pass_fail_with_auto_detect():
     @splint.attributes(tag='foo')
     def check_pass_fail(wb):
-        yield from splint.rule_xlsx_a1_pass_fail(wb, sheet="Sheet1", val_col='B', row_start='2',row_end="auto", desc_col='A')
+        yield from splint.rule_xlsx_a1_pass_fail(wb, sheet_name="Sheet1", val_col='B', row_start='2',row_end="auto", desc_col='A')
 
     s_func = splint.SplintFunction(check_pass_fail)
     wb = load_workbook('./rule_xlsx/BaseCase.xlsx')
@@ -86,11 +86,27 @@ def test_row_col_pass_fail_with_auto_detect():
 def test_row_col_pass_fail_with_hardcoded():
     @splint.attributes(tag='foo')
     def check_pass_fail(wb):
-        yield from splint.rule_xlsx_a1_pass_fail(wb, sheet="Sheet1", val_col='B', row_start='2',row_end="5", desc_col='A')
+        yield from splint.rule_xlsx_a1_pass_fail(wb, sheet_name="Sheet1", val_col='B', row_start='2',row_end="5", desc_col='A')
 
     s_func = splint.SplintFunction(check_pass_fail)
     wb = load_workbook('./rule_xlsx/BaseCase.xlsx')
     ch = splint.SplintChecker(check_functions=[s_func],env={'wb':wb}, auto_setup=True)
+    results = ch.run_all()
+
+    assert len(results) == 4
+    assert results[0].status is True
+    assert results[1].status is True
+    assert results[2].status is False
+    assert results[3].status is False
+
+def test_row_col_df():
+    @splint.attributes(tag='foo')
+    def check_pass_fail(df):
+        yield from splint.rule_xlsx_df_pass_fail(df,  val_col='Complete', desc_col='Status')
+
+    s_func = splint.SplintFunction(check_pass_fail)
+    df = pd.read_excel('./rule_xlsx/BaseCase.xlsx',sheet_name='Sheet1')
+    ch = splint.SplintChecker(check_functions=[s_func],env={'df':df}, auto_setup=True)
     results = ch.run_all()
 
     assert len(results) == 4

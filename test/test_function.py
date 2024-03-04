@@ -190,7 +190,7 @@ def test_divide_by_zero():
 
     result: splint.SplintResult = next(sfunc())
     assert result.status is False
-    assert result.msg == "Exception 'division by zero' occurred while running func"
+    assert result.msg == "Exception 'division by zero' occurred while running .func"
     assert result.doc == "Test Exception Function"
     assert result.skipped is False
     assert str(result.except_) == "division by zero"
