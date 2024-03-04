@@ -258,7 +258,7 @@ class SplintFunction:
             result.except_ = e
             result.traceback = traceback.format_exc()
             mod_msg = "" if not self.module else f"{self.module}"
-            result.msg = f"Exception '{e}' occurred while running {mod_msg}{self.function.__name__}"
+            result.msg = f"Exception '{e}' occurred while running {mod_msg}.{self.function.__name__}"
             yield result
 
     def _get_section(self, header="", text=None):

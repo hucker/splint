@@ -69,12 +69,19 @@ from .splint_score import ScoreByFunctionMean  # noqa: F401
 from .splint_score import ScoreByResult  # noqa: F401
 from .splint_score import ScoreStrategy  # noqa: F401
 
+# dataframe rules
 try:
     import pandas as pd  # noqa: F401
     from .rule_dataframe import rule_validate_df_schema  # noqa: F401
     from .rule_dataframe import rule_validate_df_values_by_col  # noqa: F401
-
 except ImportError:
+    pass
+
+# xlsx rules
+try:
+    import openpyxl
+    from .rule_xlsx import rule_xlsx_a1_pass_fail
+except:
     pass
 
 # Syntactic Sugar. Since this is used every time a result is returned it
