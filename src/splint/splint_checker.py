@@ -263,8 +263,10 @@ class SplintChecker:
 
         if env:
             self.env = env
+            self.env_nulls = {}
         else:
             self.env = {}
+            self.env_nulls = {}
 
         # Connect the progress output to the checker object.  The NoProgress
         # class is a dummy class that does no progress reporting.
@@ -443,6 +445,12 @@ class SplintChecker:
             for env_func in m.env_functions:
                 # TODO: There should be exceptions on collisions
                 full_env.update(env_func(full_env))
+
+        # This is a concern, there should be no nulls, HOWEVER this is more complex
+        # since there should be no nulls for parameters to the collectred check functions.
+        # for now I'm tracking this and dumping it in the results.
+        self.env_nulls  = [key for key,value in full_env.items() if value is None]
+
         return full_env
 
     @property
@@ -629,6 +637,7 @@ class SplintChecker:
             "phases": self.phases,
             "ruids": self.ruids,
             "score": self.score,
+            "env_nulls": self.env_nulls,
         }
         return header
 

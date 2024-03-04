@@ -70,6 +70,20 @@ def test_run_ruid_1():
     assert splint.valid_ruids(ruids)
     assert splint.ruid_issues(ruids) == "No issues found."
 
+@pytest.mark.usefixtures("sys_path")
+def test_run_package_in_list():
+    """This is a check to verify that packages can be passed in a list"""
+    pkg = splint.SplintPackage(folder="./ruid", name="ruid")
+    ch = splint.SplintChecker(packages=[pkg],auto_setup=True)
+
+    _ = ch.run_all()
+
+    ruids = pkg.ruids()
+
+    assert ruids == ["suid11", "suid12", "suid21", "suid22"]
+    assert splint.valid_ruids(ruids)
+    assert splint.ruid_issues(ruids) == "No issues found."
+
 
 @pytest.mark.usefixtures("sys_path")
 def test_ruid_dup():

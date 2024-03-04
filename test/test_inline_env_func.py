@@ -14,6 +14,13 @@ def test_inline_env_func(para_env):
     assert len(results) == 15
     assert all((result.status for result in results))
 
+def test_module_not_in_list(para_env):
+    assert len(para_env.env_functions)==1
+
+    ch = splint.SplintChecker(modules=para_env,env={"global_env":"hello"},auto_setup=True)
+    results = ch.run_all()
+    assert len(results) == 15
+    assert all((result.status for result in results))
 
 def test_fail_on_none():
     @splint.attributes(tag="tag", phase="phase", level=1, weight=100, fail_on_none=True)

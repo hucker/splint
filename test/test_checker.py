@@ -533,3 +533,14 @@ def test_bad_tag_phase_ruid_strings():
 ])
 def test__get_int_list(params, expect, msg):
     assert splint.splint_checker._param_int_list(params) == expect, msg
+
+
+def test_env_nulls(func1,func2,func3):
+    """ Verify that we detect None values in env varaibles.  This will be important in the future."""
+
+    ch = splint.SplintChecker(check_functions=[func1,func2,func3],env={'foo':1,'fum':None},auto_setup=True)
+    _ = ch.run_all()
+    header = ch.get_header()
+    assert header['env_nulls'] == ['fum']
+    assert header['levels'] == [1,2,3]
+    assert header['function_count'] == 3
