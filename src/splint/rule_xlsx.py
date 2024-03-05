@@ -102,7 +102,7 @@ def rule_xlsx_a1_pass_fail(wb:openpyxl.workbook, sheet_name=None, desc_col='A', 
             yield SR(status=False,msg=f"{desc}-Failed")
 
 
-def rule_xlsx_df_pass_fail(df:pd.DataFrame,desc_col:str,val_col:str,skip_on_null=False):
+def rule_xlsx_df_pass_fail(df:pd.DataFrame, desc_col:str, val_col:str, skip_on_none=False):
     """
     One could argue this is really a dataframe tool, but it is assumed that the end
     user will load an Excel spreadsheet into a dataframe and then process it.  This
@@ -110,29 +110,27 @@ def rule_xlsx_df_pass_fail(df:pd.DataFrame,desc_col:str,val_col:str,skip_on_null
     """
 
     for row in df.values:
+        # Make dictionaries because they are easier to look at.
         row_dict = dict(zip(df.columns, row))
 
         if pd.isnull(row_dict[val_col]):
-            if skip_on_null:
+            if skip_on_none:
                 yield SR(status=None,skipped=True, msg=f"Null value detected in column={val_col}")
             else:
                 yield SR(status=False, msg=f"Null value detected in column={val_col}")
             continue
+
         if pd.isnull(row_dict[desc_col]):
-            if skip_on_null:
+            if skip_on_none:
                 yield SR(status=None, skipped=True, msg=f"Null description detected in column={desc_col}")
             else:
                 yield SR(status=False, msg=f"Null description detected in column={desc_col}")
             continue
 
+        description = row_dict[desc_col]
+
         # Very lenient boolean values
         status = _str_to_bool(row_dict[val_col])
-
-        if desc_col:
-            description = '' if pd.isnull(row_dict[desc_col]) else row_dict[desc_col]
-        else:
-            description = ""
-
         if status:
             yield SR(status=True, msg=f"{description}-Passed")
         else:
