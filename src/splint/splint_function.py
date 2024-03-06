@@ -49,20 +49,6 @@ def result_hook_fix_blank_msg(sfunc: "SplintFunction", result: SplintResult) -> 
     return result
 
 
-def result_hook_warn_to_fail(_, result: SplintResult) -> SplintResult:
-    """If a warning message is provided change the status to fail
-
-    Args:
-        result (SplintResult): The result to rewrite.
-
-    Returns:
-        SplintResult: The result with the message fixed.
-    """
-    if result.warn_msg:
-        result.status = False
-    return result
-
-
 class SplintFunction:
     """
     A class to represent a function in a module for the Splint framework.
@@ -134,7 +120,7 @@ class SplintFunction:
 
         # Support Time To Live using the return value of time.time.  Resolution of this
         # is on the order of 10e-6 depending on OS.  In my case this is WAY more than I
-        # need and I'm assuming you aren't building a trading system with this so you dont
+        # need, and I'm assuming you aren't building a trading system with this so you dont
         # care about microseconds.
         self.last_ttl_start = 0  # this will be compared to time.time() for ttl caching
         self.last_results: List[SplintResult] = []
@@ -147,7 +133,7 @@ class SplintFunction:
         self.allowed_exceptions = allowed_exceptions or (Exception,)
 
     def __str__(self):
-        return f"SplintFunction({self.function=},{self.parameters=})"
+        return f"SplintFunction({self.function_name=})"
 
     def _get_parameter_values(self):
         args = []
@@ -156,9 +142,13 @@ class SplintFunction:
                 args.append(self.env[param.name])
             elif param.default != inspect.Parameter.empty:
                 args.append(param.default)
-            else:
-                print("???")
+
         return args
+
+    def _cache_result(self, result):
+        """Simple caching saves results if ttl_minutes is no 0"""
+        if self.ttl_minutes:
+            self.last_results.append(result)
 
     def __call__(self, *args, **kwds) -> Generator[SplintResult, None, None]:
         """Call the user provided function and collect information about the result.
@@ -185,8 +175,10 @@ class SplintFunction:
         args = self._get_parameter_values()
 
         # If any arguments are None that is a bad thing.  That means that
-        # a file could not be opened or other data is not available.
-        for count, arg in enumerate([arg for arg in args if arg is None],start=1):
+        # a file could not be opened or other data is not available. If
+        # Functions are not allowed to update the environment this only
+        # needs to run once, rather than on every functioncall
+        for count, arg in enumerate([arg for arg in args if arg is None], start=1):
             if self.fail_on_none:
                 yield SplintResult(status=False, msg=f"Failed due to None argument {count} in {self.function_name}")
                 return
@@ -218,16 +210,18 @@ class SplintFunction:
                     results = [results]
 
                 # TODO: I could not make a decorator work for this, so I just put it here.
+                #       Ideally the attribute decorator could see a non generator function
+                #       and wrap at creation rather than having this crap here.
                 elif isinstance(results, bool):
                     results = [SplintResult(status=results)]
+                if not isinstance(results[0], SplintResult):
+                    raise SplintException(f"Invalid return from splint function {self.function_name}")
                 for count, r in enumerate(results, start=1):
                     # TODO: Time is wrong here, we should estimate each part taking 1/count of the total time
                     r = self.load_result(r, start_time, end_time, count=1)
                     yield r
 
-                    # Cache if ttl
-                    if self.ttl_minutes:
-                        self.last_results.append(r)
+                    self._cache_result(r)
 
             else:
                 # Functions can return multiple results, track them with a count attribute.
@@ -245,9 +239,7 @@ class SplintFunction:
 
                     yield result
 
-                    # Cache if ttl
-                    if self.ttl_minutes:
-                        self.last_results.append(result)
+                    self._cache_result(result)
 
                     start_time = time.time()
 

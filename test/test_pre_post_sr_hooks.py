@@ -29,6 +29,7 @@ def test_result_pre_hook_result_only():
         assert result.status is True
 
 
+
 def test_result_pre_hook_use_class():
     """ Test that the pre hook can use data from the SplintFunction class"""
 

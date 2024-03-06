@@ -70,6 +70,8 @@ def attributes(
 ):
     """
     Decorator to add attributes to a Splint function.
+
+    Note the *, I always forget that this means that the function is kwarg only.
     """
 
     # throws exception on bad input

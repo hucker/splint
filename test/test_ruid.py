@@ -31,7 +31,7 @@ def test_ruid1():
     assert splint.valid_ruids(ruids)
     assert splint.ruid_issues(ruids) == "No issues found."
 
-def test_ruids1_module():
+def test_ruids1_module1():
     """Make sure we can load modules individually and extract the ruids"""
     module = splint.SplintModule(module_name="check_suid1_a",module_file='./ruid/check_suid1_a.py')
     assert module.module_name == "check_suid1_a"
@@ -43,7 +43,7 @@ def test_ruids1_module():
     assert module.module_file == "./ruid/check_suid2_a.py"
     assert set(module.ruids()) == set(["suid21", "suid22"])
 
-def test_ruids1_module():
+def test_ruids1_module2():
     """Make sure we can load modules individually and extract the ruids"""
     module = splint.SplintModule(module_name="check_suid1_a", module_file='./ruid/check_suid1_a.py')
     assert module.module_name == "check_suid1_a"

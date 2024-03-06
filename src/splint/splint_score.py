@@ -18,7 +18,7 @@ class ScoreStrategy(abc.ABC):
     strategy_name = None
 
     @abc.abstractmethod
-    def score(self, results: List[SplintResult] = None):
+    def score(self, results: List[SplintResult] = None): # pragma: no cover
         pass
 
     def __call__(self, results: List[SplintResult] = None):

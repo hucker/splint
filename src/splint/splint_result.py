@@ -85,6 +85,8 @@ class SplintResult:
         return d
 
 
+
+
 class SplintYield:
     """
     This allows syntactic sugar to know how many times a generator
@@ -141,6 +143,7 @@ class SplintYield:
             self._count += 1
             self._fail_count += 0 if result.status else 1
             yield result
+
 
 
 # Result transformers do one of three things, nothing and pass the result on, modify the result

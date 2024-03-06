@@ -15,9 +15,14 @@ from .splint_function import SplintFunction
 
 
 class SplintModule:
-    def __init__(self, module_name, module_file, check_prefix='check_', env_prefix='env_', env_functions=None, auto_load=True):
+    def __init__(self, module_name,
+                 module_file,
+                 check_prefix='check_',
+                 env_prefix='env_',
+                 env_functions=None,
+                 auto_load=True):
         self.module_name = module_name
-        self.check_functions: List[SplintFunction] = []
+        self.check_functions: List[SplintFunction] =  []
         self.env_functions:List = env_functions or []
         self.module = None
         self.module_file = module_file

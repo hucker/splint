@@ -1,7 +1,7 @@
 import datetime as dt
 from abc import ABC, abstractmethod
 from typing import List
-
+import pandas as pd
 import splint
 from .splint_exception import SplintException
 from .splint_function import SplintFunction
@@ -17,13 +17,13 @@ class SplintProgress(ABC):
         pass
 
     @abstractmethod
-    def __call__(self, current_iteration: int, max_iterations, text: str, result=None):
+    def __call__(self, current_iteration: int, max_iterations, text: str, result=None): # pragma: no cover
         pass
 
 
 class SplintNoProgress(SplintProgress):
     def __call__(self, current_iteration: int, max_iterations, text: str, result=None):
-        """Don't do anyting for progress.  THis is usful for testing."""
+        """Don't do anything for progress.  THis is usful for testing."""
         pass
 
 
@@ -40,8 +40,13 @@ class SplintDebugProgress(SplintProgress):
 def _param_str_list(params: List[str] | str, disallowed=' ,!@#$%^&*(){}[]<>~`-+=\t\n\'"') -> List[str]:
     """
     Allow user to specify "foo fum" instead of ["foo","fum"] or slightly more
-    shady "foo" instead of ["foo"].  This is strictly for reducting friction
+    shady "foo" instead of ["foo"].  This is strictly for reducing friction
     for the programmer.
+
+    Also note: the disallowed characters is just me being courteous and trying to protect
+               you from yourself.  If there are other dumb characters that
+               I missed please submit a PR as I have no intention of walling off
+               everything in a dynamic language.
 
     Returns: List of Strings
 
@@ -180,30 +185,6 @@ def debug_progress(count, msg=None, result: SplintResult = None
         print("+" if result.status else "-", end="")
 
 
-def quiet_progress(step=0, msg=None, result=None):  # pylint: disable=unused-argument
-    """
-    Updates and prints the progress in a quiet mode...as in does nothing in this case.
-
-    A real progress bar will use the step number to determine the progress compared
-    to the total number of split functions (not results).  A message is provided for
-    easy progress bars, while the last result is provided to allow streaming info.
-
-    Args:
-        steps (int): Total number of steps for the progress.
-        msg: Informational message for the current step in the process
-
-    Returns:
-        None
-
-    Example:
-        quiet_progress(10, 0.5)
-
-    This will do nothing since this function just shows the signature.
-    """
-    # Your function's code here
-    pass
-
-
 class SplintChecker:
     """
     A checker object is what manages running rules against a system.
@@ -261,8 +242,11 @@ class SplintChecker:
         self.score_strategy = score_strategy or ScoreByResult()
         self.score = 0.0
 
+        # If we are provided with an environment we save it off but first wrap it in
+        # a class that guards reasonably against writes to the underlying environment
+        # data.
         if env:
-            self.env = env
+            self.env =  self._make_immutable_env(env)
             self.env_nulls = {}
         else:
             self.env = {}
@@ -295,6 +279,24 @@ class SplintChecker:
         if auto_setup:
             self.pre_collect()
             self.prepare()
+
+    def _make_immutable_env(self, env: dict) -> dict:
+        """
+        Converts mutable containers in a dictionary to immutable versions.
+        """
+        for key, value in env.items():
+
+            # Detect mutable objects and convert them to immutable ones
+            if isinstance(value, list):
+                env[key] = splint.SplintEnvList(value)
+            elif isinstance(value, dict):
+                env[key] = splint.SplintEnvDict(value)
+            elif isinstance(value, pd.DataFrame):
+                env[key] = splint.SplintEnvDataFrame(value)
+            elif isinstance(value, set):
+                env[key] = splint.SplintEnvSet(value)
+
+        return env
 
     def _process_packages(self, packages: List[SplintPackage] | None) -> List[SplintPackage]:
         """ Allow packages to be in various forms"""
@@ -494,6 +496,10 @@ class SplintChecker:
         """
         return sorted(set(f.phase for f in self.collected))
 
+    class AbortYieldException(Exception):
+        """Allow breaking out of multi level loop without state variables"""
+        pass
+
     def yield_all(self, env=None):
         """
         Yield all the results from the collected functions
@@ -507,9 +513,7 @@ class SplintChecker:
             _type_: SplintResult
         """
 
-        class AbortYieldException(Exception):
-            """Allow breaking out of multi level loop without state variables"""
-            pass
+
 
         # Note that it is possible for the collected list to be
         # empty.  This is not an error condition.  It is possible
@@ -538,10 +542,10 @@ class SplintChecker:
 
                     # Check early exits
                     if self.abort_on_fail and result.status is False:
-                        raise AbortYieldException()
+                        raise self.AbortYieldException()
 
                     if self.abort_on_exception and result.except_:
-                        raise AbortYieldException()
+                        raise self.AbortYieldException()
 
                     # Stop yielding from a function
                     if function.finish_on_fail and result.status == False:
@@ -551,7 +555,7 @@ class SplintChecker:
                     self.progress_callback(count, self.function_count, "", result)
                 self.progress_callback(count, self.function_count, "Func done.")
 
-        except AbortYieldException:
+        except self.AbortYieldException:
             if self.abort_on_fail:
                 self.progress_callback(count, self.function_count, f"Abort on fail: {function.function_name}")
             if self.abort_on_exception:

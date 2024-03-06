@@ -512,6 +512,22 @@ def test_exclude_by_attribute(attr_functions, tags, levels, phases, ruids, expec
 def test__get_str_list(params, expect, msg):
     assert splint.splint_checker._param_str_list(params) == expect, msg
 
+
+@pytest.mark.parametrize("bad_list", [
+    ["foo", 1],
+    ["foo", None],
+    ["foo", 3.3],
+    ["foo", True],
+    [[], "foo"],
+    [{"key": "value"}, "foo"],
+    ["foo",1],
+    [1],
+])
+def test_bad__get_str_list_2(bad_list):
+    """ This only handles lists of strings"""
+
+    with pytest.raises(splint.SplintException):
+        _ = splint.splint_checker._param_str_list(bad_list)
 def test_bad_tag_phase_ruid_strings():
     """Strings used in attributes can't have illegal characters
 

@@ -2,7 +2,6 @@ import pathlib
 import sys
 from typing import List
 
-from .splint_environment import SplintEnvironment
 from .splint_exception import SplintException
 from .splint_module import SplintModule
 
@@ -15,13 +14,13 @@ class SplintPackage:
             function_prefix="check_",
             auto_load=True,
             name=None,
-            env: SplintEnvironment = None,
+            env: dict = None,
     ):
         self.modules: List[SplintModule] = []
         self.folder: pathlib.Path = pathlib.Path(folder)
         self.module_glob: str = module_glob
         self.function_prefix: str = function_prefix
-        self.env: SplintEnvironment = env or {}
+        self.env: dict = env or {}
         self.results = []
 
         if not name:
@@ -32,13 +31,9 @@ class SplintPackage:
         self.folder = self.folder.resolve()
 
         # Add to module search path
-
         self._add_folder_to_sys_path(self.folder)
 
         self._verify_dir()
-
-        if self.env is None:
-            raise SplintException("An environment has not been defined.")
 
         if auto_load:
             self.load_modules()

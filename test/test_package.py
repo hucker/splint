@@ -23,6 +23,38 @@ def skip_pkg():
     return splint.SplintPackage(folder="./skip", name="Skip")
 
 
+@pytest.fixture
+def pkg_2_modules():
+    return splint.SplintPackage(folder="./ruid")
+
+@pytest.fixture
+def skip_no_name_pkg():
+    return splint.SplintPackage(folder="./skip")
+
+def test_noname_package(skip_no_name_pkg):
+    assert skip_no_name_pkg.name == 'skip'
+    m = skip_no_name_pkg.get("check_skip")
+    assert m.module_name == "check_skip"
+    assert m.check_function_count == 2
+
+    m = skip_no_name_pkg.get("module_doesnt_exist")
+    assert m is None
+
+def test_2_package_count(pkg_2_modules):
+    assert pkg_2_modules.module_count == 2
+
+import sys
+def test_add_to_path_none(pkg_2_modules):
+
+    old_len = len(sys.path)
+    pkg_2_modules._add_folder_to_sys_path(None)
+    new_len = len(sys.path)
+    assert old_len == new_len
+
+def test_no_package():
+    with pytest.raises(splint.SplintException):
+        _ = splint.SplintPackage(folder="__non_exisitant_folder")
+
 def test_sugar():
     r1 = splint.SplintResult(status=True, msg="msg")
     r2 = splint.SR(status=True, msg="msg")
