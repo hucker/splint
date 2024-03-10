@@ -23,14 +23,13 @@ Missing
 	        No
 """
 
+import pandas as pd
 import pytest
 from openpyxl import load_workbook
-import src.splint as splint
-import pandas as pd
 
+import src.splint as splint
 
 testdata = [
-
 
     # Testing cases for 'Sheet1' and specified columns
     ('Sheet1', 'A', 'B', 2, True, 'Beginning-Passed'),
@@ -52,7 +51,8 @@ def test_row_col_pass_fail_with_sheet(sheet, desc_col, val_col, row_start, expec
     @splint.attributes(tag='foo')
     def check_pass_fail():
         wb = load_workbook('./rule_xlsx/BaseCase.xlsx')
-        yield from splint.rule_xlsx_a1_pass_fail(wb, sheet_name=sheet, val_col=val_col, row_start=str(row_start), desc_col=desc_col)
+        yield from splint.rule_xlsx_a1_pass_fail(wb, sheet_name=sheet, val_col=val_col, row_start=str(row_start),
+                                                 desc_col=desc_col)
 
     s_func = splint.SplintFunction(check_pass_fail)
     ch = splint.SplintChecker(check_functions=[s_func], auto_setup=True)
@@ -62,8 +62,9 @@ def test_row_col_pass_fail_with_sheet(sheet, desc_col, val_col, row_start, expec
     assert results[0].status is expected_status
     assert results[0].msg == expected_msg
 
+
 @pytest.mark.parametrize('sheet, desc_col, val_col, row_start, expected_status, expected_msg', testdata)
-def test_row_col_pass_fail_with_no_sheet(sheet,desc_col, val_col, row_start, expected_status, expected_msg):
+def test_row_col_pass_fail_with_no_sheet(sheet, desc_col, val_col, row_start, expected_status, expected_msg):
     @splint.attributes(tag='foo')
     def check_pass_fail():
         wb = load_workbook('./rule_xlsx/BaseCase.xlsx')
@@ -78,13 +79,12 @@ def test_row_col_pass_fail_with_no_sheet(sheet,desc_col, val_col, row_start, exp
     assert results[0].msg == expected_msg
 
 
-
-
 @pytest.mark.parametrize('sheet, desc_col, val_col, row, expected_status, expected_msg', testdata)
 def test_row_col_pass_fail_with_sheet_from_env(sheet, desc_col, val_col, row, expected_status, expected_msg):
     @splint.attributes(tag='foo')
     def check_pass_fail(wb):
-        yield from splint.rule_xlsx_a1_pass_fail(wb, sheet_name=sheet, val_col=val_col, row_start=str(row), desc_col=desc_col)
+        yield from splint.rule_xlsx_a1_pass_fail(wb, sheet_name=sheet, val_col=val_col, row_start=str(row),
+                                                 desc_col=desc_col)
 
     # Test that we can load workbooks from the environment.  Same test as above.
     s_func = splint.SplintFunction(check_pass_fail)
@@ -97,14 +97,16 @@ def test_row_col_pass_fail_with_sheet_from_env(sheet, desc_col, val_col, row, ex
     assert results[0].status is expected_status
     assert results[0].msg == expected_msg
 
+
 def test_row_col_pass_fail_with_auto_detect():
     @splint.attributes(tag='foo')
     def check_pass_fail(wb):
-        yield from splint.rule_xlsx_a1_pass_fail(wb, sheet_name="Sheet1", val_col='B', row_start='2',row_end="auto", desc_col='A')
+        yield from splint.rule_xlsx_a1_pass_fail(wb, sheet_name="Sheet1", val_col='B', row_start='2', row_end="auto",
+                                                 desc_col='A')
 
     s_func = splint.SplintFunction(check_pass_fail)
     wb = load_workbook('./rule_xlsx/BaseCase.xlsx')
-    ch = splint.SplintChecker(check_functions=[s_func],env={'wb':wb}, auto_setup=True)
+    ch = splint.SplintChecker(check_functions=[s_func], env={'wb': wb}, auto_setup=True)
     results = ch.run_all()
 
     assert len(results) == 4
@@ -112,15 +114,17 @@ def test_row_col_pass_fail_with_auto_detect():
     assert results[1].status is True
     assert results[2].status is False
     assert results[3].status is False
+
 
 def test_row_col_pass_fail_with_hardcoded():
     @splint.attributes(tag='foo')
     def check_pass_fail(wb):
-        yield from splint.rule_xlsx_a1_pass_fail(wb, sheet_name="Sheet1", val_col='B', row_start='2',row_end="5", desc_col='A')
+        yield from splint.rule_xlsx_a1_pass_fail(wb, sheet_name="Sheet1", val_col='B', row_start='2', row_end="5",
+                                                 desc_col='A')
 
     s_func = splint.SplintFunction(check_pass_fail)
     wb = load_workbook('./rule_xlsx/BaseCase.xlsx')
-    ch = splint.SplintChecker(check_functions=[s_func],env={'wb':wb}, auto_setup=True)
+    ch = splint.SplintChecker(check_functions=[s_func], env={'wb': wb}, auto_setup=True)
     results = ch.run_all()
 
     assert len(results) == 4
@@ -129,14 +133,15 @@ def test_row_col_pass_fail_with_hardcoded():
     assert results[2].status is False
     assert results[3].status is False
 
+
 def test_row_col_df():
     @splint.attributes(tag='foo')
     def check_pass_fail(df):
-        yield from splint.rule_xlsx_df_pass_fail(df,  val_col='Complete', desc_col='Status')
+        yield from splint.rule_xlsx_df_pass_fail(df, val_col='Complete', desc_col='Status')
 
     s_func = splint.SplintFunction(check_pass_fail)
-    df = pd.read_excel('./rule_xlsx/BaseCase.xlsx',sheet_name='Sheet1')
-    ch = splint.SplintChecker(check_functions=[s_func],env={'df':df}, auto_setup=True)
+    df = pd.read_excel('./rule_xlsx/BaseCase.xlsx', sheet_name='Sheet1')
+    ch = splint.SplintChecker(check_functions=[s_func], env={'df': df}, auto_setup=True)
     results = ch.run_all()
 
     assert len(results) == 4
@@ -146,18 +151,20 @@ def test_row_col_df():
     assert results[2].status is False
     assert results[3].status is False
 
+
 def test_bad_skip_on_null_df():
     @splint.attributes(tag='foo')
     def check_pass_fail(df):
         yield from splint.rule_xlsx_df_pass_fail(df, val_col='Complete', desc_col='Status', skip_on_none=True)
 
     s_func = splint.SplintFunction(check_pass_fail)
-    df = pd.read_excel('./rule_xlsx/BadCase.xlsx',sheet_name='Sheet1')
-    ch = splint.SplintChecker(check_functions=[s_func],env={'df':df}, auto_setup=True)
+    df = pd.read_excel('./rule_xlsx/BadCase.xlsx', sheet_name='Sheet1')
+    ch = splint.SplintChecker(check_functions=[s_func], env={'df': df}, auto_setup=True)
     results = ch.run_all()
 
     assert len(results) == 8
     assert sum(r.skipped for r in results if r.skipped) == 4
+
 
 def test_bad_fail_on_null_df():
     @splint.attributes(tag='foo')
@@ -165,10 +172,10 @@ def test_bad_fail_on_null_df():
         yield from splint.rule_xlsx_df_pass_fail(df, val_col='Complete', desc_col='Status', skip_on_none=False)
 
     s_func = splint.SplintFunction(check_pass_fail)
-    df = pd.read_excel('./rule_xlsx/BadCase.xlsx',sheet_name='Sheet1')
-    ch = splint.SplintChecker(check_functions=[s_func],env={'df':df}, auto_setup=True)
+    df = pd.read_excel('./rule_xlsx/BadCase.xlsx', sheet_name='Sheet1')
+    ch = splint.SplintChecker(check_functions=[s_func], env={'df': df}, auto_setup=True)
     results = ch.run_all()
 
     assert len(results) == 8
     assert sum(r.skipped for r in results if r.skipped) == 0
-    assert sum(r.status is False for r in results if not r.status)==6
+    assert sum(r.status is False for r in results if not r.status) == 6

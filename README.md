@@ -2,7 +2,7 @@
 
 Splint empowers you to create a linting tool for any task by utilizing a declarative style similar to `pytest`.
 With just a few lines of code, you can define rules that integrate into your workflow by providing JSON
-output nativel. Connecting to FastAPI or Streamlit is straight forward.
+output natively. Connecting to FastAPI or Streamlit is straight forward.
 
 ## Overview
 
@@ -11,6 +11,9 @@ effectiveness
 of `pylint` in identifying and resolving code issues, I envisioned a tool capable of extending this functionality
 across diverse workflows with minimal setup. Splint allows for effortless linting of any aspect of your project or
 system, providing easy access to test results for integration with Streamlit and FastAPI.
+
+The intention is NOT to be a `linter` by parsing the syntax of a programming language, it is meant to be a `linter`
+in the sense that some system has a large set of rules that must be met for the system to be in a good state. 
 
 After experimenting with various approaches, including scripting and configuration files, I found that a `pytest`-like
 framework could offer the flexibility and ease of use I sought. While `pytest` serves a different purpose,
@@ -50,19 +53,23 @@ The distinction between Splint, `pytest`, and Great Expectations lies in their s
 - **Complexity**: Robust and feature-rich, catering to data scientists and integrated into data pipelines.
 - **Audience**: Consumed by data scientists, emphasizing a data-first approach.
 
+### Tableaux
+- **Scope** Centered around graphical output of charts, graphs, and status
+- **Complexity** Robust and feature rich catering to real time charting.
+- **Audience** Consumed by everyone in an organzaton created as mostly low-code
+
 ### Splint:
 
 - **Scope**: Offers comprehensive linting and testing capabilities for any task or system.
 - **Complexity**: Lightweight and straightforward, designed for end users with detailed testing results and scoring.
 - **Audience**: Consumed by end users across various domains, facilitating rule-based testing with clear insights into
-  testing results.
+  testing results.  A typical go/nogo test has 100's of tests that are run almost exclusively as pass/fail
 - **Visibility**: Splint allows you to document each function and propagate standard doc strings into the results for
   detailed test information.
 
-Splint aims to democratize linting and testing by providing a tool that caters to teams, projects, or company systems,
-enabling easy linting across diverse domains. Whether it's monitoring log file changes, validating queuing
-folders, or ensuring database transactions, Splint offers a holistic solution with web-based status visualization for
-team-wide visibility.
+Splint aims to democratize linting and testing by providing a tool that caters to teams, projects, or company infrastructure
+enabling easy linting. Rules have been applied to data and manufacturing infrastrcutre as well as real time project status
+reporting.
 
 ## Getting Started with Splint
 
@@ -186,8 +193,16 @@ Each Splint function returns 0-to-N results from its generator function. By conv
 was skipped.
 The rule functions that you write don't need to use generators. They can return a wide variety of output
 (e.g., Boolean, List of Boolean, `SplintResult`, List of `SplintResult`), or you can write a generator that yields
-results
-as they are checked.
+results as they are checked.
+
+Alternatively you can not use a pytest style, discovered set of rules.  Just hand a list of rules and it will happily
+run them for you.
+
+```python
+import splint
+checker = splint.SplintChecker(check_functions=[rule1,rule2,rule3,rule4,rule5],auto_setup=True)
+results = checker.run_all(env={'db':sql_conn,'cfg':'cfg.json'})
+```
 
 ## Rule Integrations
 
@@ -212,9 +227,9 @@ def check_rule1():
 ## What is the output?
 
 The low level output of a `SplintFunction` are `SplintResults`. Each `SplintResult` is trivially converted to a `json`
-record or a line in a CSV file for processing by other tools. It is very easy to connect things up to
+record or a line in a CSV file for processing by other tools. It is easy to connect things up to
 `Streamlit`, `FastAPI` or a `typer` CLI app by json-ifying the results. Each test can have a lot of data attached
-to it, if needed, but from the end user perspective the `msg` and `status` are what is important.
+to it, if needed, but from the end user perspective the `msg` and `status` are often enough.
 
 ```json
 {
@@ -273,11 +288,11 @@ of how `splint` allows you to filter, sort, select tests to run and view by addi
 | `skip_on_none `  | If an environment parameter has a None value then the function will be skipped.                                                     |
 | `fail_on_none`   | If an invironment paramter has a None value then the function will be failed.                                                       |
 
-## What are Rule Ids (RUIDS)?
+## What are Rule-Ids (RUIDS)?
 
 Tags and phases are generic information that is only present for filtering. The values don't mean much to the inner
-workings of splint.  `RUID`s are different. The purpose of an `RUID` is to tag every rule function with a unique value
-that is meaningful to the user. The only rule to the code is that they are unique. If you tag a single function with an
+workings of splint.  `RUID`s are different. The purpose of a `RUID` is to tag every rule function with a unique value
+that is, ideally, meaningful to the user. The only rule to the code is that they are unique. If you tag a single function with an
 RUID the system will expect you to put a unique ID on every function. A `SplintException` is thrown if there are RUIDs
 that are not unique.
 

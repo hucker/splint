@@ -1,7 +1,6 @@
 import src.splint as splint
 
 
-
 def test_simple_return_function():
     """ Test cases for checking that test functions (rather than generators) work as expected. """
 

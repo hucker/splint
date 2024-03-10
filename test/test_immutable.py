@@ -49,7 +49,6 @@ import pytest
 
 import src.splint as splint
 from src.splint import SplintException
-from src.splint import SplintChecker
 
 
 @pytest.fixture
@@ -192,6 +191,7 @@ def func_list():
 
     return splint.SplintFunction(func_list)
 
+
 @pytest.fixture
 def func_dict():
     @splint.attributes(tag="t1")
@@ -200,6 +200,8 @@ def func_dict():
         yield splint.SplintResult(status=True, msg="It works1")
 
     return splint.SplintFunction(func_dict)
+
+
 @pytest.fixture
 def func_set():
     @splint.attributes(tag="env_set")
@@ -209,22 +211,21 @@ def func_set():
 
     return splint.SplintFunction(func_list)
 
-def test_splint_function_writing_to_env(func_list, func_dict,func_set):
-    env = {'env_list':[1,2,3],'env_dict':{'a':10,'b':11},'env_set':set((1,2,3))}
 
-    ch = splint.SplintChecker(check_functions=[func_dict],env = env, auto_setup=True)
+def test_splint_function_writing_to_env(func_list, func_dict, func_set):
+    env = {'env_list': [1, 2, 3], 'env_dict': {'a': 10, 'b': 11}, 'env_set': set((1, 2, 3))}
+
+    ch = splint.SplintChecker(check_functions=[func_dict], env=env, auto_setup=True)
     results = ch.run_all()
     assert len(results) == 1
     assert results[0].except_
 
-    ch = splint.SplintChecker(check_functions=[func_list],env = env, auto_setup=True)
+    ch = splint.SplintChecker(check_functions=[func_list], env=env, auto_setup=True)
     results = ch.run_all()
     assert len(results) == 1
     assert results[0].except_
 
-
-    ch = splint.SplintChecker(check_functions=[func_set],env = env, auto_setup=True)
+    ch = splint.SplintChecker(check_functions=[func_set], env=env, auto_setup=True)
     results = ch.run_all()
     assert len(results) == 1
     assert results[0].except_
-

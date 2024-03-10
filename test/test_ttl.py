@@ -1,8 +1,6 @@
 import pathlib
 import time
 
-import pytest
-
 import src.splint as splint
 
 
@@ -70,7 +68,7 @@ def test_ttl_func(tmp_path):
     assert all(result.msg == f"Exist {i}" and not result.status for i, result in enumerate(results, start=1))
 
 
-#@pytest.mark.skip(reason="Found bug that needs to be fixed in ch.run_all()")
+# @pytest.mark.skip(reason="Found bug that needs to be fixed in ch.run_all()")
 def test_ttl_func_boolean_return(tmp_path):
     """
     This is the same as the code above but using non generators.  This uses

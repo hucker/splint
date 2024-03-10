@@ -1,3 +1,4 @@
+import pytest
 
 from src import splint
 from src.splint.rule_webapi import is_mismatch
@@ -13,7 +14,7 @@ def test_urls():
     for result in check_rule1():
         assert result.status
 
-        
+
 def test_bad_urls():
     urls = ["https://www.google.com/doesnotexist", "https://www.yahooXXXXXX"]
 
@@ -48,6 +49,7 @@ def test_bad_web_api():
         assert result.status
 
 
+@pytest.mark.skip(reason="The API was shut down so it always 404s")
 def test_web_api():
     @splint.attributes(tag="tag")
     def check_rule1():
@@ -59,13 +61,11 @@ def test_web_api():
         yield from splint.rule_web_api(url='https://swapi.dev/api/people/1',
                                        json_d={'name': 'Luke Skywalker', 'height': '172', 'mass': '78'})
 
-    for result in check_rule1():
-        assert result.status
-
     for result in check_rule_bad_mass():
         assert not result.status
 
-
+    for result in check_rule1():
+        assert result.status
 
 
 def convert_integers_to_strings(d):
@@ -79,24 +79,26 @@ def convert_integers_to_strings(d):
             convert_integers_to_strings(value)
     return d
 
-def test_get_difference():
 
+def test_get_difference():
     tests = [
-        ({},{},None,'Null Test'),
-        ({'a':1},{'a':1},None,'Simple pass'),
-        ({'a':1},{'a':2},{'a':1},'Simple fail'),
-        ({'a':1},{'A':1},{'a':1},'Simple fail'),
-        ({'a':1},{'b':1},{'a':1},'Simple no key'),
-        ({'a': 1, 'b': 2, 'c': {'d': 3, 'e': 4}},{'a': 1, 'b': 2, 'c': {'d': 3, 'e': 5}},  {'c': {'e': 4}},"Nest diff"),
-        ({'a': 1, 'b': 2, 'c': {'d': 3, 'e': 4}}, {'a': 1, 'b': 2, 'c': {'d': 3, 'e': 4}, 'f': 6},None,'Nested diff'),
+        ({}, {}, None, 'Null Test'),
+        ({'a': 1}, {'a': 1}, None, 'Simple pass'),
+        ({'a': 1}, {'a': 2}, {'a': 1}, 'Simple fail'),
+        ({'a': 1}, {'A': 1}, {'a': 1}, 'Simple fail'),
+        ({'a': 1}, {'b': 1}, {'a': 1}, 'Simple no key'),
+        (
+            {'a': 1, 'b': 2, 'c': {'d': 3, 'e': 4}}, {'a': 1, 'b': 2, 'c': {'d': 3, 'e': 5}}, {'c': {'e': 4}},
+            "Nest diff"),
+        ({'a': 1, 'b': 2, 'c': {'d': 3, 'e': 4}}, {'a': 1, 'b': 2, 'c': {'d': 3, 'e': 4}, 'f': 6}, None, 'Nested diff'),
     ]
 
-    for sub_set,main_set,expected_result,msg in tests:
+    for sub_set, main_set, expected_result, msg in tests:
         result = is_mismatch(sub_set, main_set)
         assert result == expected_result
 
     # now convert to string values
-    for sub_set,main_set,expected_result,msg in tests:
+    for sub_set, main_set, expected_result, msg in tests:
         sub_set = convert_integers_to_strings(sub_set)
         main_set = convert_integers_to_strings(main_set)
         expected_result = convert_integers_to_strings(expected_result)

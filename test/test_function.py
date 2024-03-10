@@ -10,12 +10,15 @@ from splint import SplintFunction
 def check_func():
     def func(value):
         return value == 1
+
     return SplintFunction(func)
+
 
 def test__str__(check_func):
     str_value = str(check_func)
     assert check_func.function_name == 'func'
     assert str_value == "SplintFunction(self.function_name='func')"
+
 
 def test_weight_exception():
     @splint.attributes(tag="tag")
@@ -193,7 +196,7 @@ def test_info_warning_func_call():
 
 
 def test_divide_by_zero():
-    """Test exception handling data passes through to result"""
+    """Test exception handling data passes through to result and automatic tracebacks """
 
     @splint.attributes(tag="DivideByZero")
     def func():
@@ -208,8 +211,8 @@ def test_divide_by_zero():
     assert result.doc == "Test Exception Function"
     assert result.skipped is False
     assert str(result.except_) == "division by zero"
+    assert 'return 1 / 0' in result.traceback  # This might be python version dependent, just trying to be better not None
     assert result.tag == "DivideByZero"
-
 
 
 def test_simplest_case_ever():
@@ -217,6 +220,7 @@ def test_simplest_case_ever():
     Test case where the users are the laziest possible people and use nothing in
     the system.
     """
+
     def return_only():
         return True
 
@@ -226,7 +230,7 @@ def test_simplest_case_ever():
     # The above function requires all default cases to work correctly
     s_func1 = splint.SplintFunction(return_only)
     s_func2 = splint.SplintFunction(yield_only)
-    for s_func,name in ((s_func1,"return_only"),(s_func2,"yield_only")):
+    for s_func, name in ((s_func1, "return_only"), (s_func2, "yield_only")):
         for result in s_func():
             assert result.status is True
             assert result.func_name == name
@@ -239,4 +243,3 @@ def test_simplest_case_ever():
             assert result.owner_list == []
             assert result.skipped is False
             assert result.msg == f'Ran {name}.001 level=1'
-

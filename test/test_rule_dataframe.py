@@ -1,12 +1,15 @@
 import itertools
+
 import pandas as pd
 import pytest
 
 import src.splint as splint
 
+
 @pytest.fixture(scope="module")
 def good_abc_df():
-    return pd.DataFrame({'a': [1, 2, 3], 'b': [1,2,3], 'c': [1,2,3], 'd': [1,2,3]})
+    return pd.DataFrame({'a': [1, 2, 3], 'b': [1, 2, 3], 'c': [1, 2, 3], 'd': [1, 2, 3]})
+
 
 # Assuming the rule_validate_df_schema function and SR class are defined in a module named 'module'
 
@@ -38,17 +41,17 @@ def test_min_max():
     assert all([not r.status for r in result2])
     assert all([not r.status for r in result3])
 
+
 def test_bad_min_max():
     df = pd.DataFrame({'a': [1, 2, 3, 4, 5, 6, 7, 8, 9]})
+
     def check_bad_min_max():
-        yield from splint.rule_validate_df_schema(df, row_min_max=(10,0))
+        yield from splint.rule_validate_df_schema(df, row_min_max=(10, 0))
 
     sfunc = splint.SplintFunction(check_bad_min_max)
     results = list(sfunc())
     assert len(results) == 1
     assert results[0].except_
-
-
 
 
 def test_allowed_values():
@@ -85,16 +88,18 @@ def test_schema_empty():
     result = list(splint.rule_validate_df_schema(df, empty_ok=False))
     assert not all([r.status for r in result])
 
-def test_schema_nothing(df_val):
 
+def test_schema_nothing(df_val):
     def check_nothing_schema():
         yield from splint.rule_validate_df_schema(df_val
                                                   )
+
     sfunc = splint.SplintFunction(check_nothing_schema)
     results = list(sfunc())
     assert len(results) == 1
     assert results[0].status is False
     assert results[0].msg == "There are no columns to check."
+
 
 def test_exceptions():
     df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]})
@@ -122,15 +127,16 @@ def generate_all_permutations(elements):
         for perm in itertools.permutations(elements, r):
             yield perm
 
+
 def test_all_column_checks(good_abc_df):
     """ Make sure that ANY way to specifiy the columns works"""
     df = good_abc_df
 
     # Every one of these should pass
-    for cols in generate_all_permutations(['a','b','c','d']):
-        for type_ in [list,tuple]:
+    for cols in generate_all_permutations(['a', 'b', 'c', 'd']):
+        for type_ in [list, tuple]:
             tcols = type_(cols)
-            results = list(splint.rule_validate_df_schema(df,columns=tcols))
+            results = list(splint.rule_validate_df_schema(df, columns=tcols))
             for result in results:
                 assert result.status
 
@@ -138,11 +144,12 @@ def test_all_column_checks(good_abc_df):
 def test_bad_column_checks(good_abc_df):
     """ We know this dataframe has abcd columns, lets try every way to make abce and make sure they all fail"""
     df = good_abc_df.copy()
-    for cols in itertools.permutations(['a','b','c','e']):
-        results = list(splint.rule_validate_df_schema(df,columns=cols))
-        #In all cases there should be one fail and 3 pass
+    for cols in itertools.permutations(['a', 'b', 'c', 'e']):
+        results = list(splint.rule_validate_df_schema(df, columns=cols))
+        # In all cases there should be one fail and 3 pass
         assert len(results) == 1
         assert results[0].status is False
+
 
 def test_all_columns():
     df = pd.DataFrame({'a': [1, 2, 3], 'b': [4.4, 5.5, 6.6], 'c': [7, None, 9], 'd': [10.1, None, 12.2]})
@@ -168,6 +175,7 @@ def df_val():
 def test_df_null_df():
     """ Should generate an error when a null data frame is passed in """
     df = pd.DataFrame()
+
     def check_df():
         yield from splint.rule_validate_df_values_by_col(df=df, non_negative=['E', 'F'])
 
@@ -181,8 +189,10 @@ def test_df_null_df():
 
 def test_no_conditions(df_val):
     """ Should generate exception result when no checks are requested"""
+
     def check_df():
         yield from splint.rule_validate_df_values_by_col(df=df_val)
+
     s_func = splint.SplintFunction(check_df)
     results = list(s_func())
     assert len(results) == 1
@@ -224,6 +234,7 @@ def test_df_column_values_pass(df_val):
     for result in results:
         assert result.status
 
+
 def test_rule_no_column_check(df_val):
     df = df_val
 
@@ -235,8 +246,9 @@ def test_rule_no_column_check(df_val):
     assert len(results) == 1
     assert results[0].status is False
     assert results[0].except_
-def test_df_column_values_fail(df_val):
 
+
+def test_df_column_values_fail(df_val):
     df = df_val
 
     results = list(splint.rule_validate_df_values_by_col(df=df, non_negative='A'))
@@ -267,10 +279,10 @@ def test_df_column_values_fail(df_val):
     for result in results:
         assert not result.status
 
-    results = list(splint.rule_validate_df_values_by_col(df=df, max_ = (-1,'A,B,D,E,G')))
+    results = list(splint.rule_validate_df_values_by_col(df=df, max_=(-1, 'A,B,D,E,G')))
     for result in results:
         assert not result.status
 
-    results = list(splint.rule_validate_df_values_by_col(df=df, min_ = (2,'A,B,D,E,G')))
+    results = list(splint.rule_validate_df_values_by_col(df=df, min_=(2, 'A,B,D,E,G')))
     for result in results:
         assert not result.status

@@ -4,6 +4,7 @@ import itertools
 from collections import Counter
 from dataclasses import asdict, dataclass, field
 from operator import attrgetter
+import traceback
 from typing import Callable, List
 
 import splint
@@ -77,6 +78,11 @@ class SplintResult:
     #Bad parameters
     skip_on_none: bool = False
     fail_on_none: bool = False
+
+    def __post_init__(self):
+        # Automatically grab the traceback for better debugging.
+        if self.except_ is not None and not self.traceback:
+            self.traceback = traceback.format_exc()
 
     def as_dict(self):
         """Convert the SplintResult instance to a dictionary."""

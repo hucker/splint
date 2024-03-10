@@ -20,6 +20,7 @@ def by_func_weights_with_skip():
         splint.SR(status=True, msg="No RUID", func_name="func3", weight=300.0),
     ]
 
+
 @pytest.fixture
 def half_pass():
     # NOTE: This gives a case than handles most of the edge case
@@ -29,14 +30,16 @@ def half_pass():
         splint.SR(status=False, msg="No RUID", func_name="func3", weight=300.0, skipped=True),
     ]
 
+
 @pytest.fixture
 def all_pass():
     # NOTE: This gives a case than handles most of the edge case
     return [
         splint.SR(status=True, msg="No RUID", func_name="func3", weight=300.0),
         splint.SR(status=True, msg="No RUID", func_name="func3", weight=300.0),
-        splint.SR(status=False, msg="No RUID", func_name="func3", weight=300.0,skipped=True),
+        splint.SR(status=False, msg="No RUID", func_name="func3", weight=300.0, skipped=True),
     ]
+
 
 @pytest.fixture
 def all_fail():
@@ -85,7 +88,8 @@ def test_score_by_function_mean(by_func_weights_with_skip):
     assert by_function_mean(by_func_weights_with_skip) == pytest.approx(score)
     assert by_function_mean([]) == 0.0
 
-def test_score_binary_pass(all_pass,all_fail,half_pass):
+
+def test_score_binary_pass(all_pass, all_fail, half_pass):
     """Check that the full binary pass works"""
     by_binary_pass = splint.ScoreBinaryPass()
     assert by_binary_pass(all_pass) == 100.0
@@ -93,13 +97,15 @@ def test_score_binary_pass(all_pass,all_fail,half_pass):
     assert by_binary_pass(half_pass) == 100
     assert by_binary_pass([]) == 0
 
-def test_score_binary_fail(all_pass,all_fail,half_pass):
+
+def test_score_binary_fail(all_pass, all_fail, half_pass):
     """Check that the full binary fail works"""
     by_binary_fail = splint.ScoreBinaryFail()
     assert by_binary_fail(all_pass) == 100.0
     assert by_binary_fail(all_fail) == 0.0
     assert by_binary_fail(half_pass) == 0.0
     assert by_binary_fail([]) == 0
+
 
 def test_strategy_factory_text():
     assert isinstance(splint.ScoreStrategy.strategy_factory("by_function_mean"), splint.ScoreByFunctionMean)
@@ -115,5 +121,3 @@ def test_strategy_factory_class_name():
     assert isinstance(splint.ScoreStrategy.strategy_factory("ScoreByResult"), splint.ScoreByResult)
     assert isinstance(splint.ScoreStrategy.strategy_factory("ScoreBinaryPass"), splint.ScoreBinaryPass)
     assert isinstance(splint.ScoreStrategy.strategy_factory("ScoreBinaryFail"), splint.ScoreBinaryFail)
-
-
