@@ -30,7 +30,9 @@ def test_ruid1():
     assert ruids == ["suid11", "suid12", "suid21", "suid22"]
     assert splint.valid_ruids(ruids)
     assert splint.ruid_issues(ruids) == "No issues found."
-
+    assert splint.package_ruids(pkg) == ["suid11", "suid12", "suid21", "suid22"]
+    assert splint.module_ruids(pkg.modules[0]) == ["suid11", "suid12"]
+    assert splint.module_ruids(pkg.modules[1]) == ["suid21", "suid22"]
 
 def test_ruids1_module1():
     """Make sure we can load modules individually and extract the ruids"""

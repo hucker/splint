@@ -135,48 +135,48 @@ def rule_fs_oldest_file_age(filesys: FS, max_age_minutes: float = 0, max_age_hou
                  msg=f'Oldest file "{oldest_file}" is more than {time_str}. The age of the file is {old_str}')
 
 
-def rule_fs_youngest_file_age(filesys: FS, min_age_minutes: float = 0, min_age_hours: float = 0,
-                              min_age_days: float = 0, min_age_seconds: float = 0, patterns=None, no_files_status=True,
-                              now_: dt.datetime = None):
-    """ UNTESTED """
-
-
-    patterns = patterns or ['*']
-
-    if isinstance(patterns, str):
-        patterns = patterns.split(',')
-
-    now = (now_ or dt.datetime.utcnow()).replace(tzinfo=dt.timezone.utc)
-    min_file_age_seconds = dt.timedelta(days=min_age_days, hours=min_age_hours, minutes=min_age_minutes,
-                                        seconds=min_age_seconds).total_seconds()
-
-    try:
-        files = filesys.listdir('/')
-        files = [f for f in files if
-                 filesys.isfile(f) and any(
-                     fnmatch.fnmatch(f, pattern) for pattern in patterns)]
-    except FSError as e:
-        yield SR(status=False, msg=f"Error during listing files: {str(e)}", except_=e)
-        return
-
-    if not files:
-        yield SR(status=no_files_status, msg=f"No files found in the directory: {filesys.getsyspath('/')}")
-        return
-
-    try:
-        youngest_file = max(files, key=lambda f: filesys.getinfo(f, namespaces=['details']).modified)
-        youngest_file_modified = filesys.getinfo(youngest_file, namespaces=['details']).modified
-        youngest_file_age_seconds = (now - youngest_file_modified).total_seconds()
-    except FSError as e:
-        yield SR(status=False, msg=f"Error during checking file's age: {str(e)}", except_=e)
-        return
-
-    time_str = sec_format(min_file_age_seconds)
-    young_str = sec_format(youngest_file_age_seconds)
-
-    if youngest_file_age_seconds >= min_file_age_seconds:
-        yield SR(status=True,
-                 msg=f'Youngest file "{youngest_file}" is more than minimal permitted age of {time_str}. The age of the file is {young_str}')
-    else:
-        yield SR(status=False,
-                 msg=f'Youngest file "{youngest_file}" is less than minimal permitted age of {time_str}. The age of the file is {young_str}')
+# def rule_fs_youngest_file_age(filesys: FS, min_age_minutes: float = 0, min_age_hours: float = 0,
+#                               min_age_days: float = 0, min_age_seconds: float = 0, patterns=None, no_files_status=True,
+#                               now_: dt.datetime = None):
+#     """ UNTESTED """
+#
+#
+#     patterns = patterns or ['*']
+#
+#     if isinstance(patterns, str):
+#         patterns = patterns.split(',')
+#
+#     now = (now_ or dt.datetime.utcnow()).replace(tzinfo=dt.timezone.utc)
+#     min_file_age_seconds = dt.timedelta(days=min_age_days, hours=min_age_hours, minutes=min_age_minutes,
+#                                         seconds=min_age_seconds).total_seconds()
+#
+#     try:
+#         files = filesys.listdir('/')
+#         files = [f for f in files if
+#                  filesys.isfile(f) and any(
+#                      fnmatch.fnmatch(f, pattern) for pattern in patterns)]
+#     except FSError as e:
+#         yield SR(status=False, msg=f"Error during listing files: {str(e)}", except_=e)
+#         return
+#
+#     if not files:
+#         yield SR(status=no_files_status, msg=f"No files found in the directory: {filesys.getsyspath('/')}")
+#         return
+#
+#     try:
+#         youngest_file = max(files, key=lambda f: filesys.getinfo(f, namespaces=['details']).modified)
+#         youngest_file_modified = filesys.getinfo(youngest_file, namespaces=['details']).modified
+#         youngest_file_age_seconds = (now - youngest_file_modified).total_seconds()
+#     except FSError as e:
+#         yield SR(status=False, msg=f"Error during checking file's age: {str(e)}", except_=e)
+#         return
+#
+#     time_str = sec_format(min_file_age_seconds)
+#     young_str = sec_format(youngest_file_age_seconds)
+#
+#     if youngest_file_age_seconds >= min_file_age_seconds:
+#         yield SR(status=True,
+#                  msg=f'Youngest file "{youngest_file}" is more than minimal permitted age of {time_str}. The age of the file is {young_str}')
+#     else:
+#         yield SR(status=False,
+#                  msg=f'Youngest file "{youngest_file}" is less than minimal permitted age of {time_str}. The age of the file is {young_str}')

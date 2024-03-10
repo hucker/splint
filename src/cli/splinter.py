@@ -6,6 +6,8 @@ import sys
 import typer
 import uvicorn
 
+import splint_api
+
 s = pathlib.Path('./src').resolve()
 sys.path.insert(0, str(s))
 app = typer.Typer(add_completion=False)
@@ -17,6 +19,7 @@ def dump_results(results):
     for result in results:
         typer.echo(result)
 
+
 def pretty_print_json(json_obj):
     """
     Pretty print a JSON object, converting non-string values to strings.
@@ -27,6 +30,7 @@ def pretty_print_json(json_obj):
     Returns:
         str: The pretty printed JSON string.
     """
+
     def convert_non_strings(obj):
         if isinstance(obj, dict):
             return {k: convert_non_strings(v) for k, v in obj.items()}
@@ -72,10 +76,10 @@ def run_checks(
 
         # If they supply 1 or both they are all run since the checker can handle arbitrary combinations
         if mod or pkg:
-            ch = splint.SplintChecker(modules=mod, packages=pkg,auto_setup=True)
+            ch = splint.SplintChecker(modules=mod, packages=pkg, auto_setup=True)
             if api:
-                splint.set_splint_checker(ch)
-                uvicorn.run(splint.splint_api.app, host="localhost", port=port)
+                splint_api.set_splint_checker(ch)
+                uvicorn.run(splint_api.app, host="localhost", port=port)
                 return
             else:
                 results = ch.run_all()
@@ -107,7 +111,6 @@ def run_checks(
             d = splint.splint_result.results_as_dict(results)
             with open(json_file, 'w', encoding='utf-8') as f:
                 json.dump(d, f, indent=2)
-
 
     except splint.SplintException as e:
         typer.echo(f"SplintException: {e}")

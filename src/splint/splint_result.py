@@ -199,65 +199,6 @@ def warn_as_fail(sr: SplintResult):
     return sr
 
 
-def fix_blank_msg(sr: SplintResult):
-    """Sets the message to the module and function name if it's blank.
-
-    Args:
-        sr (SplintResult): The result to check.
-
-    Returns:
-        SplintResult: The result with its message set to the module and function name if it was blank.
-    """
-    pkg_msg = f"{sr.pkg_name}." if sr.pkg_name else ""
-    mod_msg = f"{sr.module_name}." if sr.module_name else ""
-    func_msg = f"{sr.func_name}." if sr.func_name else ""
-
-    if not sr.msg:
-        sr.msg = f"{pkg_msg}{mod_msg}{func_msg}.{sr.count:03d}"
-    return sr
-
-
-def yield_result_pipeline(transformers: List[Callable], results: List[SplintResult]):
-    """Applies a list of functions to a list of results.
-
-    The functions are applied in order and the results are passed to the next function in the list.
-
-    Args:
-        transformers (List[Callable]): The list of functions to apply.
-        results (List[SplintResult]): The list of results to transform.
-
-    Yields:
-        SplintResult: The transformed results, unless dropped by a transformer.
-
-    Example:
-        results = yield_result_pipeline([pass_only,fix_blank_msg], results)
-    """
-
-    for result in results:
-        for transformer in transformers:
-            result = transformer(result)
-            # None means drop the result
-            if result is None:
-                break
-        if result is not None:
-            yield result
-
-
-def result_pipeline(transformers: List[Callable], results: List[SplintResult]):
-    """Applies a list of functions to a list of results and returns a list.
-
-    This is a list version of the yield_result_pipeline function. It returns a list of results
-    that may be more convenient in some cases.
-
-    Args:
-        transformers (List[Callable]): The list of functions to apply.
-        results (List[SplintResult]): The list of results to transform.
-
-    Returns:
-        List[SplintResult]: The list of transformed results, unless dropped by a transformer.
-    """
-    return list(yield_result_pipeline(transformers, results))
-
 
 def results_as_dict(results: List[SplintResult]):
     """Converts a list of SplintResult to a list of dictionaries.
