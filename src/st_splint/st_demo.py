@@ -1,6 +1,6 @@
 """
 This example shows a NON-TRIVIAL example of how to use splint with streamlit.  An attempt is made
-to use most of the majore feature groups including:
+to use most of the major feature groups including:
 
 1) Packages/Modules/Functions
 2) Use of all attributes for classifying rule functions.
@@ -50,7 +50,7 @@ def display_overview(checker: splint.SplintChecker) -> None:
 
 def display_results(results: List[splint.SplintResult]):
     """
-    Display the results in a markdown table
+    Display the results in a Markdown table
 
     Args:
         results: List of splint results
@@ -123,7 +123,7 @@ def display_json_results(checker: splint.SplintChecker):
 
 
 class SplintStreamlitProgressBar(splint.SplintProgress):
-    """ Implimentation of a progress bar for streamlit. """
+    """ Implementation of a progress bar for streamlit. """
 
     def __init__(self, progress_bar: st.progress):
         """ Store streamlit progress bar in global state"""
@@ -168,14 +168,14 @@ def main():
 
         if include_ui:
             st.write(
-                "All of these options are AND'ed together, if you select everything from 1 of the lists all functions will be run.")
+                "All of these options are ANDed together, if you select everything from 1 of the lists all functions will be run.")
             tags = st.multiselect("Include These Tags", options=checker.tags, default=checker.tags)
             ruids = st.multiselect("Include These Rule Ids", options=checker.ruids, default=[])
             levels = st.multiselect('Include These Levels', options=checker.levels, default=[])
             phases = st.multiselect('Include These Phases', options=checker.phases, default=[])
         else:
             st.write(
-                "All of these options are AND'ed together, if you select everything from 1 of the lists no functions will be run.")
+                "All of these options are ANDed together, if you select everything from 1 of the lists no functions will be run.")
             tags = st.multiselect("Exclude These Tags", options=checker.tags, default=None)
             ruids = st.multiselect("Exclude These Rule Ids", options=checker.ruids, default=None)
             levels = st.multiselect('Exclude These Levels', options=checker.levels, default=None)
@@ -191,7 +191,7 @@ def main():
         else:
             prog_bar = st.progress(0, text=f"Rule checking status 0 of {checker.function_count}")
 
-            # INstall progress bar that is nice for splint.
+            # IInstall progress bar that is nice for splint.
             checker.progress_callback = SplintStreamlitProgressBar(prog_bar)
 
             # Magic happens here
