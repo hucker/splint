@@ -1,3 +1,7 @@
+"""
+Set of baseline rules that uses the pyfilesystem module to agnostically check on things
+about the file system, file existiting, age etc.
+"""
 import datetime as dt
 import fnmatch
 from typing import List
@@ -31,10 +35,10 @@ def rule_fs_file_within_max_size(filesys: FS, path: str, max_file_size: int):
 def sec_format(seconds):
     """
     Convert a given time in seconds to a string expressing the time in a more
-    human-readable format.  Of note when calculating months it uses 30 day months which is fine
+    human-readable format.  Of note when calculating months it uses 30-day months which is fine
     for a few months but at 23 months it has 10 days of er
 
-    Time is rounded down and represented in the largest time units possible (days, hours, minutes, then seconds)
+    Time is rounded down in the largest time units possible (days, hours, minutes, then seconds)
     For time less than 2 days, it's represented in hours. For less than 2 hours, it's in minutes.
     For less than 2 minutes, it's in seconds. The seconds are displayed with up to three
     digits of precision.
@@ -50,11 +54,11 @@ def sec_format(seconds):
     string: A string representation of the provided time duration making it easier to read.
 
     """
-    SECONDS_PER_MINUTE = 60
-    SECONDS_PER_HOUR = 60 * SECONDS_PER_MINUTE
-    SECONDS_PER_DAY = 24 * SECONDS_PER_HOUR
-    SECONDS_PER_MONTH = 30 * SECONDS_PER_DAY  # Human-readable, don't whine about this
-    SECONDS_PER_YEAR = 365 * SECONDS_PER_DAY
+    seconds_per_minute = 60
+    seconds_per_hour = 60 * seconds_per_minute
+    seconds_per_day = 24 * seconds_per_hour
+    seconds_per_month = 30 * seconds_per_day  # Human-readable, don't whine about this
+    seconds_per_year = 365 * seconds_per_day
 
     # Check if seconds is very small negative, if yes then round it to 0
     if -0.001 < seconds < 0:
@@ -69,11 +73,11 @@ def sec_format(seconds):
 
     # Order of items matters, biggest goes first
     time_units = [
-        ("years", SECONDS_PER_YEAR),
-        ("months", SECONDS_PER_MONTH),
-        ("days", SECONDS_PER_DAY),
-        ("hours", SECONDS_PER_HOUR),
-        ("minutes", SECONDS_PER_MINUTE)
+        ("years", seconds_per_year),
+        ("months", seconds_per_month),
+        ("days", seconds_per_day),
+        ("hours", seconds_per_hour),
+        ("minutes", seconds_per_minute)
     ]
 
     for unit, sec_in_unit in time_units:
@@ -85,14 +89,19 @@ def sec_format(seconds):
     # times on a human scale rather than on micro-scales.
     if seconds >= 2:
         return f"{sign}{seconds:.1f} seconds"
-    elif seconds == 0:
+
+    if seconds == 0:
         return "0.000 seconds"  # no sign
-    else:
-        return f'{sign}{seconds:.3f} seconds'
+
+    return f'{sign}{seconds:.3f} seconds'
 
 
-def rule_fs_oldest_file_age(filesys: FS, max_age_minutes: float = 0, max_age_hours: float = 0,
-                            max_age_days: float = 0, max_age_seconds: float = 0, patterns=None, no_files_stat=True,
+def rule_fs_oldest_file_age(filesys: FS, max_age_minutes: float = 0,
+                            max_age_hours: float = 0,
+                            max_age_days: float = 0,
+                            max_age_seconds: float = 0,
+                            patterns=None,
+                            no_files_stat=True,
                             now_: dt.datetime = None):
     patterns = patterns or ['*']
 
@@ -100,7 +109,9 @@ def rule_fs_oldest_file_age(filesys: FS, max_age_minutes: float = 0, max_age_hou
         patterns = patterns.split(',')
 
     now = (now_ or dt.datetime.utcnow()).replace(tzinfo=dt.timezone.utc)
-    max_file_age_seconds = dt.timedelta(days=max_age_days, hours=max_age_hours, minutes=max_age_minutes,
+    max_file_age_seconds = dt.timedelta(days=max_age_days,
+                                        hours=max_age_hours,
+                                        minutes=max_age_minutes,
                                         seconds=max_age_seconds).total_seconds()
 
     try:
@@ -113,7 +124,8 @@ def rule_fs_oldest_file_age(filesys: FS, max_age_minutes: float = 0, max_age_hou
         return
 
     if not files:
-        yield SR(status=no_files_stat, msg=f"No files found in the directory: {filesys.getsyspath('/')}")
+        yield SR(status=no_files_stat,
+                 msg=f"No files found in the directory: {filesys.getsyspath('/')}")
         return
 
     try:
@@ -129,14 +141,14 @@ def rule_fs_oldest_file_age(filesys: FS, max_age_minutes: float = 0, max_age_hou
 
     if oldest_file_age_seconds <= max_file_age_seconds:
         yield SR(status=True,
-                 msg=f'Oldest file "{oldest_file}" is within age limit of {time_str}. The age of the file is {old_str}')
+                 msg=f'Oldest file "{oldest_file}" is within age limit of {time_str}. File age= {old_str}')
     else:
         yield SR(status=False,
-                 msg=f'Oldest file "{oldest_file}" is more than {time_str}. The age of the file is {old_str}')
-
+                 msg=f'Oldest file "{oldest_file}" is more than {time_str}. File age= {old_str}')
 
 # def rule_fs_youngest_file_age(filesys: FS, min_age_minutes: float = 0, min_age_hours: float = 0,
-#                               min_age_days: float = 0, min_age_seconds: float = 0, patterns=None, no_files_status=True,
+#                               min_age_days: float = 0, min_age_seconds: float = 0,
+#                               patterns=None, no_files_status=True,
 #                               now_: dt.datetime = None):
 #     """ UNTESTED """
 #
@@ -147,7 +159,8 @@ def rule_fs_oldest_file_age(filesys: FS, max_age_minutes: float = 0, max_age_hou
 #         patterns = patterns.split(',')
 #
 #     now = (now_ or dt.datetime.utcnow()).replace(tzinfo=dt.timezone.utc)
-#     min_file_age_seconds = dt.timedelta(days=min_age_days, hours=min_age_hours, minutes=min_age_minutes,
+#     min_file_age_seconds = dt.timedelta(days=min_age_days, hours=min_age_hours,
+#                                         minutes=min_age_minutes,
 #                                         seconds=min_age_seconds).total_seconds()
 #
 #     try:
@@ -160,7 +173,8 @@ def rule_fs_oldest_file_age(filesys: FS, max_age_minutes: float = 0, max_age_hou
 #         return
 #
 #     if not files:
-#         yield SR(status=no_files_status, msg=f"No files found in the directory: {filesys.getsyspath('/')}")
+#         yield SR(status=no_files_status,
+#                  msg=f"No files found in the directory: {filesys.getsyspath('/')}")
 #         return
 #
 #     try:
@@ -176,7 +190,7 @@ def rule_fs_oldest_file_age(filesys: FS, max_age_minutes: float = 0, max_age_hou
 #
 #     if youngest_file_age_seconds >= min_file_age_seconds:
 #         yield SR(status=True,
-#                  msg=f'Youngest file "{youngest_file}" is more than minimal permitted age of {time_str}. The age of the file is {young_str}')
+#           msg=f'Youngest file "{youngest_file}" is more than minimal permitted age of {time_str}. The age of the file is {young_str}')
 #     else:
 #         yield SR(status=False,
 #                  msg=f'Youngest file "{youngest_file}" is less than minimal permitted age of {time_str}. The age of the file is {young_str}')

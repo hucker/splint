@@ -1,7 +1,8 @@
 """
-SplintModule is a class that represents a module that contains a set of functions that can be run. A module
-typically represents a file that is imported into the system by finding all function that
-start with a certain prefix and adding them to the list of functions to be managed by splint.
+    SplintModule represents a module with a functions set that can be run. A module
+    typically symbolizes a file imported into the system. It does this by identifying
+    all functions starting with a certain prefix and adding them to a list managed
+    by splint.
 """
 
 import importlib
@@ -15,6 +16,11 @@ from .splint_function import SplintFunction
 
 
 class SplintModule:
+    """
+    A module is a collection of functions that is read from a file.  The check_ functions
+    are used to verify rules, while the env_functions are used to set up any parameters
+    that the rule functions might need.
+    """
     def __init__(self, module_name,
                  module_file,
                  check_prefix='check_',
@@ -22,8 +28,8 @@ class SplintModule:
                  env_functions=None,
                  auto_load=True):
         self.module_name = module_name
-        self.check_functions: List[SplintFunction] =  []
-        self.env_functions:List = env_functions or []
+        self.check_functions: List[SplintFunction] = []
+        self.env_functions: List = env_functions or []
         self.module = None
         self.module_file = module_file
         self.check_prefix = check_prefix
@@ -37,7 +43,7 @@ class SplintModule:
 
     @property
     def check_function_count(self) -> int:
-        #return 0 if not self.check_functions else len(self.check_functions)
+        """Return the check function count..."""
         return len(self.check_functions) if self.check_functions else 0
 
     def add_check_function(self, module, function):
@@ -45,7 +51,8 @@ class SplintModule:
         function = SplintFunction(function, module)
         self.check_functions.append(function)
 
-    def add_env_function(self,func):
+    def add_env_function(self, func):
+        """Add a discovered environment function to the list """
         self.env_functions.append(func)
 
     def _add_sys_path(self, module_file):
@@ -62,6 +69,7 @@ class SplintModule:
     # If not, add it to sys.path
 
     def load(self, module_name=None):
+        """Load a module using importlib. """
         module_name = module_name or self.module_name
         self._add_sys_path(self.module_file)
         try:
@@ -96,7 +104,8 @@ class SplintModule:
                 self.add_check_function(module, obj)
 
         # Strictly speaking this doesn't need to happenhere, it could be checked later
-        duplicate_ruids = [item for item, count in Counter(self.ruids()).items() if count > 1 and item != '']
+        duplicate_ruids = [item for item, count in Counter(self.ruids()).items()
+                           if count > 1 and item != '']
 
         if duplicate_ruids:
             raise SplintException(f"Duplicate RUIDs found in module: {','.join(duplicate_ruids)}")

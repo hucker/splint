@@ -1,3 +1,16 @@
+"""
+This module provides functions for conducting URL checks and handling their responses.
+
+Includes:
+- `rule_url_200`: Checks if an array of URLs returns a specific HTTP status code.
+
+- `is_mismatch`: Compares two dictionaries, returns the first differing pair.
+
+- `rule_web_api`: Verifies a URL's HTTP response status code and compares returned JSON data.
+
+Uses the `requests` library for HTTP requests, and handles exceptions accordingly.
+"""
+
 import requests
 from requests.exceptions import RequestException
 
@@ -21,7 +34,6 @@ def rule_url_200(urls, expected_status=200, timeout_sec=5):
 
         except RequestException as ex:
             yield SR(status=False, msg=f"URL {url} exception.", except_=ex)
-
 
 
 def is_mismatch(dict1, dict2):
@@ -48,6 +60,7 @@ def is_mismatch(dict1, dict2):
             return {key: value}
     return None  # Return None if it is a subset.
 
+
 def rule_web_api(url: str, json_d: dict, timeout_sec=5, expected_response=200):
     """Simple rule check to verify that URL is active."""
     response = requests.get(url, timeout=timeout_sec)
@@ -58,16 +71,18 @@ def rule_web_api(url: str, json_d: dict, timeout_sec=5, expected_response=200):
 
     # This handles an expected failure by return true but not checking the json
     if expected_response != 200:
-        yield SR(status=True, msg=f"URL {url} returned {response.status_code}, no JSON comparison needed.")
+        yield SR(status=True,
+                 msg=f"URL {url} returned {response.status_code}, no JSON comparison needed.")
         return
 
-    response_json:dict = response.json()
-    #d_status = verify_dicts(response_json, json_d)
-
+    response_json: dict = response.json()
+    # d_status = verify_dicts(response_json, json_d)
 
     d_status = is_mismatch(json_d, response_json)
 
     if d_status is None:
-        yield SR(status=True, msg=f"URL {url} returned the expected JSON {json_d}")
+        yield SR(status=True,
+                 msg=f"URL {url} returned the expected JSON {json_d}")
     else:
-        yield SR(status=False, msg=f"URL {url} did not match at key {d_status}")
+        yield SR(status=False,
+                 msg=f"URL {url} did not match at key {d_status}")

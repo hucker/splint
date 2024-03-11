@@ -1,3 +1,23 @@
+"""
+This module contains the `SplintPackage` class, which provides the functionality to load Splint
+modules from a specified directory, manage these modules, and retrieve their properties.
+
+The `SplintPackage` class provides the following main functionalities:
+
+- Initialization allows specifying a directory, a naming glob pattern for the modules,
+  a prefix for the functions, an option to autoload modules, a name for the package, and a
+  dictionary of environment parameters.
+
+- You can dynamically load modules from the directory matching the module_glob pattern.
+
+- Access loaded modules directly through the `get` method and query the total
+  number of modules via `module_count` property.
+
+- Retrieve all the unique identifiers of rules existing within these modules through
+  the `ruids` method.
+
+The modules are added to the system path for easy import and use in other Python files.
+"""
 import pathlib
 import sys
 from typing import List
@@ -7,6 +27,9 @@ from .splint_module import SplintModule
 
 
 class SplintPackage:
+    """This class handles loading all modules from a folder that match a
+       given file name pattern."""
+
     def __init__(
             self,
             folder="check",
@@ -62,10 +85,11 @@ class SplintPackage:
 
     @property
     def module_count(self) -> int:
+        """ Count the number of modules in a package. """
         return 0 if not self.modules else len(self.modules)
 
     def load_modules(self, glob=None) -> List[SplintModule]:
-
+        """ Find all of the files that match the pattern and load the modules. """
         check_file_glob = glob or self.module_glob
 
         for file_path in sorted(self.folder.glob(check_file_glob)):
@@ -77,6 +101,7 @@ class SplintPackage:
         return self.modules
 
     def get(self, module_name) -> SplintModule | None:
+        """Find a module given its name."""
         for module in self.modules:
             if module.module_name == module_name:
                 return module

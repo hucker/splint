@@ -1,3 +1,6 @@
+"""
+Useful rules for checking data frames.
+"""
 from typing import Generator, List, Tuple
 
 import numpy as np
@@ -17,25 +20,25 @@ def rule_validate_df_schema(df: pd.DataFrame,
                             allowed_values: List = None,
                             empty_ok: bool = False) -> Generator[SR, None, None]:
     """
-    Validate the schema of a DataFrame based on given conditions.
+        Validate a DataFrame schema based on given conditions.
 
-    Parameters:
-    df (pd.DataFrame): The DataFrame to validate.
-    columns (List[str], optional): The list of column names to validate. Defaults to None.
-    no_null_columns (List[str], optional): List of columns that should not contain null values. Defaults to None.
-    int_columns (List[str], optional): List of columns that should be of integer type. Defaults to None.
-    float_columns (List[str], optional): List of columns that should be of float type. Defaults to None.
-    str_columns (List[str], optional): List of columns that should be of string type. Defaults to None.
-    row_min_max (Tuple[int,int], optional): Tuple with the min/max # of rows in the DataFrame. Defaults to None.
-    empty_ok (bool, optional): If True, an empty DataFrame is considered valid. Defaults to False.
+        Parameters:
+        df (pd.DataFrame): DataFrame to be validated.
+        columns (List[str], optional): Columns to validate. Defaults to None.
+        no_null_columns (List[str], optional): Columns without null values. Defaults to None.
+        int_columns (List[str], optional): Integer type columns. Defaults to None.
+        float_columns (List[str], optional): Float type columns. Defaults to None.
+        str_columns (List[str], optional): String type columns. Defaults to None.
+        row_min_max (Tuple[int,int], optional): Min/max row numbers in DataFrame. Defaults None.
+        empty_ok (bool, optional): When True, empty DataFrame is valid. Defaults to False.
 
-    Raises:
-    SplintException: If df is None, min_rows/max_rows are not non-negative integers, or min_rows is > than max_rows.
+        Raises:
+        SplintException: If df is None, min_rows/max_rows are negative, or min_rows > max_rows.
 
-    Yields:
-    SR: An object containing the status of the validation (True if the condition is met, False otherwise)
-        and a message describing the result.
-    """
+        Yields:
+        SR: Object with validation status (True if condition met, False otherwise)
+        and a description of the result.
+        """
 
     def check_dtype(col, dtype, dtype_name):
         if df[col].dtype in dtype:
@@ -96,11 +99,14 @@ def rule_validate_df_schema(df: pd.DataFrame,
             raise SplintException("min_rows must be less than or equal to max_rows.")
 
         if min_rows <= len(df) <= max_rows:
-            yield SR(status=True, msg=f"Data frame has {len(df)} rows. Range = {min_rows} - {max_rows} rows.")
+            yield SR(status=True,
+                     msg=f"Data frame has {len(df)} rows. Range = {min_rows} - {max_rows} rows.")
         else:
-            yield SR(status=False, msg=f"Data frame has {len(df)} rows. Range = {min_rows} - {max_rows} rows.")
+            yield SR(status=False,
+                     msg=f"Data frame has {len(df)} rows. Range = {min_rows} - {max_rows} rows.")
 
-    if not any([columns, no_null_columns, int_columns, float_columns, str_columns, row_min_max, allowed_values]):
+    if not any([columns, no_null_columns, int_columns,
+                float_columns, str_columns, row_min_max, allowed_values]):
         yield SR(status=False,
                  msg="There are no columns to check.")
 
@@ -116,37 +122,26 @@ def rule_validate_df_values_by_col(df: pd.DataFrame,
                                    correlation: List[str] = None,
                                    probability: List[str] = None):
     """
-   Validate provided columns in a DataFrame based on different conditions such as whether
-   values are positive, non-negative, in a certain percentage range, less than or
-   greater than a certain minimum or maximum value, negative, non-positive or a probability.
+        Validate DataFrame schema based on given conditions. Parameters are as follows:
 
-   There is a strong argument that these should all be separate, but the case where I sure
-   like typing 'a,b,c' rather than ['a','b','c'], roughly half the characters.  If your col
-   names have , in them then tough luck.
+        Parameters:
+        - df (pd.DataFrame): DataFrame to validate.
+        - columns (List[str], optional): Col names to validate. Defaults to None.
+        - no_null_columns (List[str], optional): Cols shouldn't have null values. Defaults to None.
+        - int_columns (List[str], optional): Columns of integer type. Defaults to None.
+        - float_columns (List[str], optional): Columns of float type. Defaults to None.
+        - str_columns (List[str], optional): Columns of string type. Defaults to None.
+        - row_min_max (Tuple[int,int], optional): Min/max # of rows in DataFrame. Defaults to None.
+        - allowed_values (List, optional): Allowed values in columns. Defaults to None.
+        - empty_ok (bool, optional): If True, empty DataFrame is valid. Defaults to False.
 
-   yield from rule_validate_df_values_by_column(positive='A', probability='B', negative='C')
+        Raises:
+        - SplintException: If df is None, min_rows/max_rows aren't positive integers, or
+                           min_rows is > max_rows.
 
-   is hard to resist.
-
-   Parameters:
-   df (pd.DataFrame): The input DataFrame to validate.
-   positive (List[str], optional): List of columns to check if all values are positive. Defaults to None.
-   non_negative (List[str], optional): List of columns to check if all values are non-negative. Defaults to None.
-   percent (List[str], optional): List of columns to check if all values are between 0 and 100. Defaults to None.
-   min_ (Tuple[float, List[str]], optional): Tuple with minimum value and list of column names. Checks if all values
-                                             in the columns are >= min value. Defaults to None.
-   max_ (Tuple[float, List[str]], optional): Tuple with maximum value and list of column names. Checks if all values
-                                             in the columns are <= max value. Defaults to None.
-   negative (List[str], optional): List of columns to check if all values are negative. Defaults to None.
-   non_positive (List[str], optional): List of columns to check if all values are non-positive. Defaults to None.
-   probability (List[str], optional): List of columns to check if all values are between 0 and 1. Defaults to None.
-
-   Raises:
-   SplintException: If df is None, no cols are spec'ed or if there are incompatible values in the specified columns.
-
-   Yields:
-   SR: A status report object containing the status of the validation (True if the condition is met, False otherwise)
-       and a message describing the result.
+        Yields:
+        - SR: An obj with the status of the validation (True if condition is met, False otherwise)
+              and a message describing the result.
     """
 
     if df is None or df.empty:
@@ -167,7 +162,8 @@ def rule_validate_df_values_by_col(df: pd.DataFrame,
     if max_:
         max_ = (max_[0], max_[1].split(',')) if isinstance(max_[1], str) else max_
 
-    conditions = [positive, non_negative, negative, non_positive, percent, min_, max_, probability, correlation]
+    conditions = [positive, non_negative, negative, non_positive,
+                  percent, min_, max_, probability, correlation]
 
     if not any(conditions):
         raise SplintException("No data frame column value rules specified.")

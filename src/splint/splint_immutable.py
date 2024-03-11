@@ -9,24 +9,25 @@ THERE IS NO ASSURANCE THAT THIS WILL WORK IN ALL CASES. DON'T WRITE TO THE ENV V
 
 """
 import pandas as pd
+
 from .splint_exception import SplintException
-
-
 
 
 class SplintEnvList(list):
     """
-    A class that represents a list where mutation is not permitted. Operations that would normally
-    modify the list instead raise a SplintException.
+        Class representing a mutation-inhibited list. Mutational operations raise
+        SplintException.
 
-    Python being a dynamic language means that determined attempts to mutate the list could still succeed.
-    However, this class serves to prevent inadvertent modifications by making mutating methods explicitly raise exceptions.
+        Python being dynamic means forceful mutations can succeed. This class serves
+        to prevent accidental changes by raising exceptions for mutating methods.
 
-    While the ideal situation would be to make a copy, for larger data sets this may not be feasible due to resource
-    constraints. As such, the ImmutableList serves as a safeguard to protect large data sets from unintended modifications.
+        Ideally, a copy is best to avoid mutation. But for large data sets, it's
+        resource-demanding. ImmutableList protects large sets from unintended changes.
     """
+
     def __init__(self, *args):
-        super(SplintEnvList, self).__init__(*args)
+        # super(SplintEnvList, self).__init__(*args)
+        super().__init__(*args)
 
     def __setitem__(self, index, value):
         raise SplintException("Environment list does not support item assignment")
@@ -35,39 +36,42 @@ class SplintEnvList(list):
         raise SplintException("Environment list doesn't support item deletion")
 
     def append(self, value):
-        raise SplintException("Environment list is immutable, append operation is not supported")
+        raise SplintException("Environment list is immutable, append is not supported")
 
     def extend(self, value):
-        raise SplintException("Environment list is immutable, extend operation is not supported")
+        raise SplintException("Environment list is immutable, extend is not supported")
 
     def insert(self, index, value):
-        raise SplintException("Environment list is immutable, insert operation is not supported")
+        raise SplintException("Environment list is immutable, insert is not supported")
 
     def remove(self, value):
-        raise SplintException("Environment list is immutable, remove operation is not supported")
+        raise SplintException("Environment list is immutable, remove is not supported")
 
     def pop(self, index=-1):
-        raise SplintException("Environment list is immutable, pop operation is not supported")
+        raise SplintException("Environment list is immutable, pop is not supported")
 
     def clear(self):
-        raise SplintException("Environment list is immutable, clear operation is not supported")
+        raise SplintException("Environment list is immutable, clear is not supported")
 
     def sort(self, *args, **kwargs):
-        raise SplintException("Environment list is immutable, sort operation is not supported")
+        raise SplintException("Environment list is immutable, sort is not supported")
 
     def reverse(self):
-        raise SplintException("Environment list is immutable, reverse operation is not supported")
+        raise SplintException("Environment list is immutable, reverse is not supported")
+
 
 class SplintEnvDict(dict):
     """
-        A class that represents a dictionary where mutation is not permitted. Operations that would normally
-        modify the dictionary instead raise a SplintException.
+    A class symbolizing a mutation-prohibited dictionary. Mutational operations raise
+    a SplintException.
 
-        Similar to ImmutableList, while Python's dynamic nature could allow mutation through determined attempts,
-        this class serves to prevent inadvertent modifications to a dict object.
-        """
+    Analogous to ImmutableList, Python's dynamic nature may allow forced mutations. This
+    class prevents unintentional modifications to a dict object.
+    """
+
     def __init__(self, *args, **kwargs):
-        super(SplintEnvDict, self).__init__(*args, **kwargs)
+        # super(SplintEnvDict, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def __setitem__(self, key, value):
         raise SplintException("Environment dict does not support item assignment")
@@ -76,31 +80,33 @@ class SplintEnvDict(dict):
         raise SplintException("Environment dict doesn't support item deletion")
 
     def pop(self, k, d=None):
-        raise SplintException("Environment dict is immutable, pop operation is not supported")
+        raise SplintException("Environment dict is immutable, pop is not supported")
 
     def popitem(self):
-        raise SplintException("Environment dict is immutable, popitem operation is not supported")
+        raise SplintException("Environment dict is immutable, popitem is not supported")
 
     def clear(self):
-        raise SplintException("Environment dict is immutable, clear operation is not supported")
+        raise SplintException("Environment dict is immutable, clear is not supported")
 
     def update(self, other=(), **kwargs):
-        raise SplintException("Environment dict is immutable, update operation is not supported")
+        raise SplintException("Environment dict is immutable, update is not supported")
 
     def setdefault(self, key, default=None):
-        raise SplintException("Environment dict is immutable, setdefault operation is not supported")
+        raise SplintException("Environment dict is immutable, setdefault is not supported")
+
 
 class SplintEnvDataFrame(pd.DataFrame):
     """
-    A class that represents a DataFrame from pandas where mutation is not permitted. Operations that would normally
-    modify the DataFrame instead raise a SplintException.
+    A class for a non-mutable pandas DataFrame. Operations causing modifications raise a
+    SplintException.
 
-    Like the ImmutableList and ImmutableDict classes, this class aims to protect large dataframes from unintended
-    modifications due to Python's dynamic nature.
+    Similar to ImmutableList and ImmutableDict, this class shields large dataframes from
+    unintentional changes due to Python's dynamic nature.
     """
 
     def __init__(self, *args, **kwargs):
-        super(SplintEnvDataFrame, self).__init__(*args, **kwargs)
+        # super(SplintEnvDataFrame, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def __setitem__(self, key, value):
         raise SplintException("Environment DataFrame does not support item assignment")
@@ -123,4 +129,3 @@ class SplintEnvDataFrame(pd.DataFrame):
 
 class SplintEnvSet(frozenset):
     """ Support immutable sets using frozenset """
-    pass

@@ -1,3 +1,6 @@
+"""Basic exception classes for splint."""
+
+
 class SplintTypeError(TypeError):
     """Type errors associated with setting up Splint
 
@@ -6,7 +9,6 @@ class SplintTypeError(TypeError):
     level error.
 
     """
-    pass
 
 
 class SplintValueError(ValueError):
@@ -20,4 +22,3 @@ class SplintValueError(ValueError):
 
 class SplintException(Exception):
     """Specialized exception for splint."""
-    pass

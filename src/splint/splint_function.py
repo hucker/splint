@@ -1,6 +1,6 @@
 """
-This class encapsulates the each of the discovered rule functions found in the system.  A greate
-deal of meta data is stored in the function and extracted from information about the function
+This class encapsulates the discovered rule functions found in the system.  A greate
+deal of metadata is stored in the function and extracted from information about the function
 its signature, its generator status etc.  This information is used so users do not need to
 configure functions in multiple places.  Design elements from fastapi and pytest are obvious.
 """
@@ -51,34 +51,32 @@ def result_hook_fix_blank_msg(sfunc: "SplintFunction", result: SplintResult) -> 
 
 class SplintFunction:
     """
-    A class to represent a function in a module for the Splint framework.
+        A class representing a function within the Splint framework's module.
 
-    This class stores a function and its associated module, and allows the function to be called with
-    error handling.
+        The class stores a function, its module and allows error-handled function calls.
+        All functions returning values convert to generators yielding SplintResult objects.
+        This ensures a consistent return type, eliminating the need to worry about
+        functions returning multiple or single results.
 
-    All functions returning values are converted to generators that yield SplintResult objects.
-    This allows functions to return multiple results and for the user not to worry about the
-    difference between functions that return a single result and functions returning multiple results.
+        Ideal use is with generated generators, which attach useful attributes
+        to each function. These attributes are then processed into the SplintFunction object.
 
-    Ideally people would just use generators everywhere, but this allows them to be lazy and just
-    return a single result and have it be converted to a generator.
+        Attributes:
+        - module (ModuleType): Contains the function.
+        - function (Callable): Function to be called.
+        - parameters (inspect.Parameters): Function parameters.
+        - allowed_exceptions (Tuple[Type[Exception]]): Exception types for try-catch clauses.
 
-    Note that splint functions are created with generators and those generators mark each function
-    with a bunch of attributes that the coder thought would be useful.  Those attributes are pulled
-    up from the lower level function into the splint function object.
+        Methods:
+        - __str__(): Returns string representation of SplintFunction.
+        - __call__(*args, **kwds): Calls the function and gathers result info.
+        """
 
-    Attributes:
-        module (ModuleType): The module that contains the function.
-        function (Callable): The function to be called.
-        parameters (inspect.Parameters): The parameters of the function.
-        allowed_exceptions (Tuple[Type[Exception]]): The types of exceptions to catch when calling the function.
-
-    Methods:
-        __str__(): Returns a string representation of the SplintFunction.
-        __call__(*args, **kwds): Calls the stored function and collects information about the result.
-    """
-
-    def __init__(self, function, module='', allowed_exceptions=None, env=None, pre_sr_hooks=None, post_sr_hooks=None):
+    def __init__(self, function, module='',
+                 allowed_exceptions=None,
+                 env=None,
+                 pre_sr_hooks=None,
+                 post_sr_hooks=None):
         self.env = env or {}
         self.module = module
         self.function = function
@@ -120,7 +118,7 @@ class SplintFunction:
 
         # Support Time To Live using the return value of time.time.  Resolution of this
         # is on the order of 10e-6 depending on OS.  In my case this is WAY more than I
-        # need, and I'm assuming you aren't building a trading system with this so you dont
+        # need, and I'm assuming you aren't building a trading system with this so you don't
         # care about microseconds.
         self.last_ttl_start = 0  # this will be compared to time.time() for ttl caching
         self.last_results: List[SplintResult] = []
@@ -180,11 +178,12 @@ class SplintFunction:
         # needs to run once, rather than on every functioncall
         for count, arg in enumerate([arg for arg in args if arg is None], start=1):
             if self.fail_on_none:
-                yield SplintResult(status=False, msg=f"Failed due to None argument {count} in {self.function_name}")
+                yield SplintResult(status=False,
+                                   msg=f"Failed due to None argument {count} in func='{self.function_name}'")
                 return
             if self.skip_on_none:
                 yield SplintResult(status=None, skipped=True,
-                                   msg=f"Skipped due to None argument {count} in {self.function_name}")
+                                   msg=f"Skipped due to None argument {count} in func='{self.function_name}'")
                 return
 
         # It is possible for an exception to occur before the generator is created.

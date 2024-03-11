@@ -12,9 +12,9 @@ from .splint_attribute import attributes  # noqa: F401
 from .splint_attribute import get_attribute  # noqa: F401
 # from .splint_attribute import _convert_to_minutes # noqa:F401
 from .splint_checker import SplintChecker  # noqa: F401
-from .splint_checker import SplintProgress # noqa: F401
-from .splint_checker import SplintNoProgress # noqa; F401
-from .splint_checker import SplintDebugProgress # noqa; F401
+from .splint_checker import SplintDebugProgress  # noqa; F401
+from .splint_checker import SplintNoProgress  # noqa; F401
+from .splint_checker import SplintProgress  # noqa: F401
 from .splint_checker import exclude_levels  # noqa: F401
 from .splint_checker import exclude_phases  # noqa: F401
 from .splint_checker import exclude_ruids  # noqa: F401
@@ -27,9 +27,13 @@ from .splint_exception import SplintException  # noqa: F401
 from .splint_exception import SplintTypeError  # noqa: F401
 from .splint_exception import SplintValueError  # noqa: F401
 from .splint_function import SplintFunction  # noqa: F401
+from .splint_immutable import SplintEnvDict  # noqa: F401
+from .splint_immutable import SplintEnvList  # noqa: F401
+from .splint_immutable import SplintEnvSet  # noqa: F401
 from .splint_module import SplintModule  # noqa: F401
 from .splint_package import SplintPackage  # noqa: F401
 from .splint_result import SplintResult  # noqa: F401
+from .splint_result import SplintYield  # noqa: F401
 from .splint_result import overview  # noqa: F401
 from .splint_ruid import empty_ruids  # noqa: F401
 from .splint_ruid import module_ruids  # noqa: F401
@@ -42,10 +46,6 @@ from .splint_score import ScoreByFunctionBinary  # noqa: F401
 from .splint_score import ScoreByFunctionMean  # noqa: F401
 from .splint_score import ScoreByResult  # noqa: F401
 from .splint_score import ScoreStrategy  # noqa: F401
-from .splint_immutable import SplintEnvList  # noqa: F401
-from .splint_immutable import SplintEnvDict  # noqa: F401
-from .splint_immutable import SplintEnvSet  # noqa: F401
-from .splint_result import SplintYield # noqa: F401
 
 # dataframe rules
 try:
@@ -62,7 +62,7 @@ try:
     from .rule_xlsx import rule_xlsx_a1_pass_fail
     from .rule_xlsx import rule_xlsx_df_pass_fail
 
-except:
+except ImportError:
     pass
 
 # Syntactic Sugar. Since this is used every time a result is returned it

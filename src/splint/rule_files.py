@@ -1,3 +1,8 @@
+"""
+This module contains splint rules that are useful for checking the status of files
+on the native file system.  This functions me be removed in a future release
+and replaced by functions that use the pyfilesystem package.
+"""
 import pathlib
 import time
 
@@ -11,20 +16,19 @@ def rule_path_exists(path_: str) -> bool:
 
 
 def rule_stale_files(
-        folder: str|pathlib.Path,
-        pattern: str|pathlib.Path,
+        folder: str | pathlib.Path,
+        pattern: str | pathlib.Path,
         days: float = 0,
         hours: float = 0,
         minutes: float = 0,
         seconds: float = 0,
-        no_files_pass_status:bool=True,
+        no_files_pass_status: bool = True,
 ):
     """
-    Rule to verify that there are no files older than some age.  Each file that is too old is reported.
-    The age is specified in days, hours, minutes, and seconds.
+        Rule verifies no files older than a specified age. Each too-old file is reported.
+        Age defined in days, hours, minutes, and seconds.
 
-    Note that the case of no files being found could be considered a pass or a fail, because
-    of that you can set which way it goes with True being the default.
+        No files found could be deemed pass or fail. This behavior can be set, with True as default.
     """
     age_in_seconds = days * 86400.0 + hours * 3600.0 + minutes * 60.0 + seconds
     if age_in_seconds <= 0:
@@ -49,31 +53,43 @@ def rule_stale_files(
                 file_age = file_age_in_seconds
                 unit = "seconds"
             yield SR(
-                status=False, msg=f"Stale file {filepath} age = {file_age:.2f} {unit} {age_in_seconds=}"
+                status=False,
+                msg=f"Stale file {filepath} age = {file_age:.2f} {unit} {age_in_seconds=}"
             )
     if count == 0:
-        yield SR(status=no_files_pass_status, msg=f"No files found matching {pattern} in {folder}.")
+        yield SR(status=no_files_pass_status,
+                 msg=f"No files found matching {pattern} in {folder}.")
 
 
-def rule_large_files(folder: str, pattern: str, max_size: float,  no_files_pass_status:bool=True,):
-    """Rule to verify that there are no files larger than a given size.  Each file that is too big is reported."""
+def rule_large_files(folder: str,
+                     pattern: str,
+                     max_size: float,
+                     no_files_pass_status: bool = True, ):
+    """
+    Rule to verify that there are no files larger than a given size.
+    Each file that is too big is reported.
+    """
     if max_size <= 0:
         raise SplintException(f"Size for large file check should be > 0 not {max_size=}")
 
     count = 0
     for count, filepath in enumerate(pathlib.Path(folder).rglob(pattern), start=1):
-        file_size_in_bytes = filepath.stat().st_size
-        if file_size_in_bytes > max_size:
+        size_bytes = filepath.stat().st_size
+        if size_bytes > max_size:
             yield SR(
                 status=False,
-                msg=f"Large file {filepath} size = {file_size_in_bytes} bytes, exceeds limit of {max_size} bytes",
+                msg=f"Large file {filepath}, {size_bytes} bytes, exceeds limit of {max_size} bytes",
             )
-    if count == 0 :
-        yield SR(status=no_files_pass_status, msg=f"No files found matching {pattern} in {folder}.")
+    if count == 0:
+        yield SR(status=no_files_pass_status,
+                 msg=f"No files found matching {pattern} in {folder}.")
 
 
-def rule_max_files(folders: list, max_files: list|int, pattern: str = '*'):
-    """Rule to verify that the number of files in a list of folders does not exceed a given limit."""
+def rule_max_files(folders: list, max_files: list | int, pattern: str = '*'):
+    """
+    Rule to verify that the number of files in a list of folders does not
+    exceed a given limit.
+    """
 
     if isinstance(folders, (str, pathlib.Path)):
         folders = [folders]
@@ -81,7 +97,7 @@ def rule_max_files(folders: list, max_files: list|int, pattern: str = '*'):
         max_files = [max_files] * len(folders)
 
     if len(folders) != len(max_files):
-        raise SplintException("The number of folders and the number of max_files must be the same.")
+        raise SplintException("Number of folders and max_files must be the same.")
 
     for folder, max_file in zip(folders, max_files):
         count = 0
@@ -90,8 +106,8 @@ def rule_max_files(folders: list, max_files: list|int, pattern: str = '*'):
             pass
 
         if count <= max_file:
-            yield SR(status=True, msg=f"Folder {folder} contains less than or equal to {max_file} files.")
+            yield SR(status=True,
+                     msg=f"Folder {folder} contains less than or equal to {max_file} files.")
         else:
-            yield SR(status=False, msg=f"Folder {folder} contains greater than {max_file} files.")
-
-
+            yield SR(status=False,
+                     msg=f"Folder {folder} contains greater than {max_file} files.")

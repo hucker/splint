@@ -54,7 +54,7 @@ def check_env2(number_config):
 def check_env3(data_frame):
     """ Should pickup dataframe from local config"""
     yield splint.SplintResult(status=isinstance(data_frame, pd.DataFrame), msg="Data_frame is actually a dataframe.")
-    yield splint.SplintResult(status=data_frame.empty == True, msg="Dataframe is empty")
+    yield splint.SplintResult(status=data_frame.empty is True, msg="Dataframe is empty")
 
 
 def check_check_lots_of_stuff(db_config, number_config, global_env, data_frame):
@@ -63,7 +63,7 @@ def check_check_lots_of_stuff(db_config, number_config, global_env, data_frame):
     yield splint.SplintResult(status=number_config == CONST_NUMBER_CONFIG,
                               msg=f"Numeric config is correct {number_config}")
     yield splint.SplintResult(status=isinstance(data_frame, pd.DataFrame), msg="Data_frame is actually a dataframe.")
-    yield splint.SplintResult(status=data_frame.empty == True, msg="Dataframe is empty")
+    yield splint.SplintResult(status=data_frame.empty is True, msg="Dataframe is empty")
     yield splint.SplintResult(status=global_env == "hello", msg=f"Got global env={global_env}")
 
 
@@ -73,5 +73,5 @@ def check_order_doesnt_matter(number_config, data_frame, db_config, global_env):
     yield splint.SplintResult(status=number_config == CONST_NUMBER_CONFIG,
                               msg=f"Numeric config is correct {number_config}")
     yield splint.SplintResult(status=isinstance(data_frame, pd.DataFrame), msg="Data_frame is actually a dataframe.")
-    yield splint.SplintResult(status=data_frame.empty == True, msg="Dataframe is empty")
+    yield splint.SplintResult(status=data_frame.empty is True, msg="Dataframe is empty")
     yield splint.SplintResult(status=global_env == "hello", msg=f"Got global env={global_env}")

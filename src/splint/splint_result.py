@@ -1,11 +1,11 @@
 """ This module contains the SplintResult class and some common result transformers. """
 
 import itertools
+import traceback
 from collections import Counter
 from dataclasses import asdict, dataclass, field
 from operator import attrgetter
-import traceback
-from typing import Callable, List
+from typing import List
 
 import splint
 
@@ -15,28 +15,28 @@ class SplintResult:
     """
     Return value of a SplintFunction.
 
-    This dataclass tracks the result of a SplintFunction. It contains information about the function call, including
-    the status, the name of the module and function, a message, additional information, a warning message, the docstring,
-    the runtime, any exceptions raised, the traceback, whether the function was skipped, a tag, a level, and a count.
+    This dataclass tracks the status of a SplintFunction. It includes data relating to the function
+    call, such as the status, module name, function name, message, additional info, warning message,
+    docstring, runtime, exceptions, traceback, skip flag, tag, level, and count.
 
     This data can be used for reporting purposes.
 
     Attributes:
-        status (bool): Indicates if the check passed or failed. Default is False.
-        module_name (str): The name of the module. Default is an empty string.
-        func_name (str): The name of the function. Default is an empty string.
-        msg (str): A short one-line message to be displayed to the user. Default is an empty string.
-        info_msg (str): Additional information about the function call. Default is an empty string.
-        warn_msg (str): A warning message. Default is an empty string.
-        doc (str): The docstring of the function. Default is an empty string.
-        runtime_sec (float): The runtime of the function in seconds. Default is 0.0.
-        except_ (Exception): The exception raised by the function, if any. Default is None.
-        traceback (str): The traceback of the exception, if any. Default is an empty string.
-        skipped (bool): Indicates if the function was skipped. Default is False.
-        tag (str): A tag for the function. Default is an empty string.
-        level (int): The level of the function. Default is 1.
-        count (int): This is the index the counts the number of return values from a SplintFunction.
-    """
+        status (bool): Check status. Default is False.
+        module_name (str): Module name. Default is "".
+        func_name (str): Function name. Default is "".
+        msg (str): Message to the user. Default is "".
+        info_msg (str): Additional function call info. Default is "".
+        warn_msg (str): Warning message. Default is "".
+        doc (str): Function docstring. Default is "".
+        runtime_sec (float): Function runtime in seconds. Default is 0.0.
+        except_ (Exception): Raised exception, if any. Default is None.
+        traceback (str): Exception traceback, if any. Default is "".
+        skipped (bool): Function skip flag. Default is False.
+        tag (str): Function tag. Default is "".
+        level (int): Function level. Default is 1.
+        count (int): Return value count from a SplintFunction.
+        """
 
     status: bool = False
 
@@ -75,7 +75,7 @@ class SplintResult:
     mit_msg: str = ""
     owner_list: List[str] = field(default_factory=list)
 
-    #Bad parameters
+    # Bad parameters
     skip_on_none: bool = False
     fail_on_none: bool = False
 
@@ -89,8 +89,6 @@ class SplintResult:
         d = asdict(self)
         d['except_'] = str(d['except_'])
         return d
-
-
 
 
 class SplintYield:
@@ -118,18 +116,22 @@ class SplintYield:
 
     @property
     def yielded(self):
+        """ Have we yielded once?"""
         return self._count > 0
 
     @property
     def count(self):
+        """How many times have we yielded?"""
         return self._count
 
     @property
     def fail_count(self):
+        """How many fails have there been"""
         return self._fail_count
 
     @property
     def pass_count(self):
+        """How many passes have there been"""
         return self.count - self._fail_count
 
     @property
@@ -149,7 +151,6 @@ class SplintYield:
             self._count += 1
             self._fail_count += 0 if result.status else 1
             yield result
-
 
 
 # Result transformers do one of three things, nothing and pass the result on, modify the result
@@ -197,7 +198,6 @@ def warn_as_fail(sr: SplintResult):
     if sr.warn_msg:
         sr.status = False
     return sr
-
 
 
 def results_as_dict(results: List[SplintResult]):

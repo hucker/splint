@@ -1,4 +1,4 @@
-#pragma no cover
+# pragma no cover
 from setuptools import find_packages, setup
 
 # Mostly AI generated setup.
