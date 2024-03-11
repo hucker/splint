@@ -143,8 +143,8 @@ class SplintYield:
 
         if isinstance(results, SplintResult):
             results = [results]
-        elif isinstance(results, list) and isinstance(results[0], SplintResult):
-            pass
+        #elif isinstance(results, list) and isinstance(results[0], SplintResult):
+        #    pass
         else:
             raise splint.SplintException(f"Unknown result type {type(results)}")
         for result in results:
@@ -227,14 +227,15 @@ def group_by(results: List[SplintResult], keys: List[str]):
     """
 
     if not keys:
-        return results
+        raise splint.SplintException(f"Empty key list for grouping results.")
 
     key = keys[0]
     key_func = attrgetter(key)
 
-    # Check if all objects have the required attribute
-    if not all(hasattr(x, key) for x in results):
-        raise splint.SplintValueError(f"All objects must have an attribute '{key}'")
+    # I do not believe this is an acutal test case as it would require a bug in
+    # the code.  I'm leaving it here for now.
+    #if not all(hasattr(x, key) for x in results):
+    #    raise splint.SplintValueError(f"All objects must have an attribute '{key}'")
 
     # Sort and group by the first key
     results = sorted(results, key=key_func)

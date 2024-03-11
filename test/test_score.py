@@ -107,17 +107,29 @@ def test_score_binary_fail(all_pass, all_fail, half_pass):
     assert by_binary_fail([]) == 0
 
 
-def test_strategy_factory_text():
-    assert isinstance(splint.ScoreStrategy.strategy_factory("by_function_mean"), splint.ScoreByFunctionMean)
-    assert isinstance(splint.ScoreStrategy.strategy_factory("by_function_binary"), splint.ScoreByFunctionBinary)
-    assert isinstance(splint.ScoreStrategy.strategy_factory("by_result"), splint.ScoreByResult)
-    assert isinstance(splint.ScoreStrategy.strategy_factory("by_binary_pass"), splint.ScoreBinaryPass)
-    assert isinstance(splint.ScoreStrategy.strategy_factory("by_binary_fail"), splint.ScoreBinaryFail)
+@pytest.mark.parametrize("strategy_name, strategy_class", [
+    ("by_function_mean", splint.ScoreByFunctionMean),
+    ("by_function_binary", splint.ScoreByFunctionBinary),
+    ("by_result", splint.ScoreByResult),
+    ("by_binary_pass", splint.ScoreBinaryPass),
+    ("by_binary_fail", splint.ScoreBinaryFail),
+    ("ScoreByFunctionMean", splint.ScoreByFunctionMean),
+    ("ScoreByFunctionBinary", splint.ScoreByFunctionBinary),
+    ("ScoreByResult", splint.ScoreByResult),
+    ("ScoreBinaryPass", splint.ScoreBinaryPass),
+    ("ScoreBinaryFail", splint.ScoreBinaryFail),
+])
+def test_strategy_factory(strategy_name, strategy_class):
+    assert isinstance(splint.ScoreStrategy.strategy_factory(strategy_name), strategy_class)
 
 
-def test_strategy_factory_class_name():
-    assert isinstance(splint.ScoreStrategy.strategy_factory("ScoreByFunctionMean"), splint.ScoreByFunctionMean)
-    assert isinstance(splint.ScoreStrategy.strategy_factory("ScoreByFunctionBinary"), splint.ScoreByFunctionBinary)
-    assert isinstance(splint.ScoreStrategy.strategy_factory("ScoreByResult"), splint.ScoreByResult)
-    assert isinstance(splint.ScoreStrategy.strategy_factory("ScoreBinaryPass"), splint.ScoreBinaryPass)
-    assert isinstance(splint.ScoreStrategy.strategy_factory("ScoreBinaryFail"), splint.ScoreBinaryFail)
+@pytest.mark.parametrize("scoring_function", [
+    (splint.ScoreBinaryFail),
+    (splint.ScoreBinaryPass),
+    (splint.ScoreByResult),
+    (splint.ScoreByFunctionMean),
+    (splint.ScoreByFunctionBinary),
+])
+def test_null_results(scoring_function):
+    score = scoring_function()
+    assert score([]) == 0.0
