@@ -10,12 +10,13 @@ import time
 import traceback
 from typing import Generator, List
 
+from .splint_result import SplintResult
 from .splint_attribute import get_attribute
 from .splint_exception import SplintException
-from .splint_result import SplintResult
 
 
-def result_hook_fix_blank_msg(sfunc: "SplintFunction", result: SplintResult) -> SplintResult:
+def result_hook_fix_blank_msg(sfunc: "SplintFunction",
+                              result: SplintResult) -> SplintResult:
     """Fix the message of a result if it is blank.
 
     This is an example of a result hook used by splint to write
@@ -48,6 +49,8 @@ def result_hook_fix_blank_msg(sfunc: "SplintFunction", result: SplintResult) -> 
             result.msg = f"Ran {sfunc.function_name}.{result.count:03d} {msg_str}"
     return result
 
+ATTRIBUTES = ("tag", "level", "phase", "weight", "skip", "ruid", "skip_on_none",
+              "fail_on_none", "ttl_minutes", "finish_on_fail")
 
 class SplintFunction:
     """
@@ -179,11 +182,11 @@ class SplintFunction:
         for count, arg in enumerate([arg for arg in args if arg is None], start=1):
             if self.fail_on_none:
                 yield SplintResult(status=False,
-                                   msg=f"Failed due to None argument {count} in func='{self.function_name}'")
+                                          msg=f"Failed due to None argument {count} in func='{self.function_name}'")
                 return
             if self.skip_on_none:
                 yield SplintResult(status=None, skipped=True,
-                                   msg=f"Skipped due to None argument {count} in func='{self.function_name}'")
+                                          msg=f"Skipped due to None argument {count} in func='{self.function_name}'")
                 return
 
         # It is possible for an exception to occur before the generator is created.
@@ -216,7 +219,8 @@ class SplintFunction:
                 if not isinstance(results[0], SplintResult):
                     raise SplintException(f"Invalid return from splint function {self.function_name}")
                 for count, r in enumerate(results, start=1):
-                    # TODO: Time is wrong here, we should estimate each part taking 1/count of the total time
+                    # TODO: Time is wrong here, we should estimate each part taking
+                    #       1/count of the total time
                     r = self.load_result(r, start_time, end_time, count=1)
                     yield r
 

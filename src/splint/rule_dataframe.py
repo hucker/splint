@@ -6,9 +6,8 @@ from typing import Generator, List, Tuple
 import numpy as np
 import pandas as pd
 
+from .splint_result import SR
 from .splint_exception import SplintException
-from .splint_result import SplintResult as SR
-
 
 def rule_validate_df_schema(df: pd.DataFrame,
                             columns: List[str] = None,

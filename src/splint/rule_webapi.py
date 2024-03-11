@@ -14,7 +14,7 @@ Uses the `requests` library for HTTP requests, and handles exceptions accordingl
 import requests
 from requests.exceptions import RequestException
 
-from .splint_result import SplintResult as SR
+from .splint_result import SR
 
 
 def rule_url_200(urls, expected_status=200, timeout_sec=5):

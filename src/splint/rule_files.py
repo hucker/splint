@@ -6,9 +6,8 @@ and replaced by functions that use the pyfilesystem package.
 import pathlib
 import time
 
+from .splint_result import SR
 from .splint_exception import SplintException
-from .splint_result import SplintResult as SR
-
 
 def rule_path_exists(path_: str) -> bool:
     """Simple rule to check for a file path."""

@@ -1,8 +1,7 @@
 import pytest
 
-import splint
 import src.splint.splint_attribute as splint_attribute
-
+import src.splint.splint_exception as splint_exception
 
 def test_attr_ttl():
     tests = [
@@ -46,6 +45,6 @@ def test_ttl_fail():
         for unit in unit_group:
             for bad_time in bad_times:
                 for sep in seps:
-                    with pytest.raises(splint.SplintException):
+                    with pytest.raises(splint_exception.SplintException):
                         s = f"{bad_time}{sep}{unit}"
                         splint_attribute._parse_ttl_string(s)

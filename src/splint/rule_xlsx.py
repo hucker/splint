@@ -2,8 +2,8 @@
 import openpyxl
 import pandas as pd
 
+from .splint_result import SR
 from .splint_exception import SplintException
-from .splint_result import SplintResult as SR
 
 SHEET1 = "Sheet1"
 AUTO = "auto"
@@ -61,8 +61,8 @@ def _ensure_row_params(row_end, row_start: int):
             row_end = 1000
     try:
         row_end = int(row_end)
-    except ValueError:
-        raise SplintException("row_end was not a valid integer value")
+    except ValueError as vex:
+        raise SplintException("row_end was not a valid integer value") from vex
 
     return row_start, row_end, auto
 

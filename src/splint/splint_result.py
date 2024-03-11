@@ -7,8 +7,7 @@ from dataclasses import asdict, dataclass, field
 from operator import attrgetter
 from typing import List
 
-import splint
-
+from .splint_exception import SplintException
 
 @dataclass
 class SplintResult:
@@ -91,6 +90,10 @@ class SplintResult:
         return d
 
 
+# Shorthand
+SR = SplintResult
+
+
 class SplintYield:
     """
     This allows syntactic sugar to know how many times a generator
@@ -143,10 +146,10 @@ class SplintYield:
 
         if isinstance(results, SplintResult):
             results = [results]
-        #elif isinstance(results, list) and isinstance(results[0], SplintResult):
+        # elif isinstance(results, list) and isinstance(results[0], SplintResult):
         #    pass
         else:
-            raise splint.SplintException(f"Unknown result type {type(results)}")
+            raise SplintException(f"Unknown result type {type(results)}")
         for result in results:
             self._count += 1
             self._fail_count += 0 if result.status else 1
@@ -227,14 +230,14 @@ def group_by(results: List[SplintResult], keys: List[str]):
     """
 
     if not keys:
-        raise splint.SplintException(f"Empty key list for grouping results.")
+        raise SplintException("Empty key list for grouping results.")
 
     key = keys[0]
     key_func = attrgetter(key)
 
-    # I do not believe this is an acutal test case as it would require a bug in
+    # I do not believe this is an actual test case as it would require a bug in
     # the code.  I'm leaving it here for now.
-    #if not all(hasattr(x, key) for x in results):
+    # if not all(hasattr(x, key) for x in results):
     #    raise splint.SplintValueError(f"All objects must have an attribute '{key}'")
 
     # Sort and group by the first key
@@ -276,4 +279,5 @@ def overview(results: List[SplintResult]) -> str:
     skipped = result_counter['skip']
     warned = result_counter['warn']
 
-    return f"Total: {total}, Passed: {passed}, Failed: {failed}, Errors: {errors}, Skipped: {skipped}, Warned: {warned}"
+    return f"Total: {total}, Passed: {passed}, Failed: {failed}, " \
+           f"Errors: {errors}, Skipped: {skipped}, Warned: {warned}"

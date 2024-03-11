@@ -8,14 +8,15 @@ from typing import List
 
 import pandas as pd
 
-import splint
 from .splint_exception import SplintException
 from .splint_function import SplintFunction
-from .splint_module import SplintModule
-from .splint_package import SplintPackage
 from .splint_result import SplintResult
-from .splint_ruid import empty_ruids, ruid_issues, valid_ruids
-from .splint_score import ScoreByResult, ScoreStrategy
+from .splint_module import  SplintModule
+from .splint_package import SplintPackage
+from .splint_score import ScoreStrategy,ScoreByResult
+from .splint_immutable import SplintEnvDict,SplintEnvDataFrame,SplintEnvSet,SplintEnvList
+from .splint_ruid import valid_ruids,empty_ruids,ruid_issues
+
 
 
 # pylint: disable=R0903
@@ -119,8 +120,8 @@ def _param_int_list(params: List[str] | int | str) -> List[int]:
         sparams = params.split()
         try:
             params = [int(sparam) for sparam in sparams]
-        except ValueError:
-            raise SplintException(f"Invalid integer parameter in {params}")
+        except ValueError as vex:
+            raise SplintException(f"Invalid integer parameter in {params}") from vex
 
     return params
 
@@ -228,8 +229,7 @@ class SplintChecker:
             modules: List[SplintModule] | None = None,
             check_functions: List[SplintFunction] | None = None,
             progress_object: SplintProgress = None,
-            score_strategy:
-            ScoreStrategy | None = None,
+            score_strategy: ScoreStrategy | None = None,
             env=None,
             abort_on_fail=False,
             abort_on_exception=False,
@@ -293,7 +293,7 @@ class SplintChecker:
         self.pre_collected = []
         self.start_time = dt.datetime.now()
         self.end_time = dt.datetime.now()
-        self.results: List[splint.SplintResult] = []
+        self.results: List[SplintResult] = []
 
         if not self.packages and not self.modules and not self.check_functions:
             raise SplintException(
@@ -315,17 +315,18 @@ class SplintChecker:
 
             # Detect mutable objects and convert them to immutable ones
             if isinstance(value, list):
-                env[key] = splint.SplintEnvList(value)
+                env[key] = SplintEnvList(value)
             elif isinstance(value, dict):
-                env[key] = splint.SplintEnvDict(value)
+                env[key] = SplintEnvDict(value)
             elif isinstance(value, pd.DataFrame):
-                env[key] = splint.SplintEnvDataFrame(value)
+                env[key] = SplintEnvDataFrame(value)
             elif isinstance(value, set):
-                env[key] = splint.SplintEnvSet(value)
+                env[key] = SplintEnvSet(value)
 
         return env
 
-    def _process_packages(self, packages: List[SplintPackage] | None) -> List[SplintPackage]:
+    def _process_packages(self,
+                          packages: List[SplintPackage] | None) -> List[SplintPackage]:
         """ Allow packages to be in various forms"""
         if not packages:
             return []
@@ -335,7 +336,8 @@ class SplintChecker:
             return packages
         raise SplintException('Packages must be a list of SplintPackage objects.')
 
-    def _process_modules(self, modules: List[SplintModule] | None) -> List[SplintModule]:
+    def _process_modules(self,
+                         modules: List[SplintModule] | None) -> List[SplintModule]:
         """ Allow modules to be in various forms"""
         if not modules:
             return []
@@ -473,8 +475,8 @@ class SplintChecker:
     def load_environments(self):
         """
         THis takes the global environment and adds in the results
-        from all of the discovered environment functions.  The results
-        are all merged into a dictionry of parameter names and their values.
+        from all the discovered environment functions.  The results
+        are all merged into a dictionary of parameter names and their values.
 
         This works very much like pytest, only without the scoping Parameters
         taht are needed in multiple places aren't regenerated.
@@ -493,7 +495,7 @@ class SplintChecker:
 
         # This is a concern, there should be no nulls, HOWEVER this is more complex
         # since there should be no nulls for parameters to the collected check functions.
-        # for now I'm tracking this and dumping it in the results.
+        # for now, I'm tracking this and dumping it in the results.
         self.env_nulls = [key for key, value in full_env.items() if value is None]
 
         return full_env
@@ -568,8 +570,8 @@ class SplintChecker:
             env = self.load_environments()
 
             # Shuts up linter
-            result: splint.SplintResult = None
-            function: splint.SplintFunction = None
+            result: SplintResult = None
+            function: SplintFunction = None
 
             # Count here to enable progress bars
             for count, function in enumerate(self.collected, start=1):
@@ -599,14 +601,16 @@ class SplintChecker:
                 self.progress_callback(count, self.function_count, "Func done.")
 
         except self.AbortYieldException:
+            name = function.function_name if function is not None else "???"
+
             if self.abort_on_fail:
                 self.progress_callback(count,
                                        self.function_count,
-                                       f"Abort on fail: {function.function_name}")
+                                       f"Abort on fail: {name}")
             if self.abort_on_exception:
                 self.progress_callback(count,
                                        self.function_count,
-                                       f"Abort on exception: {function.function_name}")
+                                       f"Abort on exception: {name}")
 
         self.end_time = dt.datetime.now()
         self.progress_callback(count,

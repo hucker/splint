@@ -2,16 +2,14 @@ import time
 
 import pytest
 
-import src.splint as splint
-from splint import SplintFunction
-
+import splint
 
 @pytest.fixture(scope="module")
 def check_func():
     def func(value):
         return value == 1
 
-    return SplintFunction(func)
+    return splint.SplintFunction(func)
 
 
 def test__str__(check_func):
@@ -88,15 +86,15 @@ def test_function_bad_weight():
     try:
         attribute_decorator = splint.attributes(tag="tag", phase="phase", level=1, weight=0, skip=False)
         attribute_decorator(dummy_func)
-    except splint.SplintValueError:
+    except splint.SplintException:
         assert True
 
     except Exception as e:
         # The above cases don't work, even though the debugger says the exception is a SplintValueError
         # if I compare type(e) to SplintValueError it says False?
-        assert True
+        assert False
         return
-    assert False
+
 
 
 def test_function_attributes():

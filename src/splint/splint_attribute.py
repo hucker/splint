@@ -14,7 +14,7 @@ the time.
 """
 import re
 
-import splint
+from .splint_exception import SplintException
 
 DEFAULT_TAG = ""  # A string indicating the type of rule, used for grouping/filtering results
 DEFAULT_LEVEL = 1  #
@@ -65,7 +65,7 @@ def _parse_ttl_string(input_string: str) -> float:
             unit = matches[0][1]
         number = float(matches[0][0]) / scale[unit]
         if number < 0.0:
-            raise splint.SplintException("TTL must be greater than or equal to 0.0")
+            raise SplintException("TTL must be greater than or equal to 0.0")
         return number
 
 
@@ -93,7 +93,7 @@ def attributes(
     ttl_minutes = _parse_ttl_string(str(ttl_minutes))
 
     if weight <= 0:
-        raise splint.SplintValueError("Weight must be > then 0.0.  Nominal value is 100.0.")
+        raise SplintException("Weight must be > then 0.0.  Nominal value is 100.0.")
 
     def decorator(func):
         func.phase = phase

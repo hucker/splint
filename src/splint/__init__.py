@@ -24,8 +24,8 @@ from .splint_checker import keep_phases  # noqa: F401
 from .splint_checker import keep_ruids  # noqa: F401
 from .splint_checker import keep_tags  # noqa: F401
 from .splint_exception import SplintException  # noqa: F401
-from .splint_exception import SplintTypeError  # noqa: F401
-from .splint_exception import SplintValueError  # noqa: F401
+# from .splint_exception import SplintTypeError  # noqa: F401
+# from .splint_exception import SplintValueError  # noqa: F401
 from .splint_function import SplintFunction  # noqa: F401
 from .splint_immutable import SplintEnvDict  # noqa: F401
 from .splint_immutable import SplintEnvList  # noqa: F401
@@ -33,6 +33,7 @@ from .splint_immutable import SplintEnvSet  # noqa: F401
 from .splint_module import SplintModule  # noqa: F401
 from .splint_package import SplintPackage  # noqa: F401
 from .splint_result import SplintResult  # noqa: F401
+from .splint_result import SR
 from .splint_result import SplintYield  # noqa: F401
 from .splint_result import overview  # noqa: F401
 from .splint_ruid import empty_ruids  # noqa: F401
@@ -64,7 +65,3 @@ try:
 
 except ImportError:
     pass
-
-# Syntactic Sugar. Since this is used every time a result is returned it
-# makes sense to make it easier to type.
-SR = SplintResult

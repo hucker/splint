@@ -9,10 +9,11 @@ from typing import List
 from fs.base import FS
 from fs.errors import FSError
 
-from splint import SR
+from .splint_result import SR
 
 
 def rule_fs_paths_exist(fs_obj: FS, paths: List[str]) -> bool:
+    """ Check a bunch of paths."""
     for path in paths:
         yield from rule_fs_path_exists(fs_obj, path)
 
@@ -103,6 +104,7 @@ def rule_fs_oldest_file_age(filesys: FS, max_age_minutes: float = 0,
                             patterns=None,
                             no_files_stat=True,
                             now_: dt.datetime = None):
+    """ Make sure the oldest file isn't too old """
     patterns = patterns or ['*']
 
     if isinstance(patterns, str):

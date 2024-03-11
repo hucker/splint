@@ -89,11 +89,11 @@ class ScoreByFunctionBinary(ScoreStrategy):
         if not results:
             return 0.0
 
-        for key, results in score_functions.items():
-            if not results:
+        for key, results_ in score_functions.items():
+            if not results_:
                 score_functions[key] = 0.0
             else:
-                score_functions[key] = 100.0 if all(r.status for r in results) else 0.0
+                score_functions[key] = 100.0 if all(r.status for r in results_) else 0.0
 
         # The score should be the average of the scores for each function
         return sum(score_functions.values()) / (len(score_functions) * 1.0)
@@ -125,8 +125,8 @@ class ScoreByFunctionMean(ScoreStrategy):
         sum_passed = 0
 
         # Now we have a dictionary of results for each function.  We can now score each function
-        for key, results in function_results.items():
-            for result in results:
+        for key, results_ in function_results.items():
+            for result in results_:
                 sum_weights += result.weight
                 sum_passed += result.weight if result.status else 0
 

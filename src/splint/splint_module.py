@@ -6,13 +6,14 @@
 """
 
 import importlib
+import inspect
 import pathlib
 import sys
 from collections import Counter
 from typing import List
 
-from .splint_exception import SplintException
 from .splint_function import SplintFunction
+from .splint_exception import  SplintException
 
 
 class SplintModule:
@@ -75,12 +76,13 @@ class SplintModule:
         try:
             module = importlib.import_module(module_name)
             self.module = module
-            self.doc = module.__doc__
+            #self.doc = module.__doc__
+            self.doc = inspect.getdoc(module)
             self.load_special_functions(module)
             return True
 
-        except ImportError as e:
-            raise SplintException(f"Can't load {module_name}: {e}")
+        except ImportError as iex:
+            raise SplintException(f"Can't load {module_name}") from iex
 
     def load_special_functions(self, module):
         """Look through all the functions in the module and load the check/env functions"""

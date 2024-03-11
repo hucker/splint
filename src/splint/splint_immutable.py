@@ -10,13 +10,12 @@ THERE IS NO ASSURANCE THAT THIS WILL WORK IN ALL CASES. DON'T WRITE TO THE ENV V
 """
 import pandas as pd
 
-from .splint_exception import SplintException
-
+from  .splint_exception import SplintException
 
 class SplintEnvList(list):
     """
         Class representing a mutation-inhibited list. Mutational operations raise
-        SplintException.
+        splint_exception.SplintException.
 
         Python being dynamic means forceful mutations can succeed. This class serves
         to prevent accidental changes by raising exceptions for mutating methods.
@@ -115,16 +114,17 @@ class SplintEnvDataFrame(pd.DataFrame):
         raise SplintException("Environment DataFrame doesn't support column deletion")
 
     def append(self, other, ignore_index=False, verify_integrity=False, sort=None):
-        raise SplintException("Environment DataFrame is immutable, append operation is not supported")
+        raise SplintException("Environment DataFrame is immutable, append is not supported")
 
     def pop(self, item):
-        raise SplintException("Environment DataFrame is immutable, pop operation is not supported")
+        raise SplintException("Environment DataFrame is immutable, pop is not supported")
 
-    def drop(self, labels=None, axis=0, index=None, columns=None, level=None, inplace=False, errors='raise'):
-        raise SplintException("Environment DataFrame is immutable, drop operation is not supported")
+    def drop(self, labels=None, axis=0, index=None, columns=None,
+             level=None, inplace=False, errors='raise'):
+        raise SplintException("Environment DataFrame is immutable, drop is not supported")
 
     def insert(self, loc, column, value, allow_duplicates=False):
-        raise SplintException("Environment DataFrame is immutable, insert operation is not supported")
+        raise SplintException("Environment DataFrame is immutable, insert is not supported")
 
 
 class SplintEnvSet(frozenset):
