@@ -23,14 +23,59 @@ def rule_fs_path_exists(fs_obj: FS, path_: str) -> bool:
     yield SR(status=fs_obj.exists(path_), msg=f"The path {path_} on {fs_obj.root_path} exists.")
 
 
-def rule_fs_file_within_max_size(filesys: FS, path: str, max_file_size: int):
+def human_readable_size(size_in_bytes: int):
+    """
+    Convert a given size in bytes to a human-readable string format.
+
+    Parameters:
+    size_in_bytes (int): The size in bytes to convert.
+
+    Returns:
+    string: The size in bytes, converted to a human-readable format
+    (e.g. 'bytes', 'KB', 'MB', 'GB', 'TB', 'PB'). The result is
+    rounded to the nearest tenth if it is not in bytes. If the original
+    size was negative, the result is also negative.
+    """
+    units = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB']
+    index = 0
+
+    # Convert negative bytes to positive, and remember if it was negative.
+    is_negative = size_in_bytes < 0
+    size_in_bytes = abs(size_in_bytes)
+
+    while size_in_bytes >= 2048 and index < len(units) - 1:  # 2048 switch to the next unit at 2.00 exactly
+        size_in_bytes /= 1024
+        index += 1
+
+    # If the size_in_bytes was negative, switch it back to negative.
+    size_in_bytes = -size_in_bytes if is_negative else size_in_bytes
+
+    # Special case for bytes (no decimal point is needed)
+    if units[index] == 'bytes':
+        # Special case for 1 byte (singular)
+        if abs(size_in_bytes) == 1:
+            return f"{size_in_bytes} byte"
+
+        # Other cases for bytes (plural)
+        return f"{int(size_in_bytes)} bytes"
+
+    # General case
+    return f"{size_in_bytes:.1f} {units[index]}"
+
+
+def rule_fs_file_within_max_size(filesys: FS, path: str, max_file_size: int, skip_if_missing=False):
     """Check if a file exists and its size is within the given max_file_size limit"""
     if not filesys.isfile(path):
-        yield SR(status=False, msg=f'File "{path}" does not exist')
-    elif filesys.getsize(path) > max_file_size:
-        yield SR(status=False, msg=f'File "{path}" exceeds size limit')
+        yield SR(status=False, msg=f'File "{path}" does not exist in {filesys.root_path}', skipped=skip_if_missing)
     else:
-        yield SR(status=True, msg=f'File "{path}" exists and is within size limit')
+        file_size = filesys.getsize(path)
+        file_size_str = human_readable_size(file_size)
+        delta = file_size - max_file_size
+        delta_str = human_readable_size(abs(delta))
+        if delta < 0:
+            yield SR(status=False, msg=f'File "{path}" size={file_size_str} exceeds size limit by -{delta} bytes.')
+        else:
+            yield SR(status=True, msg=f'File "{path}" size={file_size_str} within size limit by {delta} bytes.')
 
 
 def sec_format(seconds):
@@ -103,6 +148,7 @@ def rule_fs_oldest_file_age(filesys: FS, max_age_minutes: float = 0,
                             max_age_seconds: float = 0,
                             patterns=None,
                             no_files_stat=True,
+                            no_files_skip=True,
                             now_: dt.datetime = None):
     """ Make sure the oldest file isn't too old """
     patterns = patterns or ['*']
@@ -127,7 +173,8 @@ def rule_fs_oldest_file_age(filesys: FS, max_age_minutes: float = 0,
 
     if not files:
         yield SR(status=no_files_stat,
-                 msg=f"No files found in the directory: {filesys.getsyspath('/')}")
+                 msg=f"No files found in the directory: {filesys.getsyspath('/')}",
+                 skipped=no_files_skip)
         return
 
     try:

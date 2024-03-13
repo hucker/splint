@@ -39,6 +39,25 @@ def temp_fs():
 
 
 @pytest.fixture
+def empty_fs():
+    """Create a temporary empty FS object that points to the file system"""
+    # Create a temporary directory
+    temp_dir = tempfile.mkdtemp()
+
+    # Create a filesystem object pointing to the temporary directory
+    fs_obj = OSFS(temp_dir)
+
+    # Pass the temporary directory path and filesystem object to the test,
+    # then cleanup after the test is done.
+    yield fs_obj
+
+    # Clean up: remove the temporary directory after the test is done.
+    # This also removes all files under the directory.
+    fs_obj.close()
+    shutil.rmtree(temp_dir)
+
+
+@pytest.fixture
 def os_fs():
     # Create a temporary directory and instantiate the filesystem object
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -153,10 +172,17 @@ def test_oldest_file_outside_max_age():
             assert result.status is False, "Supposed to be too old."
 
 
+def test_oldest_file_inside_max_age_no_files(empty_fs):
+    for result in rule_fs.rule_fs_oldest_file_age(empty_fs, max_age_seconds=1, patterns='*.txt', no_files_skip=True):
+        assert result.skipped is True
+    for result in rule_fs.rule_fs_oldest_file_age(empty_fs, max_age_seconds=1, patterns='*.txt', no_files_skip=False):
+        assert result.skipped is False
+
+
 @pytest.mark.parametrize("seconds, expected_output", [
     (1.9996, "2.0 seconds"),  # Verify that .9996 rounds up to 2
     (1.9991, "1.999 seconds"),  # Verify that .999 rounds to .999
-    (2 * 365  * 24 * 3600, "2.0 years"),
+    (2 * 365 * 24 * 3600, "2.0 years"),
     (23 * 30 * 24 * 3600, "23.0 months"),
     (60 * 24 * 3600, "2.0 months"),
     (3600 * 24 * 365 * 5, "5.0 years"),  # A very large number of days (~5 years)
@@ -195,3 +221,53 @@ def test_sec_format(seconds, expected_output):
         seconds = -seconds
         time_string = rule_fs.sec_format(seconds)
         assert '-' + expected_output == time_string
+
+
+@pytest.mark.parametrize("file_size, expected_result", [
+    (15, True),
+    (25, True),
+    (26, True),  # Boundary case.
+    (40, False)])
+def test_within_max_size(temp_fs, file_size, expected_result):
+    # We now the file size is 26
+    for result in rule_fs.rule_fs_file_within_max_size(temp_fs, "test.txt", file_size):
+        assert result.status is expected_result
+
+
+def test_bad_max_size(temp_fs):
+    for result in rule_fs.rule_fs_file_within_max_size(temp_fs, "doesnt_exist.txt", 100):
+        assert result.status is False
+        assert result.skipped is False
+        assert "does not exist" in result.msg.lower()
+
+    for result in rule_fs.rule_fs_file_within_max_size(temp_fs,
+                                                       "doesnt_exist.txt",
+                                                       100,
+                                                       skip_if_missing=True):
+        assert result.skipped is True
+
+@pytest.mark.parametrize("file_size, expected_output", [
+    (1, "1 byte"),
+    (1024, "1024 bytes"),
+    (1048576, "1024.0 KB"),
+    (1073741824, "1024.0 MB"),
+    (1099511627776, "1024.0 GB"),
+    (1500, "1500 bytes"),
+    (1536000, "1500.0 KB"),
+    (1572864000, "1500.0 MB"),
+    (500, "500 bytes"),
+    (500000, "488.3 KB"),
+    (500000000, "476.8 MB"),
+    (500000000000, "465.7 GB"),
+    (500000000000000, "454.7 TB"),
+    (500000000000000000, "444.1 PB"),
+    # Edge case to get plural right
+    (0, "0 bytes"),
+])
+def test_human_readable_size(file_size, expected_output):
+    for sign in [-1,1]:
+        output = rule_fs.human_readable_size(sign * file_size)
+        if file_size == 0:
+            assert output == "0 bytes"
+        else:
+            assert output ==  ('-' if sign==-1 else "") + expected_output
