@@ -63,7 +63,6 @@ def _ensure_row_params(row_end, row_start: int):
         row_end = int(row_end)
     except ValueError as vex:
         raise SplintException("row_end was not a valid integer value") from vex
-
     return row_start, row_end, auto
 
 
