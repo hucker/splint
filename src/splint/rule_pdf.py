@@ -24,7 +24,7 @@ def extract_tables_from_pdf(file_path: str,
     Extracts tables from a PDF file that include specified columns, and returns them in a list.
 
 
-        | RuleID     | Status | Skip  | Description   |
+        | RuleID     | Status | Skip  | None          |
         |------------|--------|-------|---------------|
         | Rule ID 1  | pass   | no    | Rule desc 1   |
         | Rule ID 2  | fail   | yes   | Rule desc 2   |
