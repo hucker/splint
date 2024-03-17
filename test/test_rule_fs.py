@@ -271,3 +271,4 @@ def test_human_readable_size(file_size, expected_output):
             assert output == "0 bytes"
         else:
             assert output ==  ('-' if sign==-1 else "") + expected_output
+

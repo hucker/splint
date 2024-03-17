@@ -78,7 +78,7 @@ def attributes(
         skip=DEFAULT_SKIP,
         ruid=DEFAULT_RUID,
         ttl_minutes=DEFAULT_TTL_MIN,
-        finish_on_fail=DEFAULT_FINISH_ON_FAIL,
+        finish_on_fail=DEFAULT_FINISH_ON_FAIL,  # Abort the whole run
         skip_on_none=DEFAULT_SKIP_ON_NONE,
         fail_on_none=DEFAULT_FAIL_ON_NONE,
 

@@ -5,7 +5,7 @@ and replaced by functions that use the pyfilesystem package.
 """
 import pathlib
 import time
-
+from typing import Generator
 from .splint_result import SR
 from .splint_exception import SplintException
 
@@ -22,7 +22,7 @@ def rule_stale_files(
         minutes: float = 0,
         seconds: float = 0,
         no_files_pass_status: bool = True,
-):
+)-> Generator[SR, None, None]:
     """
         Rule verifies no files older than a specified age. Each too-old file is reported.
         Age defined in days, hours, minutes, and seconds.

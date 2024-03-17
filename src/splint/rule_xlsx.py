@@ -4,6 +4,7 @@ import pandas as pd
 
 from .splint_result import SR
 from .splint_exception import SplintException
+from .splint_util import str_to_bool
 
 SHEET1 = "Sheet1"
 AUTO = "auto"
@@ -13,15 +14,7 @@ VAL_COL_DEFAULT = "B"
 DESCRIPTION_COLUMN = "A"
 
 
-def _str_to_bool(s: str) -> bool:
-    s = s.strip().lower()  # Remove spaces at the beginning/end and convert to lower case
 
-    if s in ('true', 'yes', '1', 't', 'y', 'on'):
-        return True
-    if s in ('false', 'no', '0', 'f', 'n', 'off', ''):
-        return False
-
-    raise ValueError(f'Cannot convert {s} to a boolean')
 
 
 def _column_to_number(column: str) -> int:
@@ -106,7 +99,7 @@ def rule_xlsx_a1_pass_fail(wb: openpyxl.workbook,
             # It is possible not to have a description column
             desc = ""
 
-        if _str_to_bool(value):
+        if str_to_bool(value):
             yield SR(status=True, msg=f"{desc}-Passed")
         else:
             yield SR(status=False, msg=f"{desc}-Failed")
@@ -144,7 +137,7 @@ def rule_xlsx_df_pass_fail(df: pd.DataFrame, desc_col: str, val_col: str, skip_o
         description = row_dict[desc_col]
 
         # Very lenient boolean values
-        status = _str_to_bool(row_dict[val_col])
+        status = str_to_bool(row_dict[val_col])
         if status:
             yield SR(status=True, msg=f"{description}-Passed")
         else:

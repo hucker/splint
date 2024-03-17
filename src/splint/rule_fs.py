@@ -150,7 +150,11 @@ def rule_fs_oldest_file_age(filesys: FS, max_age_minutes: float = 0,
                             no_files_stat=True,
                             no_files_skip=True,
                             now_: dt.datetime = None):
-    """ Make sure the oldest file isn't too old """
+    """
+    This rule is useful for ensuring that files are being removed in
+    a timely manner as in the case where a folder is used to queue up
+    data files that are processed.  Old files indicates an issue.
+    """
     patterns = patterns or ['*']
 
     if isinstance(patterns, str):

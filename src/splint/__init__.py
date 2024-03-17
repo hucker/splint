@@ -8,7 +8,6 @@ from .rule_files import rule_path_exists  # noqa: F401
 from .rule_files import rule_stale_files  # noqa: F401
 from .rule_webapi import rule_url_200  # noqa: F401
 from .rule_webapi import rule_web_api  # noqa: F401
-from .rule_pdf import extract_tables_from_pdf # noqa: F401
 from .splint_attribute import attributes  # noqa: F401
 from .splint_attribute import get_attribute  # noqa: F401
 # from .splint_attribute import _convert_to_minutes # noqa:F401
@@ -33,8 +32,8 @@ from .splint_immutable import SplintEnvList  # noqa: F401
 from .splint_immutable import SplintEnvSet  # noqa: F401
 from .splint_module import SplintModule  # noqa: F401
 from .splint_package import SplintPackage  # noqa: F401
+from .splint_result import SR  # noqa: F401
 from .splint_result import SplintResult  # noqa: F401
-from .splint_result import SR # noqa: F401
 from .splint_result import SplintYield  # noqa: F401
 from .splint_result import overview  # noqa: F401
 from .splint_ruid import empty_ruids  # noqa: F401
@@ -48,6 +47,7 @@ from .splint_score import ScoreByFunctionBinary  # noqa: F401
 from .splint_score import ScoreByFunctionMean  # noqa: F401
 from .splint_score import ScoreByResult  # noqa: F401
 from .splint_score import ScoreStrategy  # noqa: F401
+from .splint_util import str_to_bool  # noqa: F401
 
 # dataframe rules
 try:
@@ -63,6 +63,14 @@ try:
     import openpyxl
     from .rule_xlsx import rule_xlsx_a1_pass_fail
     from .rule_xlsx import rule_xlsx_df_pass_fail
+except ImportError:
+    pass
 
+# pdf rules
+try:
+    import camelot
+    import pandas as pd
+    from .rule_pdf import extract_tables_from_pdf  # noqa: F401
+    from .rule_pdf import rule_from_pdf_rule_ids  # noqa: F401
 except ImportError:
     pass

@@ -108,7 +108,7 @@ def test_bad_stale_file_setup():
         yield from splint.rule_stale_files(folder=file_path, pattern="my_file*.txt", days=0, hours=0, minutes=0,
                                            seconds=0)
 
-    # Make sure we cat
+    # Make sure we all the var types work.
     for rule in [check_rule_sec, check_rule_min, check_rule_hr, check_rule_day, check_rule_all_zero]:
         s_func = splint.SplintFunction(rule)
         for result in s_func():

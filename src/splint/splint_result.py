@@ -37,7 +37,7 @@ class SplintResult:
         count (int): Return value count from a SplintFunction.
         """
 
-    status: bool = False
+    status: bool|None = False
 
     # Name hierarchy
     func_name: str = ""
