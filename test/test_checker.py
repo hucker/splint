@@ -2,8 +2,7 @@ from typing import List
 
 import pytest
 
-import src.splint as splint
-
+from src import splint
 
 @pytest.fixture
 def func1():
@@ -572,3 +571,30 @@ def test_env_nulls(func1, func2, func3):
     assert header['env_nulls'] == ['fum']
     assert header['levels'] == [1, 2, 3]
     assert header['function_count'] == 3
+
+
+def test_auto_ruids():
+    """Verify that ruids are only autocreated when the auto_ruid is true. """
+
+    @splint.attributes(tag="t1", level=1, phase='p1')
+    def ar_func1():
+        yield splint.SplintResult(status=True, msg="It works1")
+
+    @splint.attributes(tag="t1", level=1, phase='p1')
+    def ar_func2():
+        yield splint.SplintResult(status=True, msg="It works2")
+
+    sfunc1 = splint.SplintFunction(ar_func1)
+    sfunc2 = splint.SplintFunction(ar_func2)
+    ch = splint.SplintChecker(check_functions=[sfunc1, sfunc2], auto_setup=True)
+    results = ch.run_all()
+
+    for result in results:
+        assert result.ruid == ''
+
+    ch = splint.SplintChecker(check_functions=[sfunc1, sfunc2], auto_setup=True, auto_ruid=True)
+    results = ch.run_all()
+
+    assert len(results) == 2
+    assert results[0].ruid == '__ruid__0001'
+    assert results[1].ruid == '__ruid__0002'

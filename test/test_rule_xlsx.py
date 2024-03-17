@@ -27,7 +27,7 @@ import pandas as pd
 import pytest
 from openpyxl import load_workbook
 
-import src.splint as splint
+from src import splint
 
 testdata = [
 

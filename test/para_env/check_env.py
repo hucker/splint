@@ -1,7 +1,7 @@
 """DocString for check_dec_complex"""
 import pandas as pd
 
-import src.splint as splint
+from src import splint
 
 """ In this example we have a more complex decorator structure where
     we have 3 levels of decorators.  The decorators are applied to

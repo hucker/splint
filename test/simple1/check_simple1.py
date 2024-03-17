@@ -1,5 +1,5 @@
 """DocString for check_simple1"""
-import src.splint as splint
+from src import splint
 
 
 def check_hello():

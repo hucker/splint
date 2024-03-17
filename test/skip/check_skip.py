@@ -1,5 +1,5 @@
 """DocString for check_dec"""
-import src.splint as splint
+from src import splint
 
 """
 Test that functions are skipped with the skip flag.

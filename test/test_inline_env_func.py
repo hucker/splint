@@ -1,6 +1,6 @@
 import pytest
 
-import src.splint as splint
+from src import splint
 
 
 @pytest.fixture

@@ -1,4 +1,4 @@
-import src.splint as splint
+from src import splint
 
 
 def test_yielder_do_something():

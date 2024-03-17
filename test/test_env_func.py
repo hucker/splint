@@ -1,4 +1,4 @@
-import src.splint as splint
+from src import splint
 
 
 def test_funct_env_default():

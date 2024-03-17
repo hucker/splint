@@ -1,4 +1,4 @@
-import src.splint as splint
+from src import splint
 
 
 @splint.attributes(ruid="pass11",tag='tag1')

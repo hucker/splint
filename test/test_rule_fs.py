@@ -12,7 +12,7 @@ from fs.base import FS
 from fs.osfs import OSFS
 
 import splint.rule_fs as rule_fs
-import src.splint as splint
+from src import splint
 
 
 @pytest.fixture

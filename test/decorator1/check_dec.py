@@ -1,5 +1,5 @@
 """DocString for check_dec"""
-import src.splint as splint
+from src import splint
 
 
 @splint.attributes(tag='tag1', level=1)

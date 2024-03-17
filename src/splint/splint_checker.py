@@ -234,6 +234,7 @@ class SplintChecker:
             abort_on_fail=False,
             abort_on_exception=False,
             auto_setup: bool = False,
+            auto_ruid:bool = False,
     ):
         """
         
@@ -254,7 +255,7 @@ class SplintChecker:
             abort_on_fail: A bool flag indicating whether to abort a fail result occurs. def =False.
             abort_on_exception: A bool flag indicating whether to abort on exceptions. def=False.
             auto_setup: A bool flag automatically invoke pre_collect/prepare. def=False.
-
+            auto_ruid: A bool flag automatically generate rule_id if they don't exist.
         Raises:
             SplintException: If the provided packages, modules, or check_functions 
                              are not in the correct format.
@@ -289,11 +290,12 @@ class SplintChecker:
         # If any exception occurs stop processing
         self.abort_on_exception = abort_on_exception
 
-        self.collected = []
-        self.pre_collected = []
+        self.collected:List[SplintFunction] = []
+        self.pre_collected:List[SplintFunction] = []
         self.start_time = dt.datetime.now()
         self.end_time = dt.datetime.now()
         self.results: List[SplintResult] = []
+        self.auto_ruid = auto_ruid
 
         if not self.packages and not self.modules and not self.check_functions:
             raise SplintException(
@@ -410,6 +412,8 @@ class SplintChecker:
         # If no filter functions are provided then use a default one allows all functions
         filter_functions = filter_functions or [lambda _: True]
 
+        self.auto_gen_ruids()
+
         # At this point we have all the functions in the packages, modules and functions
         # Now we need to filter out the ones that are not wanted. Filter functions return
         # True if the function should be kept
@@ -434,6 +438,19 @@ class SplintChecker:
         raise SplintException(
             f"There are duplicate or missing RUIDS: {ruid_issues(ruids)}"
         )
+
+    def auto_gen_ruids(self, template='__ruid__@id@'):
+        """ Provide a mechanism for to transition from no ruids to ruids.  This way they
+            can only set up the rules that need rule_ids"""
+        if not self.auto_ruid:
+            return
+        id = 1
+        for function in self.pre_collected:
+            if function.ruid is '':
+                function.ruid = template.replace("@id@", f'{id:04d}')
+                id += 1
+
+
 
     def exclude_by_attribute(self, tags: List = None,
                              ruids: List = None,

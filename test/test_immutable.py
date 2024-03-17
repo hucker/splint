@@ -47,7 +47,7 @@ and raise the appropriate exception, consistent with the intention of preserving
 import pandas as pd
 import pytest
 
-import src.splint as splint
+from src import splint
 from src.splint import SplintException
 
 

@@ -1,5 +1,5 @@
 """ Test the pre- and post-hooks for the SplintResult"""
-import src.splint as splint
+from src import splint
 
 
 def test_result_pre_hook_result_only():

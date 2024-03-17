@@ -1,7 +1,7 @@
 import pathlib
 import time
 
-import src.splint as splint
+from src import splint
 
 
 def test_ttl_func(tmp_path):

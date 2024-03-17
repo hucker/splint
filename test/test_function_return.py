@@ -1,4 +1,4 @@
-import src.splint as splint
+from src import splint
 
 
 def test_simple_return_function():
