@@ -13,7 +13,7 @@ across diverse workflows with minimal setup. Splint allows for effortless lintin
 system, providing easy access to test results for integration with Streamlit and FastAPI.
 
 The intention is NOT to be a `linter` by parsing the syntax of a programming language, it is meant to be a `linter`
-in the sense that some system has a large set of rules that must be met for the system to be in a good state. 
+in the sense that some system has a large set of rules that must be met for the system to be in a good state.
 
 After experimenting with various approaches, including scripting and configuration files, I found that a `pytest`-like
 framework could offer the flexibility and ease of use I sought. While `pytest` serves a different purpose,
@@ -54,19 +54,19 @@ The distinction between Splint, `pytest`, and Great Expectations lies in their s
 - **Audience**: Consumed by data scientists, emphasizing a data-first approach.
 
 ### Tableaux/PowerBI
+
 - **Scope** Centered around graphical output of charts, graphs, and status for corporate dashboarding.
 - **Complexity** Robust and feature rich catering to real time charting.
-- **Audience** Consumed by everyone in an organization created as mostly in a low-code environment. 
+- **Audience** Consumed by everyone in an organization created as mostly in a low-code environment.
 
 ### Splint:
 
-- **Scope**: Offers comprehensive linting and testing capabilities for any task or system focused on granular pass fail tests.
+- **Scope**: Offers comprehensive linting and testing capabilities for any task or system focused on granular pass fail
+  tests.
 - **Complexity**: Lightweight and straightforward, designed for end users with detailed testing results and scoring.
 - **Audience**: Consumed by end users across various domains, facilitating rule-based testing with clear insights into
-  testing results.  A typical go/nogo test has 100's of tests that are run almost exclusively as pass/fail
+  testing results. A typical go/nogo test has 100's of tests that are run almost exclusively as pass/fail
 - **Visibility**: Consumed by users of a system to determine if a system is ready to be used (e.g., all tests pass).
-
-
 
 ## Getting Started with Splint
 
@@ -192,13 +192,14 @@ The rule functions that you write don't need to use generators. They can return 
 (e.g., Boolean, List of Boolean, `SplintResult`, List of `SplintResult`), or you can write a generator that yields
 results as they are checked.
 
-Alternatively you can not use a pytest style, discovered set of rules.  Just hand a list of rules and it will happily
+Alternatively you can not use a pytest style, discovered set of rules. Just hand a list of rules and it will happily
 run them for you.
 
 ```python
 import splint
-checker = splint.SplintChecker(check_functions=[rule1,rule2,rule3,rule4,rule5],auto_setup=True)
-results = checker.run_all(env={'db':sql_conn,'cfg':'cfg.json'})
+
+checker = splint.SplintChecker(check_functions=[rule1, rule2, rule3, rule4, rule5], auto_setup=True)
+results = checker.run_all(env={'db': sql_conn, 'cfg': 'cfg.json'})
 ```
 
 ## Rule Integrations
@@ -283,13 +284,14 @@ of how `splint` allows you to filter, sort, select tests to run and view by addi
 | `ttl_minutes`    | Allow caching of results so expensive tests don't need to be rerun which is only useful in cases where you run tests over and over. |
 | `finish_on_fail` | Aborts processing of splint function on the first failure.                                                                          |
 | `skip_on_none `  | If an environment parameter has a None value then the function will be skipped.                                                     |
-| `fail_on_none`   | If an invironment paramter has a None value then the function will be failed.                                                       |
+| `fail_on_none`   | If an environment paramter has a None value then the function will be failed.                                                       |
 
 ## What are Rule-Ids (RUIDS)?
 
 Tags and phases are generic information that is only present for filtering. The values don't mean much to the inner
 workings of splint.  `RUID`s are different. The purpose of a `RUID` is to tag every rule function with a unique value
-that is, ideally, meaningful to the user. The only rule to the code is that they are unique. If you tag a single function with an
+that is, ideally, meaningful to the user. The only rule to the code is that they are unique. If you tag a single
+function with an
 RUID the system will expect you to put a unique ID on every function. A `SplintException` is thrown if there are RUIDs
 that are not unique.
 
@@ -459,7 +461,8 @@ Usage: splinter.py [OPTIONS]
 
 To integrate your rule checking results with a web API using `FastAPI`, you can refer to the `splinter.py` file for a
 straightforward approach to creating a `FastAPI` app from your existing code. No changes are required in your code to
-support a `FastAPI` interface. If you have created `rule_id`s for all of your rule functions, they will all be accessible
+support a `FastAPI` interface. If you have created `rule_id`s for all of your rule functions, they will all be
+accessible
 via the API. Alternatively, if you haven't used `rule_id`s, you can run the entire set of functions or filter by
 `tag`, `level` or `phase`. The sample command-line app serves as a simple example of how to connect a `splint`
 ruleset to the web.
@@ -511,4 +514,4 @@ Splint is just a name that sounds cool. When I started this I thought system-lin
 2. Make pip installable.
 6. Fix issue with module having the same name.
 7. By function scoring
-8
+   8
