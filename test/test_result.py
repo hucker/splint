@@ -21,13 +21,13 @@ def test_total_results(results):
 
 def test_fail_only_filter(results):
     """ Test to verify the fail_only filter function """
-    fail_only = [r for r in results if splint_result.fail_only(r)]
+    fail_only = [r for r in results if splint_result.fails_only(r)]
     assert len(fail_only) == 2
 
 
 def test_pass_only_filter(results):
     """ Test to verify the pass_only filter function """
-    pass_only = [r for r in results if splint_result.pass_only(r)]
+    pass_only = [r for r in results if splint_result.passes_only(r)]
     assert len(pass_only) == 5
 
 

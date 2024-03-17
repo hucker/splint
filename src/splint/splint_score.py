@@ -31,10 +31,7 @@ class ScoreStrategy(abc.ABC):
         if isinstance(strategy_name_or_class, str):
             # Note this only goes one level deep in subclasses, which for now is good enough.
             for subclass in cls.__subclasses__():
-                if (
-                        subclass.strategy_name == strategy_name_or_class
-                        or subclass.__name__ == strategy_name_or_class
-                ):
+                if strategy_name_or_class in (subclass.strategy_name, subclass.__name__):
                     return subclass()
             raise SplintException(
                 f"No scoring strategy with name '{strategy_name_or_class}' found."

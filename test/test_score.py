@@ -6,6 +6,7 @@
 import pytest
 
 import src.splint as splint
+from splint import SplintException
 
 
 @pytest.fixture
@@ -122,6 +123,13 @@ def test_score_binary_fail(all_pass, all_fail, half_pass):
 def test_strategy_factory(strategy_name, strategy_class):
     assert isinstance(splint.ScoreStrategy.strategy_factory(strategy_name), strategy_class)
 
+def test_bad_strategy_name():
+    with pytest.raises(splint.SplintException):
+        splint.ScoreStrategy.strategy_factory("bad_strategy_name")
+
+def test_bad_strategy_class():
+    with pytest.raises(splint.SplintException):
+        splint.ScoreStrategy.strategy_factory(dict)
 
 @pytest.mark.parametrize("scoring_function", [
     (splint.ScoreBinaryFail),

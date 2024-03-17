@@ -18,7 +18,7 @@ from .splint_exception import SplintException
 from .splint_util import str_to_bool
 
 def extract_tables_from_pdf(file_path: str,
-                            required_columns: List[str] = ["RuleId", "Note", "Status"],
+                            required_columns: List[str] = ("RuleId", "Note", "Status"),
                             pages: str = 'all') -> List[pd.DataFrame]:
     """
     Extracts tables from a PDF file that include specified columns, and returns them in a list.
@@ -124,7 +124,7 @@ def rule_from_pdf_rule_ids(file_path: str,
     for table in tables:
         if rule_col in table.columns:
             df = table[table[rule_col] == rule_id]
-            for idx, rule_data in df.iterrows():
+            for _, rule_data in df.iterrows():
                 status = str_to_bool(rule_data[status_col])
                 skip = rule_data.get(skip_col, False)
                 msg = default_msg or rule_data[note_col]

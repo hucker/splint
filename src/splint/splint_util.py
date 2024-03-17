@@ -1,3 +1,6 @@
+"""
+This is the sad place for lonely functions that don't have a place
+"""
 
 def str_to_bool(s: str,default=None) -> bool:
     """ Convert a string value to a boolean."""

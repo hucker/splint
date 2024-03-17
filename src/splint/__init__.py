@@ -69,7 +69,7 @@ except ImportError:
 # pdf rules
 try:
     import camelot
-    import pandas as pd
+    import pandas as pd  # pylint: disable=ungrouped-imports
     from .rule_pdf import extract_tables_from_pdf  # noqa: F401
     from .rule_pdf import rule_from_pdf_rule_ids  # noqa: F401
 except ImportError:

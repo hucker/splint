@@ -160,12 +160,12 @@ class SplintYield:
 # or return None to indicate that the result should be dropped.  What follows are some
 # common result transformers.
 
-def pass_only(sr: SplintResult):
+def passes_only(sr: SplintResult):
     """ Return only results that have pass status"""
     return sr if sr.status else None
 
 
-def fail_only(sr: SplintResult):
+def fails_only(sr: SplintResult):
     """Filters out successful results.
 
     Args:
