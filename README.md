@@ -53,23 +53,20 @@ The distinction between Splint, `pytest`, and Great Expectations lies in their s
 - **Complexity**: Robust and feature-rich, catering to data scientists and integrated into data pipelines.
 - **Audience**: Consumed by data scientists, emphasizing a data-first approach.
 
-### Tableaux
-- **Scope** Centered around graphical output of charts, graphs, and status
+### Tableaux/PowerBI
+- **Scope** Centered around graphical output of charts, graphs, and status for corporate dashboarding.
 - **Complexity** Robust and feature rich catering to real time charting.
-- **Audience** Consumed by everyone in an organzaton created as mostly low-code
+- **Audience** Consumed by everyone in an organization created as mostly in a low-code environment. 
 
 ### Splint:
 
-- **Scope**: Offers comprehensive linting and testing capabilities for any task or system.
+- **Scope**: Offers comprehensive linting and testing capabilities for any task or system focused on granular pass fail tests.
 - **Complexity**: Lightweight and straightforward, designed for end users with detailed testing results and scoring.
 - **Audience**: Consumed by end users across various domains, facilitating rule-based testing with clear insights into
   testing results.  A typical go/nogo test has 100's of tests that are run almost exclusively as pass/fail
-- **Visibility**: Splint allows you to document each function and propagate standard doc strings into the results for
-  detailed test information.
+- **Visibility**: Consumed by users of a system to determine if a system is ready to be used (e.g., all tests pass).
 
-Splint aims to democratize linting and testing by providing a tool that caters to teams, projects, or company infrastructure
-enabling easy linting. Rules have been applied to data and manufacturing infrastrcutre as well as real time project status
-reporting.
+
 
 ## Getting Started with Splint
 
@@ -182,9 +179,9 @@ def check_file_age(csv_file):
 
 Splint uses the following hierarchy:
 
-    `SplintPackage` (one or more SplintModules in a folder)
-        `SplintModule` (one or more SplintFunctions in a Python file (function starting with the text "check_"))
-            `SplintFunction` (when called will return 0 or more `SplintResults`)
+    SplintPackage` (one or more SplintModules in a folder)
+        SplintModule` (one or more SplintFunctions in a Python file (function starting with the text "check_"))
+            SplintFunction` (when called will return 0 or more `SplintResults`)
 
 Typically one works at the module or package level where you have python files that have 1 or more files with rules in
 them.
@@ -273,7 +270,7 @@ but it is in work creating scoring by function.
 ## What are @attributes
 
 Each rule function can be assigned attributes that define metadata about the rule function. Attributes are at the heart
-of how `splint` allows you to filter, sort, select tests to run and view by adding decorators to your check funcitons.
+of how `splint` allows you to filter, sort, select tests to run and view by adding decorators to your check functions.
 
 | Attribute        | Description                                                                                                                         |
 |------------------|-------------------------------------------------------------------------------------------------------------------------------------|
@@ -350,10 +347,10 @@ exclude = ["file_simple"]
 If you have time-consuming rules, you can put a ttl on them to reduce the number of times it is run. All you need to
 do is tag the function with the `ttl_minutes` attribute, and it will use cached results if the call frequency is inside
 the ttl that was specified. This feature is useful in situations where you are `splint`ing a system
-in real time for things like dashboards or long running tasks. You don't need to check a 20MB log file for exeptions
+in real time for things like dashboards or long running tasks. You don't need to check a 20MB log file for exceptions
 every minute. When you need it, it is very useful.
 
-The status during the ttl period wil be the last result. At startup, everything runs.
+The status during the ttl period wil be the last result. At startup, everything will run since the caches are empty.
 
 ```python
 from splint import attributes, SplintResult

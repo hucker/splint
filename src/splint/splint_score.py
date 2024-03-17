@@ -127,6 +127,8 @@ class ScoreByFunctionMean(ScoreStrategy):
                 sum_weights += result.weight
                 sum_passed += result.weight if result.status else 0
 
+        # This does not appear to be possible.  The empty list is protected against
+        # and each of the summed weights must be > 0.  This could be removed?
         if sum_weights == 0:
             raise SplintException("The sum of weights is 0.  This is not allowed.")
 

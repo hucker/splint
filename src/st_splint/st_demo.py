@@ -22,6 +22,18 @@ import src.splint as splint
 st.set_page_config(layout='wide')
 
 
+def color(c,t):
+    return f':{c}[{t}]'
+def green(text):
+    return color('green',text)
+def orange(text):
+    return color('orange',text)
+def blue(text):
+    return color('blue',text)
+
+def red(text):
+    return color('red',text)
+
 def display_overview(checker: splint.SplintChecker) -> None:
     """
     Display the results from the checker in a scoreboard format.
@@ -34,11 +46,11 @@ def display_overview(checker: splint.SplintChecker) -> None:
 
     # Define the data rows
     table_rows = [
-        f"| :green[**SCORE**] | {checker.score:0.1f}% |",
-        f"| :green[**PASS**] | {checker.pass_count} |",
-        f"| :red[**FAIL**] | {checker.fail_count} |",
-        f"| :orange[**SKIP**] | {checker.skip_count} |",
-        f"| :blue[**Total**] | {checker.result_count} |",
+        f"| {green('**SCORE**')} | {checker.score:0.1f}% |",
+        f"| {green('**PASS**')} | {checker.pass_count} |",
+        f"| {red('**FAIL**')} | {checker.fail_count} |",
+        f"| {orange('**SKIP**')} | {checker.skip_count} |",
+        f"| {blue('**TOTAL**')} | {checker.result_count} |",
     ]
 
     # Join headers, separators, and rows to form a complete Markdown table
@@ -67,9 +79,11 @@ def display_results(results: List[splint.SplintResult]):
         # Determine the status
         status = "Skipped" if r.skipped else "Pass" if r.status else "Fail"
 
+        c_f = green if r.status else red if not r.skipped else orange
+
         # Append each row directly to the table
         table.append(
-            f"| {count} | {status} | {r.tag} | {r.level} | {r.phase} | {r.ruid} | {r.module_name} | {r.func_name} | {r.msg} |")
+            f"| {count} | {c_f(r.status)} | {blue(r.tag)} | {r.level} | {r.phase} | {r.ruid} | {c_f(r.module_name)} | {c_f(r.func_name)} |{c_f(r.msg)} |")
 
     # Convert the list of rows into a single string with line breaks
     markdown_table = "\n".join(table)
@@ -97,10 +111,10 @@ def display_package_info(pkg, checker):
         f"| **Package** | {pkg.name} |",
         f"| **Module Count** | {pkg.module_count} |",
         f"| **Function Count** | {checker.function_count} |",
-        f"| **Tags** | {checker.tags} |",
-        f"| **Rule IDs** | {checker.ruids} |",
+        f"| **Tags** | {','.join(checker.tags)} |",
+        f"| **Rule IDs** | {','.join(checker.ruids)} |",
         f"| **Levels** | {checker.levels} |",
-        f"| **Phases** | {checker.phases} |",
+        f"| **Phases** | {','.join(checker.phases)} |",
     ]
 
     # Combine all parts to form the full table
@@ -135,7 +149,8 @@ class SplintStreamlitProgressBar(splint.SplintProgress):
         scale as a percentage of the number of function that have run, that is whey
         we get current/max.  We also have a message which can be anything as well
         as a result which is the detailed results.  Presumably some  progress systems
-        would watch the results.
+        would watch the result metadata while others would be content with the just
+        the message.
         """
         if max_count <= 0:
             max_count = 1
@@ -158,12 +173,21 @@ def main():
     Example:
         main()
     """
-    pkg = splint.SplintPackage(folder="./my_package")
-    checker = splint.SplintChecker(packages=[pkg], auto_setup=True)
+
+    packages_mapping = {
+        "File System Checking": "../examples/file_system",
+        "Generic": "../examples/my_package"
+    }
+
+    package_name = st.selectbox("Select Package", options=list(packages_mapping.keys()), index=0)
+    package_folder = packages_mapping[package_name]
+
+    package = splint.SplintPackage(folder=package_folder)
+    checker = splint.SplintChecker(packages=[package], auto_setup=True)
 
     with st.container(border=True):
         with st.container(border=True):
-            display_package_info(pkg, checker)
+            display_package_info(package, checker)
         include_ui = st.checkbox("Select Function to Run By Including Items", value=True)
 
         if include_ui:
