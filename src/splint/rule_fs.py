@@ -71,7 +71,7 @@ def rule_fs_file_within_max_size(filesys: FS, path: str, max_file_size: int, ski
         file_size = filesys.getsize(path)
         file_size_str = human_readable_size(file_size)
         delta = file_size - max_file_size
-        #delta_str = human_readable_size(abs(delta))
+        # delta_str = human_readable_size(abs(delta))
         if delta < 0:
             yield SR(status=False, msg=f'File "{path}" size={file_size_str} exceeds size limit by -{delta} bytes.')
         else:

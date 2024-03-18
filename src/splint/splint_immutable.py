@@ -1,6 +1,6 @@
 """
 Helper classes to support making environment variables with mutable values be less prone
-to being changed by mistake.  We are under non presumption that we can stop people from
+to being changed by mistake.  We are under no presumption that we can stop people from
 using a dynamic language.  These classes make a best effort to  prevent the user from
 making edits to environment data that should be constant for the life of a rule
 checking run.
@@ -10,18 +10,19 @@ THERE IS NO ASSURANCE THAT THIS WILL WORK IN ALL CASES. DON'T WRITE TO THE ENV V
 """
 import pandas as pd
 
-from  .splint_exception import SplintException
+from .splint_exception import SplintException
+
 
 class SplintEnvList(list):
     """
-        Class representing a mutation-inhibited list. Mutational operations raise
-        splint_exception.SplintException.
+    Class representing a mutation-inhibited list. Mutational operations raise
+    splint_exception.SplintException.
 
-        Python being dynamic means forceful mutations can succeed. This class serves
-        to prevent accidental changes by raising exceptions for mutating methods.
+    Python being dynamic means forceful mutations can succeed. This class serves
+    to prevent accidental changes by raising exceptions for mutating methods.
 
-        Ideally, a copy is best to avoid mutation. But for large data sets, it's
-        resource-demanding. ImmutableList protects large sets from unintended changes.
+    Ideally, a copy is best to avoid mutation. But for large data sets, it's
+    resource-demanding. ImmutableList protects large sets from unintended changes.
     """
 
     def __init__(self, *args):
@@ -100,7 +101,7 @@ class SplintEnvDataFrame(pd.DataFrame):
     SplintException.
 
     Similar to ImmutableList and ImmutableDict, this class shields large dataframes from
-    unintentional changes due to Python's dynamic nature.
+    unintentional changes due to Python's dynamic nature.  This is not perfect.
     """
 
     def __init__(self, *args, **kwargs):

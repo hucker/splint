@@ -12,8 +12,8 @@ import sys
 from collections import Counter
 from typing import List
 
+from .splint_exception import SplintException
 from .splint_function import SplintFunction
-from .splint_exception import  SplintException
 
 
 class SplintModule:
@@ -22,6 +22,7 @@ class SplintModule:
     are used to verify rules, while the env_functions are used to set up any parameters
     that the rule functions might need.
     """
+
     def __init__(self, module_name,
                  module_file,
                  check_prefix='check_',
@@ -76,7 +77,7 @@ class SplintModule:
         try:
             module = importlib.import_module(module_name)
             self.module = module
-            #self.doc = module.__doc__
+            # self.doc = module.__doc__
             self.doc = inspect.getdoc(module)
             self.load_special_functions(module)
             return True

@@ -2,8 +2,8 @@
 import openpyxl
 import pandas as pd
 
-from .splint_result import SR
 from .splint_exception import SplintException
+from .splint_result import SR
 from .splint_util import str_to_bool
 
 SHEET1 = "Sheet1"
@@ -12,9 +12,6 @@ DESC_DEFAULT = ""
 START_ROW_DEFAULT = "1"
 VAL_COL_DEFAULT = "B"
 DESCRIPTION_COLUMN = "A"
-
-
-
 
 
 def _column_to_number(column: str) -> int:

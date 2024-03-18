@@ -6,8 +6,10 @@ and replaced by functions that use the pyfilesystem package.
 import pathlib
 import time
 from typing import Generator
-from .splint_result import SR
+
 from .splint_exception import SplintException
+from .splint_result import SR
+
 
 def rule_path_exists(path_: str) -> bool:
     """Simple rule to check for a file path."""
@@ -22,7 +24,7 @@ def rule_stale_files(
         minutes: float = 0,
         seconds: float = 0,
         no_files_pass_status: bool = True,
-)-> Generator[SR, None, None]:
+) -> Generator[SR, None, None]:
     """
         Rule verifies no files older than a specified age. Each too-old file is reported.
         Age defined in days, hours, minutes, and seconds.

@@ -21,6 +21,7 @@ The modules are added to the system path for easy import and use in other Python
 import pathlib
 import sys
 from typing import List
+
 from .splint_exception import SplintException
 from .splint_module import SplintModule
 

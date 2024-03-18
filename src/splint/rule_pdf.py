@@ -8,14 +8,15 @@ RuleId  Description Status
 
 """
 
-
 from typing import Generator, List
 
-import pandas as pd
 import camelot
-from .splint_result import SR
+import pandas as pd
+
 from .splint_exception import SplintException
+from .splint_result import SR
 from .splint_util import str_to_bool
+
 
 def extract_tables_from_pdf(file_path: str,
                             required_columns: List[str] = ("RuleId", "Note", "Status"),
@@ -58,6 +59,7 @@ def extract_tables_from_pdf(file_path: str,
 
     return filtered_tables
 
+
 DEFAULT_COL_NAMES = {
     'status_col': 'Status',
     'note_col': 'Note',
@@ -65,11 +67,12 @@ DEFAULT_COL_NAMES = {
     'skip_col': 'Skip',
 }
 
+
 def rule_from_pdf_rule_ids(file_path: str,
                            rule_id: str,
-                           default_msg:str=None,
-                           col_names:dict=None,
-                           max_results:int=1,
+                           default_msg: str = None,
+                           col_names: dict = None,
+                           max_results: int = 1,
                            pages="all") -> Generator[SR, None, None]:
     """
         Yield matching rule ID results from tables contained in a specified PDF file.
@@ -134,4 +137,3 @@ def rule_from_pdf_rule_ids(file_path: str,
                     raise SplintException(f"Maximum number of results ({max_results}) exceeded for {file_path}")
     if count == 0:
         yield SR(status=None, skipped=True, msg=f"No results found in {file_path}")
-

@@ -5,8 +5,9 @@ This module is used to check for RUID files in the system.
 from collections import Counter
 from typing import List
 
-from .splint_package import SplintPackage
 from .splint_module import SplintModule
+from .splint_package import SplintPackage
+
 
 def module_ruids(module: SplintModule) -> List[str]:
     """get a list of all the RUIDS in a module"""

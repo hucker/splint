@@ -9,6 +9,7 @@ from typing import List
 
 from .splint_exception import SplintException
 
+
 @dataclass
 class SplintResult:
     """
@@ -37,7 +38,7 @@ class SplintResult:
         count (int): Return value count from a SplintFunction.
         """
 
-    status: bool|None = False
+    status: bool | None = False
 
     # Name hierarchy
     func_name: str = ""

@@ -10,13 +10,12 @@ import pandas as pd
 
 from .splint_exception import SplintException
 from .splint_function import SplintFunction
-from .splint_result import SplintResult
-from .splint_module import  SplintModule
+from .splint_immutable import SplintEnvDataFrame, SplintEnvDict, SplintEnvList, SplintEnvSet
+from .splint_module import SplintModule
 from .splint_package import SplintPackage
-from .splint_score import ScoreStrategy,ScoreByResult
-from .splint_immutable import SplintEnvDict,SplintEnvDataFrame,SplintEnvSet,SplintEnvList
-from .splint_ruid import valid_ruids,empty_ruids,ruid_issues
-
+from .splint_result import SplintResult
+from .splint_ruid import empty_ruids, ruid_issues, valid_ruids
+from .splint_score import ScoreByResult, ScoreStrategy
 
 
 # pylint: disable=R0903
@@ -234,7 +233,7 @@ class SplintChecker:
             abort_on_fail=False,
             abort_on_exception=False,
             auto_setup: bool = False,
-            auto_ruid:bool = False,
+            auto_ruid: bool = False,
     ):
         """
         
@@ -255,7 +254,7 @@ class SplintChecker:
             abort_on_fail: A bool flag indicating whether to abort a fail result occurs. def =False.
             abort_on_exception: A bool flag indicating whether to abort on exceptions. def=False.
             auto_setup: A bool flag automatically invoke pre_collect/prepare. def=False.
-            auto_ruid: A bool flag automatically generate rule_id if they don't exist.
+            auto_ruid: A bool flag automatically generate rule_ids if they don't exist.
         Raises:
             SplintException: If the provided packages, modules, or check_functions 
                              are not in the correct format.
@@ -290,8 +289,8 @@ class SplintChecker:
         # If any exception occurs stop processing
         self.abort_on_exception = abort_on_exception
 
-        self.collected:List[SplintFunction] = []
-        self.pre_collected:List[SplintFunction] = []
+        self.collected: List[SplintFunction] = []
+        self.pre_collected: List[SplintFunction] = []
         self.start_time = dt.datetime.now()
         self.end_time = dt.datetime.now()
         self.results: List[SplintResult] = []
@@ -444,13 +443,11 @@ class SplintChecker:
             can only set up the rules that need rule_ids"""
         if not self.auto_ruid:
             return
-        id = 1
+        id_ = 1
         for function in self.pre_collected:
-            if function.ruid is '':
-                function.ruid = template.replace("@id@", f'{id:04d}')
-                id += 1
-
-
+            if function.ruid == '':
+                function.ruid = template.replace("@id@", f'{id_:04d}')
+                id_ += 1
 
     def exclude_by_attribute(self, tags: List = None,
                              ruids: List = None,
@@ -639,7 +636,10 @@ class SplintChecker:
         List version of yield all.
 
         """
+
+        # A deceptively important line of code
         self.results = list(self.yield_all(env=env))
+
         self.score = self.score_strategy(self.results)
         self.progress_callback(self.function_count,
                                self.function_count,
