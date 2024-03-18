@@ -36,9 +36,10 @@ identify and correct issues to ensure system compliance. By adhering to agreed-u
 harmoniously,
 driving error counts to zero.
 
-## Why Not pytest or Great Expectations?
+## Why Not pytest, Great Expectations or other popular tools?
 
-The distinction between Splint, `pytest`, and Great Expectations lies in their scope, complexity, and target audience:
+The distinction between Splint, `pytest`, and Great Expectations and others lies in their scope, complexity, and 
+target audience. 
 
 ### pytest:
 
@@ -52,12 +53,14 @@ The distinction between Splint, `pytest`, and Great Expectations lies in their s
 - **Scope**: Centered around data validation and expectation testing in data pipelines and notebooks.
 - **Complexity**: Robust and feature-rich, catering to data scientists and integrated into data pipelines.
 - **Audience**: Consumed by data scientists, emphasizing a data-first approach.
+- **Visibility** Very good view of data integrity at the rule level.
 
 ### Tableaux/PowerBI
 
 - **Scope** Centered around graphical output of charts, graphs, and status for corporate dashboarding.
 - **Complexity** Robust and feature rich catering to real time charting.
 - **Audience** Consumed by everyone in an organization created as mostly in a low-code environment.
+- **Visibilty** Beautiful charting.  For our application this is eye candy.
 
 ### Splint:
 
@@ -66,7 +69,7 @@ The distinction between Splint, `pytest`, and Great Expectations lies in their s
 - **Complexity**: Lightweight and straightforward, designed for end users with detailed testing results and scoring.
 - **Audience**: Consumed by end users across various domains, facilitating rule-based testing with clear insights into
   testing results. A typical go/nogo test has 100's of tests that are run almost exclusively as pass/fail
-- **Visibility**: Consumed by users of a system to determine if a system is ready to be used (e.g., all tests pass).
+- **Visibility**: Concise list of passing and failing rules with extensive filtering.
 
 ## Getting Started with Splint
 
@@ -197,7 +200,7 @@ run them for you.
 
 ```python
 import splint
-
+from rules import rule1,rule2,rule3,rule4,rule5,sql_conn
 checker = splint.SplintChecker(check_functions=[rule1, rule2, rule3, rule4, rule5], auto_setup=True)
 results = checker.run_all(env={'db': sql_conn, 'cfg': 'cfg.json'})
 ```
@@ -205,21 +208,30 @@ results = checker.run_all(env={'db': sql_conn, 'cfg': 'cfg.json'})
 ## Rule Integrations
 
 To simplify getting started, there are included rules you can call to check files and folders on your file system
-dataframes and web pages. These integrations make many common checks 1-liners.
+dataframes, Excel spreadsheets, PDF files and web APIs. These integrations make many common checks just a few lines of code.
 
-The rule shown below uses the `rule_large_files` function to look at all the files in a folder and report status on file
-sizes > 100k.
-
-TODO: MORE INFO ON OUT OF THE BOX RULES
+The rules shown below trigger errors if there are any log files > 100k in length and if they haven't been updated
+in the last 5 minutes.
 
 ```python
 import splint
 
-
 @splint.attributes(tag="tag")
 def check_rule1():
-    for result in splint.rule_large_files(folder="./log_files", pattern="log*.txt", max_size=10000):
-        yield result
+    for folder in ['folder1','folder2','folder3']:
+        yield from splint.rule_large_files(folder=folder, pattern="log*.txt", max_size=100_000)
+
+@splint.attributes(tag="tag")
+def check_rule2():
+    for folder in ['folder1','folder2','folder3']:
+        yield from splint.rule_stale_files(folder=folder, pattern="log*.txt",minutes=5.0)
+        
+@splint.attributes(tag="tag")
+def check_rule3(cfg):
+    """cfg: application config file."""
+    for folder in cfg['logging']['folders']:
+        yield from splint.rule_stale_files(folder=folder, pattern="log*.txt",minutes=5.0)
+
 ```
 
 ## What is the output?
@@ -292,8 +304,8 @@ Tags and phases are generic information that is only present for filtering. The 
 workings of splint.  `RUID`s are different. The purpose of a `RUID` is to tag every rule function with a unique value
 that is, ideally, meaningful to the user. The only rule to the code is that they are unique. If you tag a single
 function with an
-RUID the system will expect you to put a unique ID on every function. A `SplintException` is thrown if there are RUIDs
-that are not unique.
+RUID the system will expect you to put a unique ID on every function, or to set the auto_ruid flag to True when
+creating a SplintChecker object.  
 
 What do you get for this? You now have fine grain control to the function level AND the user level to enable/disable
 checks. A `pylint` analogy is that you can turn off-line width checks globally for you project setting values in
@@ -301,7 +313,8 @@ the `.lintrc` file. In the case of splint, perhaps part of your system has one s
 the system has the same set but some don't apply.
 Or perhaps in an early phase development a subset of rules is applied, and at another a different set of rules is
 applied.
-RUIDS allow you to set function level granularity with "simple" config files.
+
+RUIDS allow you to set function level granularity with "simple" config files (THAT CURRENTLY DON'T EXIST)
 
 RUIDs can be anything hashable (but comme on, they should be short strings). Smart-ish values like File-001, Fill-002, '
 smarter' or File-Required, File-Too-Old. Whatever makes sense on the project. As a general rule smart naming conventions
@@ -349,10 +362,10 @@ exclude = ["file_simple"]
 If you have time-consuming rules, you can put a ttl on them to reduce the number of times it is run. All you need to
 do is tag the function with the `ttl_minutes` attribute, and it will use cached results if the call frequency is inside
 the ttl that was specified. This feature is useful in situations where you are `splint`ing a system
-in real time for things like dashboards or long running tasks. You don't need to check a 20MB log file for exceptions
+in real time for things like dashboards or long-running tasks. You don't need to check a 20MB log file for exceptions
 every minute. When you need it, it is very useful.
 
-The status during the ttl period wil be the last result. At startup, everything will run since the caches are empty.
+The status during the ttl period will be the last result. At startup, everything will run since the caches are empty.
 
 ```python
 from splint import attributes, SplintResult
@@ -364,6 +377,18 @@ def check_file_age():
     pic = make_black_hole_image()
     yield SplintResult(status=pic.black_hole_exists(), msg="Hourly cluster image generation check")
 ```
+
+## Mitigations
+
+Mitigations are a way to extend the surface of splint from being a just a checker to a tool that automates 
+aspects of your systems.  Any rule can have a mitigation assigned to it which is an object that takes the 
+splint result and attempts to mitigate it.  The definition of mitigate is dependent on the class being used.
+A simple mitigation might be sending an email and a more complex one might be deleting old files, zipping old
+files, and running other kinds of maintainance.
+
+Optionally the rule can be re-run to determine if the mitigation was successful.
+
+CURRENTLY IN DEVELOPMENT
 
 ## How can these rules be organized?
 
@@ -384,10 +409,9 @@ The machinations of supporting all the scopes is not necessary in this case. You
 a set of named environment variables, and they are used as parameters to any functions that need them.
 
 Splint makes all lists, dictionaries, dataframes and sets that are passed as part of an environment
-immutable-ish in order to reduce the possibility of modifying the state of the environment. Python
-is dynamic, this feature is to prevent unexpected consequences.
+immutable-ish in order to reduce the possibility of modifying the state of the environment. 
 
-Any functions in a module that start with `env` are considered environment functions and they
+Any functions in a module that start with `env` are considered environment functions, and they
 will be called with the current global environment and are expected to return additions being made
 to that environment. The global environment is provided so you can see everything rather than
 making putting all the parameters in the function signature.
@@ -471,7 +495,8 @@ Integration with `FastAPI` is simple since it utilizes Python dicts for result d
 The splinter demo tool demonstrates that this can be achieved with just a few lines of code to
 create a FastAPI interface.
 
-Simply run the command with the `--api` flag, and you'll see `uvicorn` startup your API.
+Simply run the command with the `--api` flag, and you'll see `uvicorn` startup your API. Go to 
+http://localhost:8000/docs to see the API.
 
 ```
 /Users/chuck/splint/.venv/bin/python splinter.py --pkg . --api 
