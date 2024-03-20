@@ -9,18 +9,20 @@ output natively. Connecting to FastAPI or Streamlit is straight forward.
 Splint transcends traditional code analysis, offering a solution for a wide range of tasks. Inspired by the
 effectiveness
 of `pylint` in identifying and resolving code issues, I envisioned a tool capable of extending this functionality
-across diverse workflows with minimal setup. Splint allows for effortless linting of any aspect of your project or
-system, providing easy access to test results for integration with Streamlit and FastAPI.
+across diverse workflows with minimal setup. Splint allows for easy `linting` of any aspect of a project or
+system, providing access to detailed test results for integration with JSON friendly tools like Streamlit
+and FastAPI.
 
 The intention is NOT to be a `linter` by parsing the syntax of a programming language, it is meant to be a `linter`
-in the sense that some system has a large set of rules that must be met for the system to be in a good state.
+in the sense that some system has a large set of rules that must be met for the system to be in a good state.  The
+more rules the system adheres to the 'better' it is.
 
-After experimenting with various approaches, including scripting and configuration files, I found that a `pytest`-like
-framework could offer the flexibility and ease of use I sought. While `pytest` serves a different purpose,
-its declarative style for writing independent tests, managed by the framework, inspired the development of Splint.
+After experimenting with various approaches, including straight application scripting and the extensive
+configuration files, I found that a `pytest`-like framework could offer the flexibility and ease of use 
+I sought. While `pytest` serves a different purpose, its declarative style for writing independent tests, 
+managed by the framework, inspired the development of Splint.
 
-Splint facilitates running a set of rules against a system, delivering detailed results and a straightforward "score"
-for
+Splint facilitates running a set of rules against a system, delivering detailed results and a "score" for
 the run. Achieving a 100% score indicates all tests passed, accompanied by a comprehensive list of pass/fail status.
 In case of failures, Splint provides detailed information about the issues encountered, along with a score less
 than 100%.
@@ -33,8 +35,7 @@ built from the system's environment.
 While the concept may sound intricate, understanding Splint is straightforward for those familiar with `pytest`.
 Its principles have proven effective in environments where end users may not be programmers, offering a clear path to
 identify and correct issues to ensure system compliance. By adhering to agreed-upon rulesets, teams can work
-harmoniously,
-driving error counts to zero.
+harmoniously, driving error counts to zero.
 
 ## Why Not pytest, Great Expectations or other popular tools?
 
@@ -58,18 +59,19 @@ target audience.
 ### Tableaux/PowerBI
 
 - **Scope** Centered around graphical output of charts, graphs, and status for corporate dashboarding.
-- **Complexity** Robust and feature rich catering to real time charting.
+- **Complexity** Robust and feature rich catering to real time charting with complex graphical displays.
 - **Audience** Consumed by everyone in an organization created as mostly in a low-code environment.
 - **Visibilty** Beautiful charting.  For our application this is eye candy.
 
 ### Splint:
 
 - **Scope**: Offers comprehensive linting and testing capabilities for any task or system focused on granular pass fail
-  tests.
+  tests.  Designed to be integrated with other infrastructure.
 - **Complexity**: Lightweight and straightforward, designed for end users with detailed testing results and scoring.
 - **Audience**: Consumed by end users across various domains, facilitating rule-based testing with clear insights into
   testing results. A typical go/nogo test has 100's of tests that are run almost exclusively as pass/fail
-- **Visibility**: Concise list of passing and failing rules with extensive filtering.
+- **Visibility**: Concise list of passing and failing rules with extensive detail and filtering capabilities for infrastructure,
+                  data integrity, project management and general system status.
 
 ## Getting Started with Splint
 
@@ -87,10 +89,8 @@ You can start with simple rules that don't even reference `splint` directly:
 ```python
 from junk import get_drive_space
 
-
 def check_boolean():
     return get_drive_space('/foo') > 1_000_000_000
-
 
 def check_yielded_values():
     yield get_drive_space('/foo') > 1_000_000_000
@@ -146,7 +146,7 @@ def check_file_age():
         return SplintResult(status=False, msg="The file is stale")
 ```
 
-And even a bit more complexity pass values to these functions using environments, which are very similar to `pytest`
+And even a bit more complexity pass values to these functions using environments, which are similar to `pytest`
 fixtures.
 
 ```python
@@ -191,12 +191,12 @@ them.
 
 Each Splint function returns 0-to-N results from its generator function. By convention, if None is returned, the rule
 was skipped.
-The rule functions that you write don't need to use generators. They can return a wide variety of output
+The rule functions that you write don't need to use generators. They can return a variety of output
 (e.g., Boolean, List of Boolean, `SplintResult`, List of `SplintResult`), or you can write a generator that yields
 results as they are checked.
 
-Alternatively you can not use a pytest style, discovered set of rules. Just hand a list of rules and it will happily
-run them for you.
+Alternatively you can ignore the file and folder discovery mechanism provide list of rules as regular python
+functions and `Splint` will happily run them for you.
 
 ```python
 import splint
@@ -209,6 +209,9 @@ results = checker.run_all(env={'db': sql_conn, 'cfg': 'cfg.json'})
 
 To simplify getting started, there are included rules you can call to check files and folders on your file system
 dataframes, Excel spreadsheets, PDF files and web APIs. These integrations make many common checks just a few lines of code.
+
+These generally take the form of you wrapping them in some way to provide the required inputs and any attributes
+required by your app.
 
 The rules shown below trigger errors if there are any log files > 100k in length and if they haven't been updated
 in the last 5 minutes.
@@ -231,7 +234,6 @@ def check_rule3(cfg):
     """cfg: application config file."""
     for folder in cfg['logging']['folders']:
         yield from splint.rule_stale_files(folder=folder, pattern="log*.txt",minutes=5.0)
-
 ```
 
 ## What is the output?
@@ -239,7 +241,11 @@ def check_rule3(cfg):
 The low level output of a `SplintFunction` are `SplintResults`. Each `SplintResult` is trivially converted to a `json`
 record or a line in a CSV file for processing by other tools. It is easy to connect things up to
 `Streamlit`, `FastAPI` or a `typer` CLI app by json-ifying the results. Each test can have a lot of data attached
-to it, if needed, but from the end user perspective the `msg` and `status` are often enough.
+to it, if needed, but from the end user perspective the `msg` and `status` are often enough.  You will notice that
+there are useful elements in the result including the doc string of the rule function, which allows you to provide
+documentation for your rules that is exposed all the way up result stack.  For example your doc strings could 
+include information useful providing detailed information and greatly simplify displaying metadata in UI elements
+like tooltips as well as detailed error information with the traceback and exception data.
 
 ```json
 {
@@ -280,43 +286,57 @@ make sense of these things.
 Out of the box, most of these cases can be handled by choosing a scoring method. Currently, scoring happens globally,
 but it is in work creating scoring by function.
 
+| Scoring              | Description                                                              |
+|----------------------|--------------------------------------------------------------------------|
+| `by_result`          | Each result from a functon counts as 100%                                |
+| `by_function_binary` | All tests from a single function must pass to get 100% for the function. |
+| `by_funciton_mean`   | If a function has 3 results and 2 pass the function result is 66%        |
+| `binary_fail`        | If any single result from a funciton is False, the function score is 0%  |
+| `binary_pass`        | If any single result from a function is True, the funciton score is 100% |
+
+IN addition to the scoring, each function has a weight that is also applied to it after the scoring to all
+different rules to have higher weights.
+
+The utility of this is somewhat useless in smaller systems (< 100 rules) since we generally are aiming to
+have 100% pass.  The weighting could be used to determine triage.
+
 ## What are @attributes
 
 Each rule function can be assigned attributes that define metadata about the rule function. Attributes are at the heart
 of how `splint` allows you to filter, sort, select tests to run and view by adding decorators to your check functions.
 
-| Attribute        | Description                                                                                                                         |
-|------------------|-------------------------------------------------------------------------------------------------------------------------------------|
-| `tag`            | Zero or more strings that can be used for filtering results.                                                                        |
-| `phase`          | A single string that indicates a project phase like testing or development.                                                         |
-| `level`          | A numeric value that is better for greater than/less than tests.                                                                    |
-| `weight`         | A positive number indicating the weight of a functions results. The nominal weight is 100.                                          |
-| `skip`           | Indicates the function should be skipped.                                                                                           |
-| `ruid`           | Rule-ID is a unique identifier for a rule. If one test has a rule-id all of them must have ids.                                     |
+| Attribute        | Description                                                                                                                       |
+|------------------|-----------------------------------------------------------------------------------------------------------------------------------|
+| `tag`            | Zero or more strings that can be used for filtering results.                                                                      |
+| `phase`          | A single string that indicates a project phase like testing or development.                                                       |
+| `level`          | A numeric value that is better for greater than/less than tests.                                                                  |
+| `weight`         | A positive number indicating the weight of a functions results. The nominal weight is 100.                                        |
+| `skip`           | Indicates the function should be skipped.                                                                                         |
+| `ruid`           | Rule-ID is a unique identifier for a rule.                                     |
 | `ttl_minutes`    | Allow caching of results so expensive tests don't need to be rerun which is only useful in cases where you run tests over and over. |
-| `finish_on_fail` | Aborts processing of splint function on the first failure.                                                                          |
-| `skip_on_none `  | If an environment parameter has a None value then the function will be skipped.                                                     |
-| `fail_on_none`   | If an environment paramter has a None value then the function will be failed.                                                       |
+| `finish_on_fail` | Aborts processing of `splint` function on the first failure.                                                                        |
+| `skip_on_none `  | If an environment parameter has a None value then the function will be skipped.                                                   |
+| `fail_on_none`   | If an environment paramter has a None value then the function will be failed.                                                     |
 
 ## What are Rule-Ids (RUIDS)?
 
 Tags and phases are generic information that is only present for filtering. The values don't mean much to the inner
 workings of splint.  `RUID`s are different. The purpose of a `RUID` is to tag every rule function with a unique value
-that is, ideally, meaningful to the user. The only rule to the code is that they are unique. If you tag a single
-function with an
-RUID the system will expect you to put a unique ID on every function, or to set the auto_ruid flag to True when
-creating a SplintChecker object.  
+that is, ideally, meaningful to the user.  For very large rulesets this becomes prohibitive and ends up looking like
+integers with some leading text. The only rule to the code is that they are unique. If you tag a single
+function with an RUID the system will expect you to put a unique ID on every function, or to set the `auto_ruid` flag 
+to True when creating a `SplintChecker` object.  
 
 What do you get for this? You now have fine grain control to the function level AND the user level to enable/disable
 checks. A `pylint` analogy is that you can turn off-line width checks globally for you project setting values in
-the `.lintrc` file. In the case of splint, perhaps part of your system has one set of rules and another part of
+the `.lintrc` file. In the case of `splint`, perhaps part of your system has one set of rules and another part of
 the system has the same set but some don't apply.
 Or perhaps in an early phase development a subset of rules is applied, and at another a different set of rules is
 applied.
 
 RUIDS allow you to set function level granularity with "simple" config files (THAT CURRENTLY DON'T EXIST)
 
-RUIDs can be anything hashable (but comme on, they should be short strings). Smart-ish values like File-001, Fill-002, '
+RUIDs can be anything hashable (but come on, they should be short strings). Smart-ish values like File-001, Fill-002, '
 smarter' or File-Required, File-Too-Old. Whatever makes sense on the project. As a general rule smart naming conventions
 aren't smart, so beware of the bed you make for yourself.
 
@@ -486,10 +506,9 @@ Usage: splinter.py [OPTIONS]
 To integrate your rule checking results with a web API using `FastAPI`, you can refer to the `splinter.py` file for a
 straightforward approach to creating a `FastAPI` app from your existing code. No changes are required in your code to
 support a `FastAPI` interface. If you have created `rule_id`s for all of your rule functions, they will all be
-accessible
-via the API. Alternatively, if you haven't used `rule_id`s, you can run the entire set of functions or filter by
-`tag`, `level` or `phase`. The sample command-line app serves as a simple example of how to connect a `splint`
-ruleset to the web.
+accessible via the API. Alternatively, if you haven't used `rule_id`s, you can run the entire set of 
+functions or filter by `tag`, `level` or `phase`. The sample command-line app serves as a simple example
+of how to connect a `splint` ruleset to the web via FastAPI.
 
 Integration with `FastAPI` is simple since it utilizes Python dicts for result data.
 The splinter demo tool demonstrates that this can be achieved with just a few lines of code to
@@ -525,7 +544,7 @@ showing many of the features of `splint` in a `streamlit` app.
 Here is the setup using a couple of modules in a package folder:
 ![Streamlit](./img/streamlit_setup.png)
 
-And here are the results!
+And here are the results.
 
 ![Streamlit](./img/streamlit_results.png)
 
@@ -536,7 +555,7 @@ Splint is just a name that sounds cool. When I started this I thought system-lin
 ## TODO
 
 1. Implement `.splintrc` file and toml interface.
-2. Make pip installable.
-6. Fix issue with module having the same name.
-7. By function scoring
-   8
+1. Make pip installable.
+1. Fix issue with module having the same name.
+1. By function scoring
+1. Make non-toy showing pdf/excel/csv integration

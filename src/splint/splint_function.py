@@ -196,6 +196,7 @@ class SplintFunction:
         count = 1
 
         # If they want cacheing this takes care of it.
+        # TODO: This replayes old results exactly including timing, perhaps we should redo the time fields?
         if self.ttl_minutes * 60 + self.last_ttl_start > time.time():
             yield from self.last_results
             return
