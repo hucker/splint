@@ -48,7 +48,7 @@ from .splint_score import ScoreByFunctionMean  # noqa: F401
 from .splint_score import ScoreByResult  # noqa: F401
 from .splint_score import ScoreStrategy  # noqa: F401
 from .splint_util import str_to_bool  # noqa: F401
-
+from .splint_rc import SplintRC,SplintJsonRC,SplintTomlRC
 # dataframe rules
 try:
     import pandas as pd  # noqa: F401

@@ -673,7 +673,7 @@ class SplintChecker:
 
     @property
     def result_count(self):
-        """ Possibly redundate call to get the number of results."""
+        """ Possibly redundant call to get the number of results."""
         return len(self.results)
 
     @property
