@@ -4,9 +4,10 @@ The base class implements the configuration file as a dictionary while two subcl
 creation aof config files based on TOML and json files.
 """
 import json
-import toml
 import pathlib
-from typing import List,Union,Tuple
+from typing import List, Tuple, Union
+
+import toml
 
 from .splint_exception import SplintException
 
@@ -24,13 +25,29 @@ class SplintRC:
 
     def __init__(self, *, display_name: str = "NoName", ruids: List[str] = None, tags: List[str] = None,
                  phases: List[str] = None):
-        self.display_name = display_name
-        self.ruids, self.ex_ruids = self._split_items(ruids)
-        self.tags, self.ex_tags = self._split_items(tags)
-        self.phases, self.ex_phases = self._split_items(phases)
 
-    def _load_config(self, cfg: str,section:str) -> dict: # pragma no cover
+        self.set_attributes({
+            'display_name': display_name,
+            'ruids': ruids,
+            'tags': tags,
+            'phases': phases
+        })
+
+    def _load_config(self, cfg: str, section: str) -> dict:  # pragma no cover
         raise NotImplementedError
+
+    def set_attributes(self, data: dict):
+        """
+        Configures the instance using a dictionary which should contain keys
+        for display_name, ruids, tags, and phases.
+
+        Args:
+            data (dict): a dictionary containing display_name, ruids, tags, and phases
+        """
+        self.display_name = data.get('display_name', 'NoName')
+        self.ruids, self.ex_ruids = self._split_items(data.get('ruids', []))
+        self.tags, self.ex_tags = self._split_items(data.get('tags', []))
+        self.phases, self.ex_phases = self._split_items(data.get('phases', []))
 
     @staticmethod
     def _split_items(items: Union[List[str], str]) -> Tuple[List[str], List[str]]:
@@ -64,7 +81,6 @@ class SplintRC:
         return items_, ex_items
 
 
-
 class SplintJsonRC(SplintRC):
     """
     The SplintJsonRC class is a subclass of SplintRC that handles loading configuration from JSON files.
@@ -82,23 +98,21 @@ class SplintJsonRC(SplintRC):
         section = "desired_section"
         splint_json_instance = SplintJsonRC(cfg, section)
     """
+
     def __init__(self, cfg: str, section: str):
         section_data = self._load_config(cfg, section)
 
         if not isinstance(section_data, dict):
             raise SplintException(f"Configuration section is not a dictionary in {cfg}")
 
-        super().__init__(display_name=section_data.get('display_name','NoName'),
-                         ruids=section_data.get('ruids',[]),
-                         tags=section_data.get('tags',[]),
-                         phases=section_data.get('phases',[]))
+        self.set_attributes(section_data)
 
     def _load_config(self, cfg: str, section: str) -> dict:
         cfg = pathlib.Path(cfg)
         try:
             with cfg.open("rt", encoding="utf8") as j:
                 config_data = json.load(j)
-        except (FileNotFoundError, json.JSONDecodeError,AttributeError) as error:
+        except (FileNotFoundError, json.JSONDecodeError, AttributeError) as error:
             raise SplintException(f"Configuration file {cfg} not found: {error}")from error
 
         return config_data.get(section, {})
@@ -122,23 +136,21 @@ class SplintTomlRC(SplintRC):
     section = "some_section"
     splint_rc_toml_instance = SplintRCToml(cfg, section)
     """
+
     def __init__(self, cfg: str, section: str):
         section_data = self._load_config(cfg, section)
 
         if not isinstance(section_data, dict):
             raise SplintException(f"Configuration section is not a dictionary in {cfg}")
 
-        super().__init__(display_name=section_data.get('display_name','NoName'),
-                         ruids=section_data.get('ruids',[]),
-                         tags=section_data.get('tags',[]),
-                         phases=section_data.get('phases',[]))
+        self.set_attributes(section_data)
 
     def _load_config(self, cfg: str, section: str) -> dict:
         cfg = pathlib.Path(cfg)
         try:
             with cfg.open("rt", encoding="utf8") as t:
                 config_data = toml.load(t)
-        except (FileNotFoundError, toml.TomlDecodeError,AttributeError) as error:
+        except (FileNotFoundError, toml.TomlDecodeError, AttributeError) as error:
             raise SplintException(f"Configuration file {cfg} error: {error}") from error
 
         return config_data.get(section, {})
