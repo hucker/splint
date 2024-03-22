@@ -34,6 +34,7 @@ def test_ruid1():
     assert splint.module_ruids(pkg.modules[0]) == ["suid11", "suid12"]
     assert splint.module_ruids(pkg.modules[1]) == ["suid21", "suid22"]
 
+
 def test_ruids1_module1():
     """Make sure we can load modules individually and extract the ruids"""
     module = splint.SplintModule(module_name="check_suid1_a", module_file='./ruid/check_suid1_a.py')

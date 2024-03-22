@@ -4,6 +4,7 @@ import pytest
 
 from src import splint
 
+
 @pytest.fixture
 def func1():
     @splint.attributes(tag="t1", level=1, phase='p1', ruid="suid_1")

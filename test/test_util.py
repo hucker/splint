@@ -1,9 +1,7 @@
 import pytest
 
-import splint
-from splint import splint_result
-from splint import splint_exception
 from splint import str_to_bool
+
 
 @pytest.mark.parametrize("input_val",
                          ['true', 't', 'yes', 'y', '1', 'on'])
@@ -17,13 +15,15 @@ def test_def_str_to_bool_true(input_val):
 def test_def_str_to_bool_false(input_val):
     assert str_to_bool(input_val) == False
 
+
 import pytest
 
 
-@pytest.mark.parametrize("input_val", ['x', 'foo', 'whatever','',' '])
+@pytest.mark.parametrize("input_val", ['x', 'foo', 'whatever', '', ' '])
 def test_except(input_val):
     with pytest.raises(ValueError):
         _ = str_to_bool(input_val)
+
 
 @pytest.mark.parametrize("input_val, default_val",
                          [('x', True),
@@ -39,6 +39,7 @@ def test_def_str_to_bool(input_val, default_val):
         assert str_to_bool(input_val, default_val) == True
     else:
         assert str_to_bool(input_val, default_val) == False
+
 
 @pytest.mark.parametrize("input_val, default_val, expected_output",
                          [('f', True, False),

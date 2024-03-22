@@ -246,6 +246,7 @@ def test_bad_max_size(temp_fs):
                                                        skip_if_missing=True):
         assert result.skipped is True
 
+
 @pytest.mark.parametrize("file_size, expected_output", [
     (1, "1 byte"),
     (1024, "1024 bytes"),
@@ -265,10 +266,9 @@ def test_bad_max_size(temp_fs):
     (0, "0 bytes"),
 ])
 def test_human_readable_size(file_size, expected_output):
-    for sign in [-1,1]:
+    for sign in [-1, 1]:
         output = rule_fs.human_readable_size(sign * file_size)
         if file_size == 0:
             assert output == "0 bytes"
         else:
-            assert output ==  ('-' if sign==-1 else "") + expected_output
-
+            assert output == ('-' if sign == -1 else "") + expected_output

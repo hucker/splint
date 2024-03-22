@@ -3,6 +3,7 @@ import pytest
 import src.splint.splint_attribute as splint_attribute
 import src.splint.splint_exception as splint_exception
 
+
 def test_attr_ttl():
     tests = [
         ["0", ["m", "minute", "min"], 0],

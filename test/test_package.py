@@ -91,4 +91,3 @@ def test_load_2_packages_load(decorator1_pkg, decorator2_pkg):
     assert m
     assert m.module_name == "check_dec_complex"
     assert m.doc == "DocString for check_dec_complex"
-

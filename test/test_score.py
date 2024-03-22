@@ -6,7 +6,6 @@
 import pytest
 
 from src import splint
-from splint import SplintException
 
 
 @pytest.fixture
@@ -124,15 +123,18 @@ def test_strategy_factory(strategy_name, strategy_class):
     """Test the strategy factory in  both methods."""
     assert isinstance(splint.ScoreStrategy.strategy_factory(strategy_name), strategy_class)
 
+
 def test_bad_strategy_name():
     """Exception on invalid strategy name."""
     with pytest.raises(splint.SplintException):
         splint.ScoreStrategy.strategy_factory("bad_strategy_name")
 
+
 def test_bad_strategy_class():
     """Exception from non-derived class"""
     with pytest.raises(splint.SplintException):
         splint.ScoreStrategy.strategy_factory(dict)
+
 
 @pytest.mark.parametrize("scoring_function", [
     (splint.ScoreBinaryFail),

@@ -4,6 +4,7 @@ import pytest
 
 import splint
 
+
 @pytest.fixture(scope="module")
 def check_func():
     def func(value):
@@ -94,7 +95,6 @@ def test_function_bad_weight():
         # if I compare type(e) to SplintValueError it says False?
         assert False
         return
-
 
 
 def test_function_attributes():

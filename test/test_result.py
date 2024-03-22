@@ -1,10 +1,8 @@
-import sys
-
 import pytest
 
 import splint
-from splint import splint_result
 from splint import splint_exception
+from splint import splint_result
 
 
 # Define the fixture for the results
@@ -13,6 +11,7 @@ def results():
     pkg = splint.SplintPackage(folder="./pkg_result")
     chk = splint.SplintChecker(packages=pkg, auto_setup=True)
     return chk.run_all()
+
 
 def test_total_results(results):
     """ Test to verify the total results """
@@ -66,9 +65,10 @@ def test_group_by_tags(results):
     assert len(grouped_results['tag3']) == 1
     assert grouped_results['tag3'][0].ruid == "blank_msg"
 
+
 def test_group_by_tags_ruid(results):
     """ This shows that the recursion works with multi level grouping """
-    grouped_results = splint_result.group_by(results, ['tag','ruid'])
+    grouped_results = splint_result.group_by(results, ['tag', 'ruid'])
     assert len(grouped_results) == 3
     assert len(grouped_results['tag1']) == 3
     assert len(grouped_results['tag1']['pass11']) == 1
@@ -79,11 +79,11 @@ def test_group_by_tags_ruid(results):
     assert len(grouped_results['tag2']['info']) == 1
     assert len(grouped_results['tag3']['blank_msg']) == 1
 
+
 def test_group_by_empty_key(results):
     """ This shows that the recursion works with multi level grouping """
     with pytest.raises(splint_exception.SplintException):
         _ = splint_result.group_by(results, [])
-
 
 
 def test_group_by_ruids(results):
