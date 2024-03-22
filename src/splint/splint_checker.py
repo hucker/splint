@@ -13,6 +13,7 @@ from .splint_function import SplintFunction
 from .splint_immutable import SplintEnvDataFrame, SplintEnvDict, SplintEnvList, SplintEnvSet
 from .splint_module import SplintModule
 from .splint_package import SplintPackage
+from .splint_rc import SplintRC
 from .splint_result import SplintResult
 from .splint_ruid import empty_ruids, ruid_issues, valid_ruids
 from .splint_score import ScoreByResult, ScoreStrategy
@@ -229,6 +230,7 @@ class SplintChecker:
             check_functions: List[SplintFunction] | None = None,
             progress_object: SplintProgress = None,
             score_strategy: ScoreStrategy | None = None,
+            rc: SplintRC | None = None,
             env=None,
             abort_on_fail=False,
             abort_on_exception=False,
@@ -268,6 +270,9 @@ class SplintChecker:
         # If the user has not provided a score strategy then use the simple one
         self.score_strategy = score_strategy or ScoreByResult()
         self.score = 0.0
+
+        # Allow an RC object to be specified.
+        self.rc = rc or SplintRC()
 
         # If we are provided with an environment we save it off but first wrap it in
         # a class that guards reasonably against writes to the underlying environment
@@ -421,6 +426,11 @@ class SplintChecker:
             if all(f(splint_func) for f in filter_functions):
                 self.collected.append(splint_func)
 
+        # Now use the RC file.  Note that if you are running filter functions AND
+        # an RC file this can be confusing.  Ideally you use one or the other. but
+        # it isn't an error to do so, you just need to know what you are doing.
+        self.apply_rc()
+
         # The collected list has the functions that will be run to verify operation
         # of the system.
 
@@ -448,6 +458,27 @@ class SplintChecker:
             if function.ruid == '':
                 function.ruid = template.replace("@id@", f'{id_:04d}')
                 id_ += 1
+
+    def apply_rc(self,rc=None):
+        """ Apply RC file to collected functions applying includes then excludes. """
+
+        rc = rc or self.rc
+
+        # Remember that if all includes are empty then everything is included.  That
+        # seems odd, but without this, including everything is hard.  You'd need to
+        # include everything from one attribute.
+        self.include_by_attribute(tags=rc.tags,
+                                  ruids=rc.ruids,
+                                  phases=rc.phases,
+                                  levels=rc.levels)
+
+        self.exclude_by_attribute(tags=rc.ex_tags,
+                                  ruids=rc.ex_ruids,
+                                  phases=rc.ex_phases,
+                                  levels=rc.ex_levels)
+
+        # Can be useful for testing.
+        return self.collected
 
     def exclude_by_attribute(self, tags: List = None,
                              ruids: List = None,
@@ -479,6 +510,10 @@ class SplintChecker:
         ruids = _param_str_list(ruids)
         phases = _param_str_list(phases)
         levels = _param_int_list(levels)
+
+        # This is a special case to make including everything the default
+        if not tags and not ruids and not levels and not phases:
+            return self.collected
 
         # Only include the attributes that match
         self.collected = [f for f in self.collected if (f.tag in tags) or
