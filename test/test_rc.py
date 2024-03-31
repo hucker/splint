@@ -17,264 +17,170 @@ from splint import splint_rc
 from splint import splint_tomlrc
 
 
-def _test_invariants(rc: splint_rc.SplintRC):
-    # the RC file has collections of values that
-    # represent inclusions and exclusions.  These
-    # sets should always intersect to an empty set.
-    # This test could go ANYWHERE at any time and be true.
-    assert set(rc.tags) & set(rc.ex_tags) == set()
-    assert set(rc.ruids) & set(rc.ex_ruids) == set()
-    assert set(rc.levels) & set(rc.ex_levels) == set()
-    assert set(rc.phases) & set(rc.ex_phases) == set()
+
+@pytest.fixture
+def test_data():
+    d = {
+        'tags': ['a', 'b', 'c'],
+        'ruids': ['r1', 'r2', 'r3'],
+        'phases': ['p1', 'p2', 'p3'],
+        'levels': [1, 2, 3]
+    }
+    return d
 
 
-def test_base():
-    """Test the base SplintRC class with single values for each attribute"""
-    rc = splint_rc.SplintRC(display_name="empty")
-    assert rc.display_name == "empty"
-    assert not rc.tags
-    assert not rc.ruids
-    assert not rc.phases
-    assert not rc.ex_tags
-    assert not rc.ex_ruids
-    assert not rc.ex_phases
-    _test_invariants(rc)
 
-    rc = splint_rc.SplintRC(display_name="Ruids", ruids=['ruid1', '-ruid2'])
+@pytest.fixture
+def test_neg_data():
+    d = {
+        'tags': ['a', 'b', '-c'],
+        'ruids': ['r1', 'r2', '-r3'],
+        'phases': ['p1', 'p2', '-p3'],
+        'levels': [1, 2, 3]
+    }
+    return d
 
-    assert 'ruid1' in rc.ruids
-    assert 'ruid2' in rc.ex_ruids
-    assert not rc.ex_phases
-    assert not rc.phases
-    assert not rc.ex_tags
-    assert not rc.tags
-    _test_invariants(rc)
+def test_simple_summary(test_data):
+    rc = splint_rc.SplintRC(rc_d=test_data)
 
-    rc = splint_rc.SplintRC(display_name="Phases", phases=['phase1', '-phase2'])
+    assert rc.tags == ['a', 'b', 'c']
+    assert rc.ruids == ['r1', 'r2','r3']
+    assert rc.phases == ['p1', 'p2','p3']
+    assert rc.levels == ['1','2','3']
 
-    assert 'phase1' in rc.phases
-    assert 'phase2' in rc.ex_phases
-    assert not rc.ex_tags
-    assert not rc.tags
-    assert not rc.ex_ruids
-    assert not rc.ruids
-    _test_invariants(rc)
-
-    rc = splint_rc.SplintRC(display_name="Tags", tags=['tag1', '-tag2'])
-
-    assert 'tag1' in rc.tags
-    assert 'tag2' in rc.ex_tags
-    assert not rc.ex_phases
-    assert not rc.phases
-    assert not rc.ex_ruids
-    assert not rc.ruids
-    _test_invariants(rc)
-
-    rc = splint_rc.SplintRC(display_name="Levels", levels=['1', '-2'])
-
-    assert '1' in rc.levels
-    assert '2' in rc.ex_levels
-    assert not rc.ex_phases
-    assert not rc.phases
-    assert not rc.ex_ruids
-    assert not rc.ruids
-    _test_invariants(rc)
+def test_simple_rc(test_data):
+    rc = splint_rc.SplintRC(rc_d=test_data)
+    assert rc.does_match(tag='a')
+    assert rc.does_match(ruid='r1')
+    assert rc.does_match(phase='p1')
+    assert rc.does_match(level='1')
+    assert rc.does_match(ruid='r1',phase='p1')
+    assert rc.does_match(ruid='r1', level='1')
+    assert rc.does_match(ruid='r1', tag='a')
+    assert rc.does_match(ruid='r1', tag='a',level='1')
+    assert rc.does_match(ruid='r1', tag='a',phase='p1',level='1')
 
 
-def test_everything():
-    """Test SplintRC initialization with all inputs as lists."""
-    rc = splint_rc.SplintRC(display_name="FromList",
-                            tags=['tag1', '-tag2', 'tag3'],
-                            phases=['phase1', '-phase2', 'phase3'],
-                            ruids=['ruid1', '-ruid2'],
-                            levels=['1', '-2'])
-    assert set(rc.tags) == {'tag1', 'tag3'}
-    assert set(rc.ex_tags) == {'tag2'}
-    assert set(rc.phases) == {'phase1', 'phase3'}
-    assert set(rc.ex_phases) == {'phase2'}
-    assert set(rc.ruids) == {'ruid1'}
-    assert set(rc.ex_ruids) == {'ruid2'}
-    assert set(rc.levels) == {'1'}
-    assert set(rc.ex_levels) == {'2'}
+def test_simple_failrc(test_data):
+    rc = splint_rc.SplintRC(rc_d=test_data)
 
-    _test_invariants(rc)
+    assert rc.does_match(tag='d') is False
+    assert rc.does_match(ruid='r4') is False
+    assert rc.does_match(phase='p4') is False
+    assert rc.does_match(level='4') is False
 
 
-def test_everything_as_string():
-    """Test SplintRC initialization with all inputs as strings."""
-    rc = splint_rc.SplintRC(display_name="FromString",
-                            tags='tag1 -tag2',
-                            phases='phase1 -phase2',
-                            ruids='ruid1 -ruid2',
-                            levels='1 2 -3')
-    assert set(rc.tags) == {'tag1'}
-    assert set(rc.ex_tags) == {'tag2'}
-    assert set(rc.phases) == {'phase1'}
-    assert set(rc.ex_phases) == {'phase2'}
-    assert set(rc.ruids) == {'ruid1'}
-    assert set(rc.ex_ruids) == {'ruid2'}
-    assert set(rc.levels) == {'1', '2'}
-    assert set(rc.ex_levels) == {'3'}
+def test_regex_rc(test_data):
+    rc = splint_rc.SplintRC(rc_d={'ruids':'r.*'})
 
-    # This test is really an invariant.
-    assert set(rc.tags) & set(rc.ex_tags) == set()
-    assert set(rc.ruids) & set(rc.ex_ruids) == set()
-    assert set(rc.levels) & set(rc.ex_levels) == set()
-    assert set(rc.phases) & set(rc.ex_phases) == set()
-    _test_invariants(rc)
+    assert rc.does_match(ruid='r1')
+    assert rc.does_match(ruid='r2')
+    assert rc.does_match(ruid='rasdfasdfasdf')
+
+    rc = splint_rc.SplintRC(rc_d={'ruids':r'r\d','phases':r'p\d'})
+
+    assert rc.does_match(ruid='r1',phase='p1')
+    assert rc.does_match(ruid='r2',phase='p2')
+    assert rc.does_match(ruid='r22',phase='p2') is False
+    assert rc.does_match(ruid='r2',phase='p22') is False
+
+    rc = splint_rc.SplintRC(rc_d={'ruids':r'r\d+','phases':r'p\d+'})
+    assert rc.does_match(ruid='r12',phase='p1')
+    assert rc.does_match(ruid='r2',phase='p22')
 
 
-def test_everything_as_string2():
-    """Test SplintRC initialization with more inputs as strings."""
-    rc = splint_rc.SplintRC(display_name="FromString",
-                            tags='tag1 -tag2 tag3',
-                            phases='phase1 -phase2 phase3',
-                            ruids='ruid1 -ruid2 ruid3')
-    assert set(rc.tags) == {'tag1', 'tag3'}
-    assert set(rc.ex_tags) == {'tag2'}
-    assert set(rc.phases) == {'phase1', 'phase3'}
-    assert set(rc.ex_phases) == {'phase2'}
-    assert set(rc.ruids) == {'ruid1', 'ruid3'}
-    assert set(rc.ex_ruids) == {'ruid2'}
-    _test_invariants(rc)
+
+@pytest.mark.parametrize("rules, ruid, phase, tag, expected", [
+    # Cases for 'ruids' rule
+    ({'ruids': 'r.*'}, 'r1', '', '', True),
+    ({'ruids': 'r.*'}, 'r2', '', '', True),
+    ({'ruids': 'r.*'}, 'rasdfasdfasdf', '', '', True),
+    # Cases for 'ruids' and 'phases' rules
+    ({'ruids': r'r\d', 'phases': r'p\d'}, 'r1', 'p1', '', True),
+    ({'ruids': r'r\d', 'phases': r'p\d'}, 'r2', 'p2', '', True),
+    ({'ruids': r'r\d', 'phases': r'p\d'}, 'r22', 'p2', '', False),
+    ({'ruids': r'r\d', 'phases': r'p\d'}, 'r2', 'p22', '', False),
+    # Cases for 'ruids' and 'phases' rules with multiple-digits
+    ({'ruids': r'r\d+', 'phases': r'p\d+'}, 'r12', 'p1', '', True),
+    ({'ruids': r'r\d+', 'phases': r'p\d+'}, 'r2', 'p22', '', True),
+    # Optionally, add cases for 'tags' rule as well
+    ({'tags': 't.*'}, '', '', 't1', True),
+    ({'tags': 't.*'}, '', '', 't_example', True),
+    # New test cases where 'tag' doesn't match the rules
+    ({'tags': r't\d'}, '', '', 't1', True),  # matches because the tag 't1' fits the rule 't\d'
+    ({'tags': r't\d'}, '', '', 't', False),  # no digit after 't', so it doesn't match 't\d'
+    ({'tags': r't\d'}, '', '', 'tag', False),  # 'tag' doesn't fit the rule 't\d'
+    ({'tags': 't.*'}, '', '', 'tag1', True),  # matches because the rule 't.*' fits any string starting with 't'
+    ({'tags': 't.*'}, '', '', '1tag', False),
+
+])
+def test_regex_fixture_rc(rules, ruid, phase, tag, expected):
+    rc = splint_rc.SplintRC(rc_d=rules)
+    assert rc.does_match(ruid=ruid, phase=phase, tag=tag) is expected
 
 
-def test_empty_string():
-    rc = splint_rc.SplintRC(tags='')
-    assert rc.tags == []
-    assert rc.ex_tags == []
-
-    rc = splint_rc.SplintRC(ruids='')
-    assert rc.ruids == []
-    assert rc.ex_ruids == []
-
-    rc = splint_rc.SplintRC(phases='')
-    assert rc.phases == []
-    assert rc.ex_phases == []
-
-    rc = splint_rc.SplintRC(levels='')
-    assert rc.levels == []
-    assert rc.ex_levels == []
-
-
-def test_both_lists():
-    attrs = ['a', 'b', 'c', '-c', '-d', '-e']
-    with pytest.raises(SplintException, match=r'Attributes in list and exclusion'):
-        _ = splint_rc.SplintRC(tags=attrs)
-
-    with pytest.raises(SplintException, match=r'Attributes in list and exclusion'):
-        _ = splint_rc.SplintRC(phases=attrs)
-
-    with pytest.raises(SplintException, match=r'Attributes in list and exclusion'):
-        _ = splint_rc.SplintRC(ruids=attrs)
-
-
-def test_dups_in_lists():
-    attrs = ['a', 'c', 'c', '-c', '-d', '-d']
-    with pytest.raises(SplintException, match=r'Duplicate attributes'):
-        _ = splint_rc.SplintRC(tags=attrs)
-
-    with pytest.raises(SplintException, match=r'Duplicate attributes'):
-        _ = splint_rc.SplintRC(phases=attrs)
-
-    with pytest.raises(SplintException, match=r'Duplicate attributes'):
-        _ = splint_rc.SplintRC(ruids=attrs)
+@pytest.mark.parametrize("rules, ruid, phase, tag, expected", [
+    # Test cases for 'ruids'
+    ({'ruids': 'r.*'}, 'r1', '', '', True),
+    ({'ruids': 'r.*'}, 'r2', '', '', True),
+    ({'ruids': 'r.*'}, 'rasdfasdfasdf', '', '', True),
+    ({'ruids': r'r\d'}, 'r1', '', '', True),
+    ({'ruids': r'r\d'}, 'r2', '', '', True),
+    ({'ruids': r'r\d'}, 'r22', '', '', False),
+    ({'ruids': r'r\d'}, 'r22', '', '', False),
+    ({'ruids': 'r'}, 'r22', '', '', False),
+    # Test cases for 'phases'
+    ({'phases': 'p.*'}, '', 'p1', '', True),
+    ({'phases': 'p.*'}, '', 'p2', '', True),
+    ({'phases': 'p.*'}, '', 'pasdfasdfasdf', '', True),
+    ({'phases': r'p\d'}, '', 'p1', '', True),
+    ({'phases': r'p\d'}, '', 'p2', '', True),
+    ({'phases': r'p\d'}, '', 'p22', '', False),
+    ({'phases': 'p'}, '', 'p22', '', False),
+    # Test cases for 'tags'
+    ({'tags': 't.*'}, '', '', 't1', True),
+    ({'tags': 't.*'}, '', '', 't_example', True),
+    ({'tags': r't\d'}, '', '', 't1', True),
+    ({'tags': r't\d'}, '', '', 't', False),
+    ({'tags': r't\d'}, '', '', 'tag', False),
+    ({'tags': 't.*'}, '', '', 'tag1', True),
+    ({'tags': 't.*'}, '', '', '1tag', False),
+    ({'tags': 't'}, '', '', '1tag', False),
+    # Combined test cases (Assuming 'does_match' checks if any rule matches)
+    # (Matches 'ruids' but not 'phases' and 'tags', so expected is True)
+    ({'ruids': r'r\d', 'phases': r'p\d', 'tags': r't\d'}, 'r1', 'p', 't', False),
+    ({'ruids': r'r\d', 'phases': r'p\d', 'tags': r't\d'}, 'r', 'p1', 't', False),
+    ({'ruids': r'r\d', 'phases': r'p\d', 'tags': r't\d'}, 'r', 'p', 't1', False),
+    ({'ruids': r'r\d', 'phases': r'p\d', 'tags': r't\d'}, 'r1', 'p1', 't1', True),
+])
+def test_regex_big_rc(rules, ruid, phase, tag, expected):
+    rc = splint_rc.SplintRC(rc_d=rules)
+    assert rc.does_match(ruid=ruid, phase=phase, tag=tag) is expected
 
 
-@pytest.mark.parametrize("section", ['test1', 'test2'])
-def test_toml(section):
-    """Test SplintTomlRC with different sections from a TOML file."""
-    rc = splint_tomlrc.SplintTomlRC(cfg='./rc_files/test.toml', section=section)
-    assert 'ruid_foo' in rc.ruids
-    assert 'ruid_bar' in rc.ruids
-    assert 'ruid_baz' in rc.ex_ruids
-    assert 'tag_spam' in rc.tags
-    assert 'phase_alpha' in rc.phases
-    assert 'phase_delta' in rc.ex_phases
-    _test_invariants(rc)
+@pytest.mark.parametrize("rules, level, expected", [
+    # Test cases for 'levels'
+    ({'levels': '1|2'}, '1', True),
+    ({'levels': '1|2|3'}, '2', True),
+])
+def test_regex_rc(rules, level, expected):
+    rc = splint_rc.SplintRC(rc_d=rules)
+    assert rc.does_match(level=level) is expected
 
 
-@pytest.mark.parametrize("section", ['test1', 'test2'])
-def test_json(section):
-    """Test SplintJsonRC with different sections from a JSON file."""
-    rc = splint_jsonrc.SplintJsonRC(cfg='./rc_files/test.json', section=section)
-    assert 'ruid_foo' in rc.ruids
-    assert 'ruid_bar' in rc.ruids
-    assert 'ruid_baz' in rc.ex_ruids
-    assert 'tag_spam' in rc.tags
-    assert 'phase_alpha' in rc.phases
-    assert 'phase_delta' in rc.ex_phases
-    _test_invariants(rc)
+def test_neg():
+    rc = splint_rc.SplintRC(rc_d = {'tags':['t1','-t2'],
+                                    'ruids':['r1', '-r2'],
+                                    'phases':'p1,-p2'})
+
+    assert rc.does_match(tag='t1')
+    assert rc.does_match(tag='t2') is False
+    assert rc.does_match(ruid='r1')
+    assert rc.does_match(ruid='r2') is False
+    assert rc.does_match(phase='p1')
+    assert rc.does_match(phase='p2') is False
+
+    assert rc.does_match(phase='p1',ruid='r1',tag='t2') is False
+    assert rc.does_match(phase='p1',ruid='r1',tag='t1') is True
 
 
-@pytest.mark.parametrize(
-    "tag_val, phase_val, ruid_val, level_val,msg",
-    [
-        ([], [], [], ['abc'], "Invalid integer value"),
-        ([], [], [], 'abc', "Invalid integer value"),
-        ([], [], [], '1 2 abc', "Invalid integer value"),
-        ([], [], [], [1, 2, 'abc'], "Invalid integer value"),
-    ],
-)
-def test_value_exceptions(tag_val, phase_val, ruid_val, level_val, msg):
-    with pytest.raises(SplintException):
-        _ = splint_rc.SplintRC(tags=tag_val, phases=phase_val, ruids=ruid_val, levels=level_val)
-
-
-@pytest.mark.parametrize(
-    "input_value, expected_output",
-    [
-        (['1'], True),
-        (['1', '2'], True),
-        ([], True),
-    ],
-)
-def test_integer_items(input_value, expected_output):
-    rc = splint.SplintRC()
-    assert rc.check_integer_items(input_value) == expected_output
-
-
-@pytest.mark.parametrize(
-    "input_value, expected_output",
-    [
-        (['a'], "Invalid value for"),
-        (['1', 'a'], "Invalid value for"),
-        (['a', '1'], "Invalid value for"),
-    ],
-)
-def test_integer_ex_items(input_value, expected_output):
-    rc = splint.SplintRC()
-    with pytest.raises(SplintException):
-        assert rc.check_integer_items(input_value) == expected_output
-
-
-@pytest.mark.parametrize(
-    "input_value, expected_output",
-    [
-        ([''], "Invalid value for"),
-        (['', 'a'], "Invalid value for"),
-        (['a', ''], "Invalid value for"),
-    ],
-)
-def test_str_ex_items(input_value, expected_output):
-    rc = splint.SplintRC()
-    with pytest.raises(SplintException):
-        assert rc.check_string_items(input_value) == expected_output
-
-
-def test_json_exc():
-    """Test exceptions raised while initializing SplintJsonRC with invalid input."""
-    with pytest.raises(splint.SplintException):
-        _ = splint_jsonrc.SplintJsonRC(cfg='./rc_files/test_bad.json', section='test1')
-
-    with pytest.raises(splint.SplintException):
-        _ = splint_jsonrc.SplintJsonRC(cfg='./rc_files/test_non_existant.json', section='foo')
-
-
-def test_toml_exc():
-    """Test exceptions raised while initializing SplintTomlRC with invalid input."""
-    with pytest.raises(splint.SplintException):
-        _ = splint_tomlrc.SplintTomlRC(cfg='./rc_files/test_non_existant.toml', section='foo')
-
-    with pytest.raises(splint.SplintException):
-        _ = splint_tomlrc.SplintTomlRC(cfg='./rc_files/test_bad.toml', section='test1')

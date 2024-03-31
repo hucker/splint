@@ -51,4 +51,4 @@ def test_skip_on_none():
 
     assert len(results) == 1
     assert results[0].status is None
-    assert results[0].msg.startswith("Skipped due to None argument 1 in func='env_test_function'")
+    assert results[0].msg.startswith("Skipped due to None argument 1 in func='env_test_function")

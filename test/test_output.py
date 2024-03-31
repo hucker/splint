@@ -41,20 +41,22 @@ def test_json(simple1, simple2):
     assert d['failed_count'] == 0
     assert len(d['results']) == 2
 
-    result = d['results'][0]
-    assert result['status'] is True
-    assert result['func_name'] == 'func1'
-    assert result['msg'] == 'It works1'
-    assert result['warn_msg'] == ''
-    assert result['info_msg'] == ''
-    assert result['tag'] == 't1'
-    assert result['except_'] == 'None'  # Odd??
-    assert result['traceback'] == ''
-    assert result['skipped'] is False
-    assert result['phase'] == 'proto'
-    assert result['count'] == 1
-    assert result['weight'] == 100
-    assert result['ruid'] == 'ruid_1'
-    assert result['ttl_minutes'] == 0.0
-    assert result['mit_msg'] == ''
-    assert result['doc'] == 'my doc string'
+    # We don't know the order that the functions run in
+    for result in d['results']:
+        if result['func_name']== 'func1':
+            assert result['status'] is True
+            assert result['func_name'] == 'func1'
+            assert result['msg'] == 'It works1'
+            assert result['warn_msg'] == ''
+            assert result['info_msg'] == ''
+            assert result['tag'] == 't1'
+            assert result['except_'] == 'None'  # Odd??
+            assert result['traceback'] == ''
+            assert result['skipped'] is False
+            assert result['phase'] == 'proto'
+            assert result['count'] == 1
+            assert result['weight'] == 100
+            assert result['ruid'] == 'ruid_1'
+            assert result['ttl_minutes'] == 0.0
+            assert result['mit_msg'] == ''
+            assert result['doc'] == 'my doc string'

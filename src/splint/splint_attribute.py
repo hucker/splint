@@ -95,6 +95,13 @@ def attributes(
     if weight <= 0:
         raise SplintException("Weight must be > then 0.0.  Nominal value is 100.0.")
 
+    # Make sure these names don't have bad characters.  Very important for regexs
+    disallowed = ' ,!@#$%^&:?*<>\\/(){}[]<>~`-+=\t\n\'"'
+    for attr_name,attr in (('tag', tag), ('phase', phase), ('ruid', ruid)):
+        bad_chars = [c for c in disallowed if c in attr]
+        if bad_chars:
+            raise SplintException(f"Invalid characters {bad_chars} found in {attr_name} ")
+
     def decorator(func):
         func.phase = phase
         func.tag = tag

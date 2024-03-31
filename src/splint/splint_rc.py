@@ -1,104 +1,151 @@
 """
 Handles configuration abstraction for splint, includes classes to parse TOML and JSON.
 """
-from collections import Counter
+import itertools
 from typing import List, Tuple, Union
-
-import toml
-
+import re
 from .splint_exception import SplintException
 
+class EarlyExitException(SplintException):
+    """Break out of processing early """
 
 class SplintRC:
-    """
-    Represents a set of Rule IDs, tags, and phases. Handles positive and negative values.
-    """
 
-    def __init__(self, *,
-                  display_name: str = "NoName",
-                  ruids: str | List[str] = None,
-                  tags: str | List[str] = None,
-                  phases: str | List[str] = None,
-                  levels: str | List[int] = None,):
+    def __init__(self, *, rc_d: dict=None) :
 
-        self.set_attributes({
-            'display_name': display_name,
-            'ruids': ruids,
-            'tags': tags,
-            'phases': phases,
-            'levels': levels,
-        })
+
+        # Any falsy value ends up being valid...which means that setting
+        # rcd=0 will work.
+        rc_d = rc_d or {}
+
+        # This gives a nicer error than what might happen when you pass randomness
+        # to the next function
+        if not isinstance(rc_d, dict):
+            raise SplintException(f"SplintRC expects a dictionary but got '{type(rc_d)}'")
+
+        # This is being quite paranoid, but allows for the user to only specifiy what is
+        # needed rather that having data structures filled with []
+        rc_data={
+            'display_name': rc_d.get('display_name', 'NoName'),
+            'ruids': rc_d.get('ruids', []),
+            'tags': rc_d.get('tags', []),
+            'phases': rc_d.get('phases', []),
+            'levels': rc_d.get('levels', [])
+        }
+
+        # These will get overwritten, but it is use
+        self.ruids,self.ex_ruids = [],[]
+        self.phases,self.ex_phases = [],[]
+        self.tags,self.ex_tags = [],[]
+        self.levels,self.ex_levels = [],[]
+
+        self.expand_attributes(rc_data)
+        self.name = rc_data['display_name']
+
+        # This is a special case
+        self.is_inclusion_list_empty = all(not r for r in [self.ruids,
+                                                           self.phases,
+                                                           self.tags,
+                                                           self.levels])
+
+    def _not_int_list(self,lst):
+        return [item for item in lst if not item.isdigit()]
 
     def _load_config(self, cfg: str, section: str) -> dict:  # pragma no cover
         raise NotImplementedError
 
-    def set_attributes(self, data: dict,name:str="NoName"):
-        """
-        Sets SplintRC attributes from a data dictionary.
-        """
-        self.display_name = data.get('display_name', name)
-        self.ruids, self.ex_ruids = self._split_items(data.get('ruids', []))
-        self.tags, self.ex_tags = self._split_items(data.get('tags', []))
-        self.phases, self.ex_phases = self._split_items(data.get('phases', []))
-        self.levels, self.ex_levels = self._split_items(data.get('levels', []))
-
-        # Define a dictionary that maps attributes to their validation functions
-        attribute_validations = {
-            "ruids": self.check_string_items,
-            "tags": self.check_string_items,
-            "phases": self.check_string_items,
-            "levels": self.check_integer_items,
-        }
-
-        self.validate_attributes(attribute_validations)
-
-    def validate_attributes(self, attributes):
-        """
-        Applies validation functions on provided attributes.
-        """
-        for attribute, validation_func in attributes.items():
-            validation_func(getattr(self, attribute))
-            validation_func(getattr(self, "ex_" + attribute))
-
     @staticmethod
-    def _split_items(items: Union[List[str], str]) -> Tuple[List[str], List[str]]:
+    def _separate_values(data: List[str]) -> Tuple[List[str], List[str]]:
         """
-        Splits items into positive and negative lists. Supports comma or space-separated strings.
+        Separate included and excluded values based on sign pre-fixes from the given data.
+
+        This method receives a list of data values and splits it into two lists:
+        included values and excluded values. A data value is considered as 'excluded'
+        if it starts with a '-' sign, while it is 'included' otherwise (including values without any prefix).
+
+        Spaces and commas are treated as separators for the elements in the list. Non-string
+        data elements will be converted to strings.
+
+        Args:
+            data (list or str): A list of data values or a single string to separate.
+
+        Returns:
+            tuple: A tuple containing two lists; the first list consists of included values
+                   (those not starting with '-'), and the second list consists of excluded values
+                   (those starting with '-').
+
+        Example:
+            separate_values(["+apple", "-banana", "+cherry", "-date", "elderberry"])
+
+            Should return (['apple', 'cherry', 'elderberry'], ['banana', 'date']) as
+            "elderberry" doesn't start with a "-" sign, it is also included in the 'included' list.
+
         """
-        if not items:
-            return [], []
-        # split strings into a list if necessary
-        if isinstance(items, str):
-            items = items.replace(',', ' ').split()
+        data = data.replace(',', ' ').split() if isinstance(data, str) else data
 
-        # There are multiple str's going on here that might look odd.  It is possible
-        # that we got integers or floats which are valid.  This makes them into strings,
-        # so we can do the +/- checking stuff
-        pos_items = [str(item).lstrip('+') for item in items if not str(item).startswith('-')]
-        neg_items = [str(item).lstrip('-') for item in items if str(item).startswith('-')]
+        # Always make sure data elements are string
+        data = [str(item) for item in data]
 
-        if (dups := [item for item, count in Counter(items).items() if count > 1]):
-            raise SplintException(f"Duplicate attributes - {dups}")
+        # Separate included and excluded values note that + is optional
+        included = [x.lstrip('+') for x in data if not x.startswith('-')]
+        excluded = [x.lstrip('-') for x in data if x.startswith('-')]
 
-        if (intersect := set(items) & set(neg_items)):
-            raise SplintException(f"Attributes in list and exclusion list = {intersect}")
+        return included, excluded
 
-        return pos_items, neg_items
+    def expand_attributes(self, rc_data: dict):
+        """
+        Convert the data from the configuration dictionary into a form that
+        is useful for processing in code.
+        Args:
+            rc_data: dictionary of attributes that should have all expected values
 
-    @staticmethod
-    def check_string_items(items: List[str]) -> bool:
-        """Validates that all items are non-empty strings."""
-        for item in items:
-            if item == '':
-                raise SplintException(f"Invalid string value: '{item}'. Strings should not be empty.")
+        Exception: If the levels list has an iteger it throws an exception
+        """
+
+        self.ruids, self.ex_ruids = self._separate_values(rc_data.get('ruids'))
+        self.tags, self.ex_tags = self._separate_values(rc_data.get('tags',[]))
+        self.phases, self.ex_phases = self._separate_values(rc_data.get('phases',[]))
+        self.levels, self.ex_levels = self._separate_values(rc_data.get('levels',[]))
+
+
+
+    def does_match(self,ruid:str="",tag:str="",phase:str="",level:str="")->bool:
+        """
+        Determines whether a given `ruid`/`tag`/`phase`/`level` matches any of the inclusions defined, and doesn't match any of the exclusions.
+
+        With no inclusions defined, all values are included by default. Exclusion matching takes precedent over inclusion matching.
+
+        Args:
+            ruid (str): The RUID string to check.
+            tag (str): The tag string to check.
+            phase (str): The phase string to check.
+            level (int): The level integer to check.
+
+        Returns:
+            bool: True if it matches any inclusion and doesn't match any exclusion, False otherwise.
+        """
+
+        # This is sort of a hack levels must be integers, this makes any non integer level not match
+        level=str(level)
+
+        # Each list of patterns corresponds to a specific input
+        patterns = [(self.ruids, ruid), (self.tags, tag), (self.levels, level), (self.phases, phase)]
+        ex_patterns = [(self.ex_ruids, ruid), (self.ex_tags, tag), (self.ex_levels, level), (self.ex_phases, phase)]
+
+        # Check if any of the inputs match an inclusion pattern
+        if not self.is_inclusion_list_empty:
+            for pattern_list, attribute in patterns:
+                if not attribute:
+                    continue
+                if pattern_list and not any(re.fullmatch(pat, attribute) for pat in pattern_list):
+                    return False
+
+
+        # Check if any of the inputs match an exclusion pattern
+        for ex_pattern_list, attribute in ex_patterns:
+            if not attribute:
+                continue
+            if any(re.fullmatch(xpat, attribute) for xpat in ex_pattern_list):
+                return False
+
         return True
-
-    @staticmethod
-    def check_integer_items(items: List[str]) -> bool:
-        """Validates that all items can be casted to integers."""
-        for item in items:
-            if not item.isdigit():
-                raise SplintException(f"Invalid value for level: '{item}'. Levels should be integers.")
-        return True
-
-

@@ -184,11 +184,11 @@ class SplintFunction:
         for count, arg in enumerate([arg for arg in args if arg is None], start=1):
             if self.fail_on_none:
                 yield SplintResult(status=False,
-                                   msg=f"Failed due to None argument {count} in func='{self.function_name}'")
+                                   msg=f"Failed due to None argument {count} in func='{self.function_name}'|{self.ruid}",fail_on_none=True)
                 return
             if self.skip_on_none:
                 yield SplintResult(status=None, skipped=True,
-                                   msg=f"Skipped due to None argument {count} in func='{self.function_name}'")
+                                   msg=f"Skipped due to None argument {count} in func='{self.function_name}|{self.ruid}'",skip_on_none=True)
                 return
 
         # It is possible for an exception to occur before the generator is created.
@@ -315,6 +315,9 @@ class SplintFunction:
         result.runtime_sec = end_time - start_time
         result.ttl_minutes = self.ttl_minutes
         result.count = count
+
+        result.fail_on_none = self.fail_on_none
+        result.skip_on_none = self.skip_on_none
 
         # Apply all (usually 1 or 0) hooks to the result
         for hook in self.result_hooks:

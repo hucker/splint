@@ -51,6 +51,7 @@ from .splint_util import str_to_bool  # noqa: F401
 from .splint_rc import SplintRC  # noqa: F401
 from .splint_tomlrc import SplintTomlRC  # noqa: F401
 from .splint_jsonrc import SplintJsonRC  # noqa: F401
+from .splint_rc_factory import splint_rc_factory # noqa:F401
 
 # dataframe rules
 try:

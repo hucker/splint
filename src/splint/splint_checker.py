@@ -3,6 +3,7 @@ This class manages running the checker agains a list of functions.
 There is also support for low level progress for functions/classes.
 """
 import datetime as dt
+import re
 from abc import ABC, abstractmethod
 from typing import List
 
@@ -238,8 +239,7 @@ class SplintChecker:
             auto_ruid: bool = False,
     ):
         """
-        
-        
+
         
         Args:
             packages: List of SplintPackage objs to check. 
@@ -272,7 +272,7 @@ class SplintChecker:
         self.score = 0.0
 
         # Allow an RC object to be specified.
-        self.rc = rc or SplintRC()
+        self.rc = rc
 
         # If we are provided with an environment we save it off but first wrap it in
         # a class that guards reasonably against writes to the underlying environment
@@ -429,7 +429,7 @@ class SplintChecker:
         # Now use the RC file.  Note that if you are running filter functions AND
         # an RC file this can be confusing.  Ideally you use one or the other. but
         # it isn't an error to do so, you just need to know what you are doing.
-        self.apply_rc()
+        self.apply_rc(self.rc)
 
         # The collected list has the functions that will be run to verify operation
         # of the system.
@@ -461,23 +461,19 @@ class SplintChecker:
 
     def apply_rc(self,rc=None):
         """ Apply RC file to collected functions applying includes then excludes. """
+        self.rc = rc or self.rc
 
-        rc = rc or self.rc
+        # By exiting early an NOT using the RC file we don't use
+        # Sets as shown below.  Sets cause order to be nondeterministic
+        if not self.rc:
+            return self.collected
 
-        # Remember that if all includes are empty then everything is included.  That
-        # seems odd, but without this, including everything is hard.  You'd need to
-        # include everything from one attribute.
-        self.include_by_attribute(tags=rc.tags,
-                                  ruids=rc.ruids,
-                                  phases=rc.phases,
-                                  levels=rc.levels)
+        self.collected = [function for function in self.collected
+                          if self.rc.does_match(ruid=function.ruid,
+                                                tag=function.tag,
+                                                phase=function.phase,
+                                                level=function.level)]
 
-        self.exclude_by_attribute(tags=rc.ex_tags,
-                                  ruids=rc.ex_ruids,
-                                  phases=rc.ex_phases,
-                                  levels=rc.ex_levels)
-
-        # Can be useful for testing.
         return self.collected
 
     def exclude_by_attribute(self, tags: List = None,
@@ -520,6 +516,35 @@ class SplintChecker:
                           (f.ruid in ruids) or
                           (f.level in levels) or
                           (f.phase in phases)]
+
+    def XXXinclude_by_attribute(self,
+                             tags: List | str = None,
+                             ruids: List | str = None,
+                             levels: List | str = None,
+                             phases: List | str = None):
+        tags = _param_str_list(tags)
+        ruids = _param_str_list(ruids)
+        phases = _param_str_list(phases)
+        levels = _param_int_list(levels)
+
+        # Convert each list of patterns into a list of compiled regexes
+        tag_regexes = [re.compile(tag) for tag in tags]
+        ruid_regexes = [re.compile(ruid) for ruid in ruids]
+        phase_regexes = [re.compile(phase) for phase in phases]
+        level_regexes = [re.compile(str(level)) for level in levels]  # levels are integers, convert to str first
+
+        # Returns true if any regex in the given list matches the input string
+        def matches_any(input_str, regexes):
+            return any(regex.search(input_str) for regex in regexes)
+
+        # Only include the attributes that match
+        self.collected = [
+            f for f in self.collected
+            if matches_any(f.tag, tag_regexes)
+               or matches_any(f.ruid, ruid_regexes)
+               or matches_any(str(f.level), level_regexes)  # levels are integers, convert to str first
+               or matches_any(f.phase, phase_regexes)
+        ]
 
     def load_environments(self):
         """

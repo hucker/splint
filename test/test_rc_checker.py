@@ -34,36 +34,58 @@ def func3():
 
 def test_nothing_rc_file(func1, func2, func3):
 
-    rc = splint.SplintRC(display_name='rc')
-
     ch = splint.SplintChecker(check_functions=[func1, func2, func3], auto_setup=True)
     assert ch.phases == ['p1', 'p2', 'p3']
     assert ch.tags == ['t1', 't2', 't3']
     assert ch.ruids == ['ruid_1', 'ruid_2', 'ruid_3']
     assert ch.levels == [1, 2, 3]
 
-    #Same assertions
-    rc = splint.SplintRC(display_name='rc')
+    #Same assertions since we are giving an RC file with nothing in it
+    rc = splint.SplintRC()
+    ch = splint.SplintChecker(check_functions=[func1, func2, func3], auto_setup=True,rc=rc)
     assert ch.phases == ['p1', 'p2', 'p3']
     assert ch.tags == ['t1', 't2', 't3']
     assert ch.ruids == ['ruid_1', 'ruid_2', 'ruid_3']
     assert ch.levels == [1, 2, 3]
 
-def test_include_tag_rc_file(func1, func2, func3):
+def test_check_with_rc(func1, func2, func3):
 
-    rc = splint.SplintRC(display_name='rc',tags=['t1'])
+    rc = splint.SplintRC(rc_d={'tags':'t1'})
     ch = splint.SplintChecker(check_functions=[func1, func2, func3], auto_setup=True,rc=rc)
     assert ch.tags == ['t1']
 
-    rc = splint.SplintRC(display_name='rc',phases=['p1'])
+    rc = splint.SplintRC(rc_d={'phases':['p1']})
     ch = splint.SplintChecker(check_functions=[func1, func2, func3], auto_setup=True,rc=rc)
     assert ch.phases == ['p1']
 
-    rc = splint.SplintRC(display_name='rc',ruids=['ruid_1'])
+    rc = splint.SplintRC(rc_d={'ruids':['ruid_1']})
     ch = splint.SplintChecker(check_functions=[func1, func2, func3], auto_setup=True,rc=rc)
     assert ch.ruids == ['ruid_1']
 
-    #TODO Fix this.  LEvels should be ints not string rep of ints.
+    # TODO Fix this.  Levels should be ints not string bazbaz123
+    #  of ints.
     #rc = splint.SplintRC(display_name='rc',levels=[1])
     #ch = splint.SplintChecker(check_functions=[func1, func2, func3], auto_setup=True,rc=rc)
     #assert ch.levels == ['1']
+
+
+@pytest.mark.parametrize("rc_d, expected", [
+    ({'ruids': ['r.*']}, 3),
+    ({'ruids': ['.*1|.*2']}, 2),
+    ({'phases': ['.*1|.*2']}, 2),
+    ({'phases': ['p.*']}, 3),
+    ({'tags': ['t.*']}, 3),
+    ({'tags': ['.*1|.*2']}, 2),
+    ({'levels': ['1|2|3']}, 3),
+    ({'levels': ['1|3']}, 2),
+    ({'levels': ['1'],'tags':'t2','phases':'p3'}, 0),
+])
+def test_simple_check_regex1(func1, func2, func3, rc_d, expected):
+    """
+    Verify that using a SplintRC 'file' is correctly applied using various regular
+    expressions.
+    """
+    rc = splint.SplintRC(rc_d=rc_d)
+    ch = splint.SplintChecker(check_functions=[func1, func2, func3], auto_setup=True, rc=rc)
+    assert ch.function_count == expected
+
