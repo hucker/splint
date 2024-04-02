@@ -66,7 +66,7 @@ target audience.
 ### Splint:
 
 - **Scope**: Offers comprehensive linting and testing capabilities for any task or system focused on granular pass fail
-  tests.
+  tests.  Designed to be integrated with other infrastructure.
 - **Complexity**: Lightweight and straightforward, designed for end users with detailed testing results and scoring.
 - **Audience**: Consumed by end users across various domains, facilitating rule-based testing with clear insights into
   testing results. A typical go/nogo test has 100's of tests that are run almost exclusively as pass/fail
@@ -397,6 +397,18 @@ def check_file_age():
     pic = make_black_hole_image()
     yield SplintResult(status=pic.black_hole_exists(), msg="Hourly cluster image generation check")
 ```
+
+## Mitigations
+
+Mitigations are a way to extend the surface of splint from being a just a checker to a tool that automates 
+aspects of your systems.  Any rule can have a mitigation assigned to it which is an object that takes the 
+splint result and attempts to mitigate it.  The definition of mitigate is dependent on the class being used.
+A simple mitigation might be sending an email and a more complex one might be deleting old files, zipping old
+files, and running other kinds of maintainance.
+
+Optionally the rule can be re-run to determine if the mitigation was successful.
+
+CURRENTLY IN DEVELOPMENT
 
 ## How can these rules be organized?
 
