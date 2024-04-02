@@ -99,10 +99,10 @@ class SplintRC:
         Args:
             rc_data: dictionary of attributes that should have all expected values
 
-        Exception: If the levels list has an iteger it throws an exception
+        Exception: If the levels list has an integer it throws an exception
         """
 
-        self.ruids, self.ex_ruids = self._separate_values(rc_data.get('ruids'))
+        self.ruids, self.ex_ruids = self._separate_values(rc_data.get('ruids',[]))
         self.tags, self.ex_tags = self._separate_values(rc_data.get('tags',[]))
         self.phases, self.ex_phases = self._separate_values(rc_data.get('phases',[]))
         self.levels, self.ex_levels = self._separate_values(rc_data.get('levels',[]))

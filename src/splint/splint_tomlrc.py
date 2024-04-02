@@ -10,9 +10,6 @@ class SplintTomlRC(SplintRC):
     def __init__(self, cfg: str, section: str):
         section_data = self._load_config(cfg, section)
 
-        if not isinstance(section_data, dict):
-            raise SplintException(f"Configuration section is not a dictionary in {cfg}")
-
         self.expand_attributes(section_data)
 
     def _load_config(self, cfg: str, section: str) -> dict:
@@ -21,7 +18,7 @@ class SplintTomlRC(SplintRC):
         try:
             with cfg.open("rt", encoding="utf8") as t:
                 config_data = toml.load(t)
-        except (FileNotFoundError, toml.TomlDecodeError, AttributeError) as error:
+        except (FileNotFoundError, toml.TomlDecodeError, AttributeError,PermissionError) as error:
             raise SplintException(f"TOML config file {cfg} error: {error}") from error
 
         return config_data.get(section, {})
