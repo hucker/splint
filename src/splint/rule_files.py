@@ -34,9 +34,12 @@ def rule_stale_files(
     age_in_seconds = days * 86400.0 + hours * 3600.0 + minutes * 60.0 + seconds
     if age_in_seconds <= 0:
         raise SplintException("Age for stale file check should be > 0")
+    if age_in_seconds == 0:
+        raise SplintException("Age for stale file check set to 0.  Please enter an age > 0.")
 
     current_time = time.time()
     count = 0
+    good_count = 0
     for count, filepath in enumerate(pathlib.Path(folder).rglob(pattern), start=1):
         file_mod_time = filepath.stat().st_mtime
         file_age_in_seconds = current_time - file_mod_time
@@ -57,9 +60,17 @@ def rule_stale_files(
                 status=False,
                 msg=f"Stale file {filepath} age = {file_age:.2f} {unit} {age_in_seconds=}"
             )
+        else:
+            good_count += 1
+
+    # Nothing to check
     if count == 0:
         yield SR(status=no_files_pass_status,
                  msg=f"No files found matching {pattern} in {folder}.")
+
+    # Everything OK, provide some info
+    elif count == good_count:
+        yield SR(status=True,msg=f"All {good_count} file(s) are not not stale.")
 
 
 def rule_large_files(folder: str,

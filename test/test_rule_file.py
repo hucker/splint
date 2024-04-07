@@ -1,5 +1,6 @@
 import pathlib
 import time
+import pytest
 
 from src import splint
 
@@ -84,37 +85,26 @@ def test_rule_large_files_missing():
         assert result.status is False
 
 
-def test_bad_stale_file_setup():
-    """Verify that all negative and 0 params can fail"""
+
+@pytest.mark.parametrize("days, hours, minutes, seconds", [
+    (0, 0, 0,-1),  # Test case for seconds=-1
+    (0, 0, -1, 0),  # Test case for minutes=-1
+    (0, -1, 0, 0),  # Test case for hours=-1
+    (-1, 0, 0, 0),  # Test case for days=1
+    (0, 0, 0, 0)  # Test case for all zero
+])
+def test_bad_stale_file_setup(days, hours, minutes, seconds):
+    """Test that the check_rule_file function works with different values of days, hours, minutes, and seconds"""
     file_path = pathlib.Path("./rule_files_")
 
-    def check_rule_sec():
-        yield from splint.rule_stale_files(folder=file_path, pattern="my_file*.txt", days=0, hours=0, minutes=0,
-                                           seconds=-1)
+    def check_rule_files():
+        yield from splint.rule_stale_files(folder=file_path, pattern="my_file*.txt", days=days, hours=hours,
+                                           minutes=minutes, seconds=seconds)
 
-    def check_rule_min():
-        yield from splint.rule_stale_files(folder=file_path, pattern="my_file*.txt", days=0, hours=0, minutes=-1,
-                                           seconds=0)
-
-    def check_rule_hr():
-        yield from splint.rule_stale_files(folder=file_path, pattern="my_file*.txt", days=0, hours=-1, minutes=0,
-                                           seconds=0) @ splint.attributes(tag="tag")
-
-    def check_rule_day():
-        yield from splint.rule_stale_files(folder=file_path, pattern="my_file*.txt", days=1, hours=0, minutes=0,
-                                           seconds=0)
-
-    def check_rule_all_zero():
-        yield from splint.rule_stale_files(folder=file_path, pattern="my_file*.txt", days=0, hours=0, minutes=0,
-                                           seconds=0)
-
-    # Make sure we all the var types work.
-    for rule in [check_rule_sec, check_rule_min, check_rule_hr, check_rule_day, check_rule_all_zero]:
-        s_func = splint.SplintFunction(rule)
-        for result in s_func():
-            assert result.except_
-            assert result.status is False
-
+    s_func = splint.SplintFunction(check_rule_files)
+    for result in s_func():
+        assert result.except_
+        assert result.status is False
 
 def test_stale_file_no_match():
     """No files is an interesting case as it"""
@@ -138,7 +128,11 @@ def test_stale_file_no_match():
 
 
 def test_stale_file():
-    """Verify that we can use the rule_stale_files rule in a function that we build."""
+    """
+    Verify that we can use the rule_stale_files rule in a function that we build.
+
+    This is kind of ugly but having individual functions for each was quite huge
+    """
     file_path = pathlib.Path("./rule_files_")
 
     @splint.attributes(tag="tag")
