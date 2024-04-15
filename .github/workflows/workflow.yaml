@@ -1,6 +1,6 @@
 name: CI for Splint
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
   build:
@@ -8,7 +8,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: [3.12]
+        python-a: [3.11]
 
     steps:
     - uses: actions/checkout@v2
