@@ -128,8 +128,8 @@ class SplintFunction:
         self.last_ttl_start = 0  # this will be compared to time.time() for ttl caching
         self.last_results: List[SplintResult] = []
 
-        if self.weight is None:
-            self.weight = 100.0
+        if self.weight in [True,False,None]:
+            raise SplintException("Boolean and none types are not allowed for weights.")
         elif self.weight <= 0.0:
             raise SplintException("Weight must be greater than 0.0")
 

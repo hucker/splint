@@ -109,6 +109,16 @@ def test_no_ruid():
     assert ruids == ["", "", "", ""]
 
     # Now check
+    assert pkg.name == 'ruid_empty'
     assert splint.empty_ruids(ruids) is True
     assert splint.valid_ruids(ruids) is False
     assert splint.ruid_issues(ruids) == "RUIDS are not used."
+
+def test_missing_ruids():
+
+    ruids = ["","foo"]
+
+    # Now check
+    assert splint.empty_ruids(ruids) is False
+    assert splint.valid_ruids(ruids) is False
+    assert splint.ruid_issues(ruids) == "Blank RUIDs are present."

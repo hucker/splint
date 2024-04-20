@@ -92,8 +92,9 @@ def attributes(
     # throws exception on bad input
     ttl_minutes = _parse_ttl_string(str(ttl_minutes))
 
-    if weight <= 0:
-        raise SplintException("Weight must be > then 0.0.  Nominal value is 100.0.")
+    if weight in [None,True,False] or weight <= 0 :
+        raise SplintException("Weight must be numeric and > than 0.0.  Nominal value is 100.0.")
+
 
     # Make sure these names don't have bad characters.  Very important for regexs
     disallowed = ' ,!@#$%^&:?*<>\\/(){}[]<>~`-+=\t\n\'"'

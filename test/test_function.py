@@ -18,6 +18,14 @@ def test__str__(check_func):
     assert check_func.function_name == 'func'
     assert str_value == "SplintFunction(self.function_name='func')"
 
+@pytest.mark.parametrize("weight", [True, False, None])
+def test_weight_none(weight):
+
+    # Note this will fail if you say SplintException since weights
+    with pytest.raises(splint.SplintException):
+        @splint.attributes(weight=weight)
+        def func():
+            yield splint.SR(status=True, msg="Hello")
 
 def test_weight_exception():
     @splint.attributes(tag="tag")
@@ -36,7 +44,7 @@ def test_function_str():
         yield splint.SR(status=True, msg="Hello")
 
     splint_func = splint.SplintFunction(func)
-    assert (splint_func.function_name == "func")
+    assert splint_func.function_name == "func"
 
 
 def test_func_doc_string_extract():

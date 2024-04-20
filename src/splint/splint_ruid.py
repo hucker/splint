@@ -55,7 +55,7 @@ def ruid_issues(ruids: List[str]) -> str:
         if empty_ruids(ruids):
             issues.append("RUIDS are not used.")
         else:
-            issues.append("Blank RUIDs present.")
+            issues.append("Blank RUIDs are present.")
 
     msg = " ".join(issues) if issues else "No issues found."
     return msg
