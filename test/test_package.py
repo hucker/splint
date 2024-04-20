@@ -33,6 +33,16 @@ def skip_no_name_pkg():
     return splint.SplintPackage(folder="./skip")
 
 
+def test_index_in_modules(skip_pkg):
+
+    """ Verify that packages read from modules have the check functions indexed correctly """
+    ch = splint.SplintChecker(packages=[skip_pkg],auto_setup=True)
+
+    for count,func in enumerate(ch.collected,start=1):
+        assert count == func.index
+
+
+
 def test_noname_package(skip_no_name_pkg):
     assert skip_no_name_pkg.name == 'skip'
     m = skip_no_name_pkg.get("check_skip")
