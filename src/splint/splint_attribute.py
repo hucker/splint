@@ -26,12 +26,12 @@ DEFAULT_RUID = ""
 DEFAULT_FINISH_ON_FAIL = False  # If a splint function yields fail result stop processing
 DEFAULT_SKIP_ON_NONE = False
 DEFAULT_FAIL_ON_NONE = False
-
+DEFAULT_INDEX = 1  # All sfunctions are given an index of 1 when created.
 
 def _parse_ttl_string(input_string: str) -> float:
     """
     Use regular expression to match a TTL string.  This pattern was a pain to figure out.  There
-    are soo many permutations that need to be handled that are subtle (like the order matters in the
+    are so many permutations that need to be handled that are subtle (like the order matters in the
     list).
 
     Args:
@@ -134,6 +134,7 @@ def get_attribute(func, attr, default_value=None):
         "finish_on_fail": DEFAULT_FINISH_ON_FAIL,
         "skip_on_none": DEFAULT_SKIP_ON_NONE,
         "fail_on_none": DEFAULT_FAIL_ON_NONE,
+        "index": DEFAULT_INDEX,
     }
 
     default = default_value or defs[attr]

@@ -65,6 +65,36 @@ def func_exc():
     return splint.SplintFunction(func)
 
 
+def test_no_attrs():
+    def func():
+        return splint.SplintResult(status=True, msg="It works")
+
+    sfunc = splint.SplintFunction(func)
+
+    ch =  splint.SplintChecker(check_functions= [sfunc], auto_setup=True)
+
+    assert ch.collected[0].function == func
+    assert ch.collected[0] == sfunc
+
+
+
+
+def test_checker_indexing(func1,func2,func3,func4):
+    """Verify that the checker indexes the functions based on the load order"""
+    ch = splint.SplintChecker(check_functions=[func1, func2, func3, func4], auto_setup=True)
+
+    for count,func in enumerate(ch.check_functions,start=1):
+        assert count == func.index
+        assert 'adhoc' == func.module
+
+
+    ch = splint.SplintChecker(check_functions=[func4, func3, func2, func1], auto_setup=True)
+
+    for count,func in enumerate(ch.check_functions,start=1):
+        assert count == func.index
+        assert 'adhoc' == func.module
+
+
 def test_attr_lists(func1, func2, func3):
     ch = splint.SplintChecker(check_functions=[func1, func2, func3], auto_setup=True)
     assert ch.phases == ['p1', 'p2', 'p3']

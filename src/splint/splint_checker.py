@@ -294,8 +294,10 @@ class SplintChecker:
         # If any exception occurs stop processing
         self.abort_on_exception = abort_on_exception
 
+        # These two have the collection of all checkerfunctions from packages, modules, and adhoc
         self.collected: List[SplintFunction] = []
         self.pre_collected: List[SplintFunction] = []
+
         self.start_time = dt.datetime.now()
         self.end_time = dt.datetime.now()
         self.results: List[SplintResult] = []
@@ -358,12 +360,14 @@ class SplintChecker:
         """ Load up an arbitrary list of splint functions.
         These functions are tagged with adhoc for module"""
         if isinstance(check_functions, list) and len(check_functions) >= 1:
-            for f in check_functions:
+            for count,f in enumerate(check_functions,start=1):
                 if not isinstance(f, SplintFunction):
                     raise SplintException(
                         "Functions must be a list of SplintFunction objects."
                     )
-                # Since we are building up a module from nothing we give it a generic name
+                # Since we are building up a module from nothing we give it a generic name and
+                # remember the load order.
+                f.index = count
                 f.module = "adhoc"
             return check_functions
 
@@ -516,35 +520,6 @@ class SplintChecker:
                           (f.ruid in ruids) or
                           (f.level in levels) or
                           (f.phase in phases)]
-
-    def XXXinclude_by_attribute(self,
-                             tags: List | str = None,
-                             ruids: List | str = None,
-                             levels: List | str = None,
-                             phases: List | str = None):
-        tags = _param_str_list(tags)
-        ruids = _param_str_list(ruids)
-        phases = _param_str_list(phases)
-        levels = _param_int_list(levels)
-
-        # Convert each list of patterns into a list of compiled regexes
-        tag_regexes = [re.compile(tag) for tag in tags]
-        ruid_regexes = [re.compile(ruid) for ruid in ruids]
-        phase_regexes = [re.compile(phase) for phase in phases]
-        level_regexes = [re.compile(str(level)) for level in levels]  # levels are integers, convert to str first
-
-        # Returns true if any regex in the given list matches the input string
-        def matches_any(input_str, regexes):
-            return any(regex.search(input_str) for regex in regexes)
-
-        # Only include the attributes that match
-        self.collected = [
-            f for f in self.collected
-            if matches_any(f.tag, tag_regexes)
-               or matches_any(f.ruid, ruid_regexes)
-               or matches_any(str(f.level), level_regexes)  # levels are integers, convert to str first
-               or matches_any(f.phase, phase_regexes)
-        ]
 
     def load_environments(self):
         """

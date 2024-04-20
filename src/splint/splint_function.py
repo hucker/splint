@@ -120,6 +120,7 @@ class SplintFunction:
         self.fail_on_none = get_attribute(function, "fail_on_none")
         self.ttl_minutes = get_attribute(function, "ttl_minutes")
         self.finish_on_fail = get_attribute(function, "finish_on_fail")
+        self.index = get_attribute(function, "index")
 
         # Support Time To Live using the return value of time.time.  Resolution of this
         # is on the order of 10e-6 depending on OS.  In my case this is WAY more than I

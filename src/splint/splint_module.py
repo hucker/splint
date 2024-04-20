@@ -90,6 +90,9 @@ class SplintModule:
 
         module = module or self.module
 
+        # Dir givens you every element in the module object and allows us to look
+        # for check functions that look a certain way
+        cfunc_count = 0
         for name in dir(module):
             if name.startswith("_"):
                 continue
@@ -102,8 +105,11 @@ class SplintModule:
             if name.startswith(self.env_prefix):
                 self.add_env_function(obj)
 
-            # Load check functions
+            # Load check functions.  We number them because we care about the 'file' order
+            # The file order will let us sort/resort functions and access file order if we want it.
             if name.startswith(self.check_prefix):
+                cfunc_count += 1
+                obj.index = cfunc_count
                 self.add_check_function(module, obj)
 
         # Strictly speaking this doesn't need to happenhere, it could be checked later
