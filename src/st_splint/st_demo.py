@@ -33,6 +33,8 @@ def blue(text):
 
 def red(text):
     return color('red',text)
+def violet(text):
+    return color('violet',text)
 
 def display_overview(checker: splint.SplintChecker) -> None:
     """
@@ -49,7 +51,8 @@ def display_overview(checker: splint.SplintChecker) -> None:
         f"| {green('**SCORE**')} | {checker.score:0.1f}% |",
         f"| {green('**PASS**')} | {checker.pass_count} |",
         f"| {red('**FAIL**')} | {checker.fail_count} |",
-        f"| {orange('**SKIP**')} | {checker.skip_count} |",
+        f"| {orange('**WARN**')} | {checker.warn_count} |",
+        f"| {violet('**SKIP**')} | {checker.skip_count} |",
         f"| {blue('**TOTAL**')} | {checker.result_count} |",
     ]
 
@@ -59,6 +62,8 @@ def display_overview(checker: splint.SplintChecker) -> None:
     # Display the Markdown table in Streamlit
     st.markdown(markdown_table)
 
+def yes_or_none(var):
+    return 'Yes' if bool(var) else  ''
 
 def display_results(results: List[splint.SplintResult]):
     """
@@ -67,7 +72,7 @@ def display_results(results: List[splint.SplintResult]):
     Args:
         results: List of splint results
     """
-    headers = ['Count', 'Status', 'Tag', 'Level', 'Phase', 'RUID', 'Module Name', 'Function Name', 'Message']
+    headers = ['Count', 'Status', 'Warn', 'Skipped', 'Tag', 'Level', 'Phase', 'RUID', 'Module Name', 'Function Name', 'Message']
 
     # Start with the table headers and separators created as f-strings
     table = [
@@ -83,7 +88,7 @@ def display_results(results: List[splint.SplintResult]):
 
         # Append each row directly to the table
         table.append(
-            f"| {count} | {c_f(r.status)} | {blue(r.tag)} | {r.level} | {r.phase} | {r.ruid} | {c_f(r.module_name)} | {c_f(r.func_name)} |{c_f(r.msg)} |")
+            f"| {count} | {c_f(r.status)} | {orange(yes_or_none(r.warn_msg))} | {violet(yes_or_none(r.skipped))}| {blue(r.tag)} | {r.level} | {r.phase} | {r.ruid} | {c_f(r.module_name)} | {c_f(r.func_name)} |{c_f(r.msg)} |")
 
     # Convert the list of rows into a single string with line breaks
     markdown_table = "\n".join(table)
@@ -148,9 +153,8 @@ class SplintStreamlitProgressBar(splint.SplintProgress):
         Display a status message/progress update.  The progress bar goes from 0 to full
         scale as a percentage of the number of function that have run, that is whey
         we get current/max.  We also have a message which can be anything as well
-        as a result which is the detailed results.  Presumably some  progress systems
-        would watch the result metadata while others would be content with the just
-        the message.
+        as a result which is the detailed results.  Presumably some progress systems
+        would watch the result metadata while others would be content with the message.
         """
         if max_count <= 0:
             max_count = 1

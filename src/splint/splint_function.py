@@ -32,7 +32,7 @@ def result_hook_fix_blank_msg(sfunc: "SplintFunction",
     # from the doc string or from the function name/module/package.
     if not result.msg:
         if sfunc.doc and sfunc.doc.strip().count("\n") == 0 and sfunc.doc.strip():
-            result.msg = f"{result.func_name}{sfunc.doc.strip()}"
+            result.msg = f"{result.func_name}: {sfunc.doc.strip()}"
         else:
             # Use a dictionary to store the optional parts of the message
             # This makes it easier to add or remove parts in the future
@@ -299,8 +299,9 @@ class SplintFunction:
         Provide a bunch of metadata about the function call, mostly hoisting
         parameters from the functon to the result.
 
-        A design decision was made to make the result data flat since there are no more than
-        1 possible hierarchy.  Tall-skinny.
+        A design decision was made to make the result data flat since there are more than
+        1 possible hierarchy.  Tall-skinny data that can be transformed into wide or
+        hierarchical.
         """
         # Use getattr to avoid repeating the same pattern of checking if self.module exists
         result.pkg_name = getattr(self.module, "__package__", "")

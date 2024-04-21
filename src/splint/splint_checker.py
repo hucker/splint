@@ -689,12 +689,17 @@ class SplintChecker:
     @property
     def perfect_run(self):
         """No fails or skips"""
-        return all(r.status and not r.skipped for r in self.results)
+        return all(r.status and not r.skipped and not r.warn_msg for r in self.results)
 
     @property
     def skip_count(self):
         """Number of skips"""
         return len([r for r in self.results if r.skipped])
+
+    @property
+    def warn_count(self):
+        """Number of warns"""
+        return len([r for r in self.results if r.warn_msg])
 
     @property
     def pass_count(self):
