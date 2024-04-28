@@ -34,7 +34,7 @@ built from the system's environment.
 
 While the concept may sound intricate, understanding Splint is straightforward for those familiar with `pytest`.
 Its principles have proven effective in environments where end users may not be programmers, offering a clear path to
-identify and correct issues to ensure system compliance. By adhering to agreed-upon rulesets, teams can work
+identify and correct issues to ensure system compliance. By adhering to agreed-upon rule sets, teams can work
 harmoniously, driving error counts to zero.
 
 ## Why Not pytest, Great Expectations or other popular tools?
@@ -58,10 +58,10 @@ target audience.
 
 ### Tableaux/PowerBI
 
-- **Scope** Centered around graphical output of charts, graphs, and status for corporate dashboarding.
+- **Scope** Centered around graphical output of charts, graphs, and status for corporate dash-boarding.
 - **Complexity** Robust and feature rich catering to real time charting with complex graphical displays.
 - **Audience** Consumed by everyone in an organization created as mostly in a low-code environment.
-- **Visibilty** Beautiful charting.  For our application this is eye candy.
+- **Visibility** Beautiful charting.  For our application this is eye candy.
 
 ### Splint:
 
@@ -69,7 +69,7 @@ target audience.
   tests.
 - **Complexity**: Lightweight and straightforward, designed for end users with detailed testing results and scoring.
 - **Audience**: Consumed by end users across various domains, facilitating rule-based testing with clear insights into
-  testing results. A typical go/nogo test has 100's of tests that are run almost exclusively as pass/fail
+  testing results. A typical go/no-go test has 100's of tests that are run almost exclusively as pass/fail
 - **Visibility**: Concise list of passing and failing rules with extensive detail and filtering capabilities for infrastructure,
                   data integrity, project management and general system status.
 
@@ -97,7 +97,7 @@ def check_yielded_values():
     yield get_drive_space('/fum') > 1_000_000_000
 ```
 
-As you might expect running this will provide 3 passing test results.
+As you might expect running this will provide 3 passing test results but with very limited feedback.
 
 You can up your game and return status message info:
 From the most simple you could write rules like this:
@@ -116,9 +116,9 @@ def check_yielded_values():
     yield SR(status=get_drive_space('/fum') > 1_000_000_000, msg="Drive space check for fum")
 ```
 
-As you might expect running this will also provide 3 passing test results.
+As you might expect running this will also provide 3 passing test results with better messages.
 
-Now we can add more complexity. Tag a test functions with attributes.
+Now we can add more complexity. Tag check functions with attributes to allow subsets of checks to be run.
 
 ```python
 from splint import SplintResult, attributes
@@ -129,13 +129,13 @@ import pathlib
 @attributes(tag="file")
 def check_file_exists():
     """ Verify this that my_file exists """
-    status = pathlib.Path("myfile.csv").exists()
+    status = pathlib.Path("my_file.csv").exists()
     return SplintResult(status=status, msg="Verify daily CSV file exists")
 
 
 @attributes(tag="file")
 def check_file_age():
-    file = pathlib.Path("myfile.csv")
+    file = pathlib.Path("my_file.csv")
     modification_time = file.stat().st_mtime
     current_time = dt.datetime.now().timestamp()
     file_age_in_seconds = current_time - modification_time
@@ -156,7 +156,7 @@ from splint import attributes, SplintResult
 
 
 def env_csv_file():
-    env = {'csv_file': pathlib.Path("myfile.csv")}
+    env = {'csv_file': pathlib.Path("my_file.csv")}
     return env
 
 
@@ -211,7 +211,8 @@ To simplify getting started, there are included rules you can call to check file
 dataframes, Excel spreadsheets, PDF files and web APIs. These integrations make many common checks just a few lines of code.
 
 These generally take the form of you wrapping them in some way to provide the required inputs and any attributes
-required by your app.
+required by your app as well as messages specific to your application.
+
 
 The rules shown below trigger errors if there are any log files > 100k in length and if they haven't been updated
 in the last 5 minutes.
@@ -291,8 +292,8 @@ but it is in work creating scoring by function.
 | `by_result`          | Each result from a functon counts as 100%                                |
 | `by_function_binary` | All tests from a single function must pass to get 100% for the function. |
 | `by_funciton_mean`   | If a function has 3 results and 2 pass the function result is 66%        |
-| `binary_fail`        | If any single result from a funciton is False, the function score is 0%  |
-| `binary_pass`        | If any single result from a function is True, the funciton score is 100% |
+| `binary_fail`        | If any single result from a function is False, the function score is 0%  |
+| `binary_pass`        | If any single result from a function is True, the function score is 100% |
 
 IN addition to the scoring, each function has a weight that is also applied to it after the scoring to all
 different rules to have higher weights.
@@ -300,29 +301,29 @@ different rules to have higher weights.
 The utility of this is somewhat useless in smaller systems (< 100 rules) since we generally are aiming to
 have 100% pass.  The weighting could be used to determine triage.
 
-## What are @attributes
+## What are @attributes?
 
 Each rule function can be assigned attributes that define metadata about the rule function. Attributes are at the heart
 of how `splint` allows you to filter, sort, select tests to run and view by adding decorators to your check functions.
 
-| Attribute        | Description                                                                                                                       |
-|------------------|-----------------------------------------------------------------------------------------------------------------------------------|
-| `tag`            | Zero or more strings that can be used for filtering results.                                                                      |
-| `phase`          | A single string that indicates a project phase like testing or development.                                                       |
-| `level`          | A numeric value that is better for greater than/less than tests.                                                                  |
-| `weight`         | A positive number indicating the weight of a functions results. The nominal weight is 100.                                        |
-| `skip`           | Indicates the function should be skipped.                                                                                         |
-| `ruid`           | Rule-ID is a unique identifier for a rule.                                     |
+| Attribute        | Description                                                                                                                         |
+|------------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| `tag`            | Zero or more strings that can be used for filtering results.                                                                        |
+| `phase`          | A single string that indicates a project phase like testing or development.                                                         |
+| `level`          | A numeric value that is better for greater than/less than tests.                                                                    |
+| `weight`         | A positive number indicating the weight of a functions results. The nominal weight is 100.                                          |
+| `skip`           | Indicates the function should be skipped.                                                                                           |
+| `ruid`           | Rule-ID is a unique identifier for a rule.                                                                                          |
 | `ttl_minutes`    | Allow caching of results so expensive tests don't need to be rerun which is only useful in cases where you run tests over and over. |
 | `finish_on_fail` | Aborts processing of `splint` function on the first failure.                                                                        |
-| `skip_on_none `  | If an environment parameter has a None value then the function will be skipped.                                                   |
-| `fail_on_none`   | If an environment paramter has a None value then the function will be failed.                                                     |
+| `skip_on_none `  | If an environment parameter has a None value then the function will be skipped.                                                     |
+| `fail_on_none`   | If an environment parameter has a None value then the function will be failed.                                                      |
 
 ## What are Rule-Ids (RUIDS)?
 
 Tags and phases are generic information that is only present for filtering. The values don't mean much to the inner
 workings of splint.  `RUID`s are different. The purpose of a `RUID` is to tag every rule function with a unique value
-that is, ideally, meaningful to the user.  For very large rulesets this becomes prohibitive and ends up looking like
+that is, ideally, meaningful to the user.  For very large rule sets this becomes prohibitive and ends up looking like
 integers with some leading text. The only rule to the code is that they are unique. If you tag a single
 function with an RUID the system will expect you to put a unique ID on every function, or to set the `auto_ruid` flag 
 to True when creating a `SplintChecker` object.  
@@ -359,33 +360,77 @@ def check_file_age():
 
 ## Splint RC
 
-A `.splintrc` file can be provided in the toml format (or from code a dictionary) of the form
+A `.splintrc` file can be provided in the `.TOML`, `.XML`, `.JSON` format, or from code as a dictionary.  I hope you don't
+need to use `XML`.
 
-TODO__WRITE DOCS HERE__
+RC files allow you to set up matching expressions for tags, phases, ruids and levels.  Python regular expressions
+are allowed, so there is a lot of power available to make rules that are hard to read.  The website https://regex101.com
+is recommended for testing your regular expressions.
 
-This TOML file has a "simple" mode and a "complex" mode. In each case they run all the checks (based on to include)
-and then anything in the exclude list is not reported. Note that this happens BEFORE the tests are run rather than
-running the test and then throwing away the result.
+Give a list of each of the attributes.  Any item that starts with a dash is an exclusion rule. Anything that doesn't 
+start with a dash is an inclusion rule.
+
+__If there are no inclusion rules then EVERYTHING is included__
+__If there are no exclusion rules then NOTHING is excluded__
+
+There are several common patterns:
+
+1) Do nothing (empty rc file or dictionary) to run EVERYTHING.
+2) Only list exclusions.  Useful in cases where you are testing several things that are mostly similar.
+3) Use tags, phases and selectors to run subsets of your tests.
+4) You can completely punt and ONLY use ruids and regular expressions.  Super powerful, but you need to plan well.
+
+```text
+NOTE: Regular expressions may NOT contain spaces.  Don't do it and don't ask for it.  The idea is that they
+      are short and easily added to lists.  Also you are allowed to say:
+      
+      tags = "t1 t2 t3"
+      
+      instead of typing:
+      
+      tags = ['t1', 't2','t3']
+      
+      It is just easier to type and to read and to get right.
+```
+
+### Some examples:
 
 ```toml
-[simple]
-include = ["*"]
-exclude = ["file_complex"]
-
-[complex]
-include = ["*"]
-exclude = ["file_simple"]
+[package1]
+tags = ['t1']
+phases = ['p1']
 ```
+The above rc file only runs phase p1 and tag t1 rules. 
+
+```toml
+[package1]
+tags = ['-t1']
+phases = ['-p1','-p2']
+```
+This one runs any rule that isn't `t1` and isn't `p1` or `p2`.
+
+```toml
+[package1]
+ruids = ['file.*']
+```
+This rc only runs `ruid`s that start with `file`
+
+
 
 ## TTL Time to Live Caching
 
-If you have time-consuming rules, you can put a ttl on them to reduce the number of times it is run. All you need to
-do is tag the function with the `ttl_minutes` attribute, and it will use cached results if the call frequency is inside
-the ttl that was specified. This feature is useful in situations where you are `splint`ing a system
-in real time for things like dashboards or long-running tasks. You don't need to check a 20MB log file for exceptions
-every minute. When you need it, it is very useful.
+If you are running checks in real-ish-time you may want to throttle some check functions.  TTL allows caching of results
+to reduce execution of long-running checks.
 
-The status during the ttl period will be the last result. At startup, everything will run since the caches are empty.
+Just tag the check function with the `ttl_minutes` attribute, and it will use cached results if the call frequency is 
+inside the TTL that was specified. This feature is useful in situations where you are `splint`ing a system
+in real time for things like dashboards or long-running tasks. You don't need to check a 20MB log file for exceptions
+every minute. When you need TTL, it is very useful.
+
+The status during the TTL period will be the last result. At startup, everything will run since the caches are empty.
+
+NOTE: ttl_minutes is assumed to be in minutes, should you provide a number without units.  If you want hours days or
+      seconds you can put the units in the string ("30sec", "1day", ".5 hours")
 
 ```python
 from splint import attributes, SplintResult
@@ -404,15 +449,15 @@ Lots of ways.
 
 1) Just give it a bunch of functions in a list would work. Ideally the return SplintResults, but it works if they
    return booleans or lists of booleans.
-2) Point it to a file and `splint` will find all the functions in that file and call them. (ScruffModule)
+2) Point it to a file and `splint` will find all the functions in that file and call them. (`splint_module`)
 3) Point it to a folder (or pass it a bunch of filenames) and splint will load each module and collect all the tests (
-   ScruffPackage)
+   `splint_package`)
 
 For me that is as deep as I want things to go.
 
 ## How are environments used?
 
-Environments in `splint` are analogous to fixtures in `pytest` but the usecase is different.
+Environments in `splint` are analogous to fixtures in `pytest` but the use-case is different.
 The machinations of supporting all the scopes is not necessary in this case. You provide
 a set of named environment variables, and they are used as parameters to any functions that need them.
 
@@ -421,7 +466,7 @@ immutable-ish in order to reduce the possibility of modifying the state of the e
 
 Any functions in a module that start with `env` are considered environment functions, and they
 will be called with the current global environment and are expected to return additions being made
-to that environment. The global environment is provided so you can see everything rather than
+to that environment. The global environment is provided, so you can see everything rather than
 making putting all the parameters in the function signature.
 
 Note that the variable names in the dictionary are the parameters that are passed to the function.
@@ -463,27 +508,27 @@ Included is a light weight `typer` app that allows to point `splint` at a file o
 command
 line.
 
-To run it against a folder
+To run it against any folder
 
-`python -m splinter.py -p path/to/package_folder`
+`python -m splinter.py --pkg path/to/package_folder`
 
 To run it against a folder and start a FastAPI endpoint do:
 
-`python -m splinter.py -p path/to/package_folder --api --port 8000`
+`python -m splinter.py --pkg path/to/package_folder --api --port 8000`
 
 ```text
 Usage: splinter.py [OPTIONS]
 
- Run Splint checks on a given using a typer command line app.
+ Run Splint checks on a given module or package using a typer command line app.
 
 ╭─ Options ───────────────────────────────────────────────────────────────────────────────────────────────────────╮
 │ --mod      -m      TEXT  The module to run rules against. [default: None]                                       │
-│ --pkg      -p      TEXT  The package to run rules against. [default: None]                                      │
+│ --pkg              TEXT  The package to run rules against. [default: None]                                      │
 │ --json     -j      TEXT  The JSON file to write results to. [default: None]                                     │
 │ --flat     -f            Should the output be flat or a hierarchy. [default: True]                              │
 │ --score    -s            Print the score of the rules.                                                          │
 │ --api                    Make rules visible to FastAPI Endpoint                                                 │
-| --port                   FastAPI Port [default=8000]                                                            │
+| --port     -p      INT   FastAPI Port [default=8000]                                                            │
 │ --verbose  -v            Enable verbose output.                                                                 │
 │ --help                   Show this message and exit.                                                            │
 ╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
@@ -499,7 +544,7 @@ functions or filter by `tag`, `level` or `phase`. The sample command-line app se
 of how to connect a `splint` ruleset to the web via FastAPI.
 
 Integration with `FastAPI` is simple since it utilizes Python dicts for result data.
-The splinter demo tool demonstrates that this can be achieved with just a few lines of code to
+The `splinter` demo tool demonstrates that this can be achieved with just a few lines of code to
 create a FastAPI interface.
 
 Simply run the command with the `--api` flag, and you'll see `uvicorn` startup your API. Go to 
@@ -518,7 +563,7 @@ INFO:     127.0.0.1:64116 - "GET /openapi.json HTTP/1.1" 200 OK
 
 And going to `localhost:8000/docs` gets you this:
 
-FastAPI swagger interiface:
+FastAPI swagger interface:
 ![FastAPI](./img/fastapi2.png)
 
 FastAPI example running some rules:
@@ -542,8 +587,7 @@ Splint is just a name that sounds cool. When I started this I thought system-lin
 
 ## TODO
 
-1. Implement `.splintrc` file and toml interface.
 1. Make pip installable.
-1. Fix issue with module having the same name.
-1. By function scoring
-1. Make non-toy showing pdf/excel/csv integration
+2. Fix issue with module having the same name.
+3. By function scoring
+4. Make non-toy showing pdf/excel/csv integration

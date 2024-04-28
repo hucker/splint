@@ -1,47 +1,90 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
             "name": "Python: Typer Splinter Package Verbose",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/src/cli/splinter.py",
+            "program": "${workspaceFolder}\\src\\cli\\splinter.py",
             "console": "integratedTerminal",
-            "args": [ "-s","-p", "./src/cli","-v","-j","./src/cli/result.json"]
+            "cwd": "${workspaceFolder}\\src\\cli",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}\\src;${workspaceFolder}"
+            },
+            "args": [
+                "-s",
+                "--pkg",
+                "${workspaceFolder}\\src\\examples\\my_package",
+                "-v",
+                "-j",
+                "${workspaceFolder}\\src\\cli\\result.json"
+            ]
         },
         {
             "name": "Python: Typer Splinter Package",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/src/cli/splinter.py",
+            "program": "${workspaceFolder}\\src\\cli\\splinter.py",
             "console": "integratedTerminal",
-            "args": [ "-p", "./src/cli","-s","-j","./src/cli/result.json"]
+            "cwd": "${workspaceFolder}\\src\\cli",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}\\src;${workspaceFolder}"
+            },
+            "args": [
+                "--pkg",
+                "${workspaceFolder}\\src\\examples\\my_package",
+                "-s",
+                "-j",
+                "${workspaceFolder}\\src\\cli\\result.json"
+            ]
         },
         {
             "name": "Python: Typer Splinter Module Verbose",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/src/cli/splinter.py",
+            "program": "${workspaceFolder}\\src\\cli\\splinter.py",
             "console": "integratedTerminal",
-            "args": [ "-s","-m", "./src/cli/check_1.py","-v","-j","./src/cli/result.json"]
-        },        {
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}\\src;${workspaceFolder}"
+            },
+            "args": [
+                "-s",
+                "-m",
+                "${workspaceFolder}\\src\\examples\\my_package\\check_module1.py",
+                "-v",
+                "-j",
+                "${workspaceFolder}\\src\\cli\\result.json"
+            ]
+        },
+        {
             "name": "Python: Typer Splinter Module",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/src/cli/splinter.py",
+            "program": "${workspaceFolder}\\src\\cli\\splinter.py",
             "console": "integratedTerminal",
-            "args": [ "-s","-m", "./src/cli/check_1.py","-j","./src/cli/result.json"]
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}\\src;${workspaceFolder}"
+            },
+            "args": [
+                "-s",
+                "-m",
+                "${workspaceFolder}\\src\\examples\\my_package\\check_module1.py",
+                "-j",
+                "${workspaceFolder}\\src\\cli\\result.json"
+            ]
         },
         {
             "name": "Python: Typer Splinter Help",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/src/cli/splinter.py",
+            "program": "${workspaceFolder}\\src\\cli\\splinter.py",
             "console": "integratedTerminal",
-            "args": [ "--help"]
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}\\src;${workspaceFolder}"
+            },
+            "args": [
+                "--help"
+            ]
         }
     ]
 }
