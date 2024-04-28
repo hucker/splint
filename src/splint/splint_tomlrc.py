@@ -1,7 +1,14 @@
+"""
+Allow the usage of an TOML file as an RC file.  
+"""
 import pathlib
+
 import toml
+
 from splint import SplintException
 from splint import SplintRC
+
+
 class SplintTomlRC(SplintRC):
     """
     Loads configurations from TOML files. Extends SplintRC.
@@ -18,7 +25,7 @@ class SplintTomlRC(SplintRC):
         try:
             with cfg.open("rt", encoding="utf8") as t:
                 config_data = toml.load(t)
-        except (FileNotFoundError, toml.TomlDecodeError, AttributeError,PermissionError) as error:
+        except (FileNotFoundError, toml.TomlDecodeError, AttributeError, PermissionError) as error:
             raise SplintException(f"TOML config file {cfg} error: {error}") from error
 
         return config_data.get(section, {})

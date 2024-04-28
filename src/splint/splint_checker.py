@@ -3,7 +3,6 @@ This class manages running the checker agains a list of functions.
 There is also support for low level progress for functions/classes.
 """
 import datetime as dt
-import re
 from abc import ABC, abstractmethod
 from typing import List
 

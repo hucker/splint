@@ -1,7 +1,12 @@
-import pathlib
+"""
+Allow the usage of an INI file as an RC file.  
+"""
 import configparser
+
 from splint import SplintException
 from splint import SplintRC
+
+
 class SplintIniRC(SplintRC):
     """
     Loads configurations from TOML files. Extends SplintRC.
@@ -16,15 +21,15 @@ class SplintIniRC(SplintRC):
         """Loads and returns the requested section from a TOML file."""
         try:
             config = configparser.ConfigParser()
-            config.read(cfg,encoding="utf-8")
+            config.read(cfg, encoding="utf-8")
             if not section:
-                raise SplintException(f"Section must be provided to read INI RC files.")
+                raise SplintException("Section must be provided to read INI RC files.")
             d = {}
-            d["tags"] = config.get(section,"tags")
-            d["ruids"] = config.get(section,"ruids")
+            d["tags"] = config.get(section, "tags")
+            d["ruids"] = config.get(section, "ruids")
             d["phases"] = config.get(section, "phases")
 
-        except (FileNotFoundError, TypeError,configparser.Error,PermissionError) as error:
+        except (FileNotFoundError, TypeError, configparser.Error, PermissionError) as error:
             raise SplintException(f"INI config file {cfg} error: {error}") from error
 
         return d

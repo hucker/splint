@@ -1,5 +1,5 @@
 """
-This class encapsulates the discovered rule functions found in the system.  A greate
+This class encapsulates the discovered rule functions found in the system.  A great
 deal of metadata is stored in the function and extracted from information about the function
 its signature, its generator status etc.  This information is used so users do not need to
 configure functions in multiple places.  Design elements from fastapi and pytest are obvious.
@@ -109,7 +109,7 @@ class SplintFunction:
         else:
             raise SplintException("post_sr_hooks must be a list")
 
-        # This really should be a class rather than having to repeat yourself.
+        # This should be a class rather than having to repeat yourself.
         self.tag = get_attribute(function, "tag")
         self.level = get_attribute(function, "level")
         self.phase = get_attribute(function, "phase")
@@ -124,12 +124,12 @@ class SplintFunction:
 
         # Support Time To Live using the return value of time.time.  Resolution of this
         # is on the order of 10e-6 depending on OS.  In my case this is WAY more than I
-        # need, and I'm assuming you aren't building a trading system with this so you don't
+        # need, and I'm assuming you aren't building a trading system with this, so you don't
         # care about microseconds.
         self.last_ttl_start = 0  # this will be compared to time.time() for ttl caching
         self.last_results: List[SplintResult] = []
 
-        if self.weight in [True,False,None]:
+        if self.weight in [True, False, None]:
             raise SplintException("Boolean and none types are not allowed for weights.")
         elif self.weight <= 0.0:
             raise SplintException("Weight must be greater than 0.0")
@@ -185,11 +185,13 @@ class SplintFunction:
         for count, arg in enumerate([arg for arg in args if arg is None], start=1):
             if self.fail_on_none:
                 yield SplintResult(status=False,
-                                   msg=f"Failed due to None argument {count} in func='{self.function_name}'|{self.ruid}",fail_on_none=True)
+                                   msg=f"Failed due to None argument {count} in func='{self.function_name}'|{self.ruid}",
+                                   fail_on_none=True)
                 return
             if self.skip_on_none:
                 yield SplintResult(status=None, skipped=True,
-                                   msg=f"Skipped due to None argument {count} in func='{self.function_name}|{self.ruid}'",skip_on_none=True)
+                                   msg=f"Skipped due to None argument {count} in func='{self.function_name}|{self.ruid}'",
+                                   skip_on_none=True)
                 return
 
         # It is possible for an exception to occur before the generator is created.

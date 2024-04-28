@@ -1,18 +1,21 @@
 """
 Handles configuration abstraction for splint, includes classes to parse TOML and JSON.
 """
-import itertools
-from typing import List, Tuple, Union
 import re
+from typing import List, Tuple
+
 from .splint_exception import SplintException
+
 
 class EarlyExitException(SplintException):
     """Break out of processing early """
 
+
 class SplintRC:
-
-    def __init__(self, *, rc_d: dict=None) :
-
+    """
+    Loads configurations from a dictionary.
+    """
+    def __init__(self, *, rc_d: dict = None):
 
         # Any falsy value ends up being valid...which means that setting
         # rcd=0 will work.
@@ -25,7 +28,7 @@ class SplintRC:
 
         # This is being quite paranoid, but allows for the user to only specifiy what is
         # needed rather that having data structures filled with []
-        rc_data={
+        rc_data = {
             'display_name': rc_d.get('display_name', 'NoName'),
             'ruids': rc_d.get('ruids', []),
             'tags': rc_d.get('tags', []),
@@ -34,10 +37,10 @@ class SplintRC:
         }
 
         # These will get overwritten, but it is use
-        self.ruids,self.ex_ruids = [],[]
-        self.phases,self.ex_phases = [],[]
-        self.tags,self.ex_tags = [],[]
-        self.levels,self.ex_levels = [],[]
+        self.ruids, self.ex_ruids = [], []
+        self.phases, self.ex_phases = [], []
+        self.tags, self.ex_tags = [], []
+        self.levels, self.ex_levels = [], []
 
         self.expand_attributes(rc_data)
         self.name = rc_data['display_name']
@@ -48,7 +51,7 @@ class SplintRC:
                                                            self.tags,
                                                            self.levels])
 
-    def _not_int_list(self,lst):
+    def _not_int_list(self, lst):
         return [item for item in lst if not item.isdigit()]
 
     def _load_config(self, cfg: str, section: str) -> dict:  # pragma no cover
@@ -102,14 +105,12 @@ class SplintRC:
         Exception: If the levels list has an integer it throws an exception
         """
 
-        self.ruids, self.ex_ruids = self._separate_values(rc_data.get('ruids',[]))
-        self.tags, self.ex_tags = self._separate_values(rc_data.get('tags',[]))
-        self.phases, self.ex_phases = self._separate_values(rc_data.get('phases',[]))
-        self.levels, self.ex_levels = self._separate_values(rc_data.get('levels',[]))
+        self.ruids, self.ex_ruids = self._separate_values(rc_data.get('ruids', []))
+        self.tags, self.ex_tags = self._separate_values(rc_data.get('tags', []))
+        self.phases, self.ex_phases = self._separate_values(rc_data.get('phases', []))
+        self.levels, self.ex_levels = self._separate_values(rc_data.get('levels', []))
 
-
-
-    def does_match(self,ruid:str="",tag:str="",phase:str="",level:str="")->bool:
+    def does_match(self, ruid: str = "", tag: str = "", phase: str = "", level: str = "") -> bool:
         """
         Determines whether a given `ruid`/`tag`/`phase`/`level` matches any of the inclusions defined, and doesn't match any of the exclusions.
 
@@ -126,7 +127,7 @@ class SplintRC:
         """
 
         # This is sort of a hack levels must be integers, this makes any non integer level not match
-        level=str(level)
+        level = str(level)
 
         # Each list of patterns corresponds to a specific input
         patterns = [(self.ruids, ruid), (self.tags, tag), (self.levels, level), (self.phases, phase)]
@@ -139,7 +140,6 @@ class SplintRC:
                     continue
                 if pattern_list and not any(re.fullmatch(pat, attribute) for pat in pattern_list):
                     return False
-
 
         # Check if any of the inputs match an exclusion pattern
         for ex_pattern_list, attribute in ex_patterns:

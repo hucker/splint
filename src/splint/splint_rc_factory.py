@@ -7,12 +7,13 @@ I have provided two implementations.
 """
 
 import sys
-from .splint_rc import SplintRC
-from .splint_jsonrc import SplintJsonRC
-from .splint_tomlrc import SplintTomlRC
-from .splint_xmlrc import SplintXMLRC
+
 from .splint_exception import SplintException
 from .splint_inirc import SplintIniRC
+from .splint_jsonrc import SplintJsonRC
+from .splint_rc import SplintRC
+from .splint_tomlrc import SplintTomlRC
+from .splint_xmlrc import SplintXMLRC
 
 if sys.version_info[:2] >= (3, 10):
     def splint_rc_factory(param: dict | str, section: str = "") -> SplintRC:
@@ -35,7 +36,7 @@ if sys.version_info[:2] >= (3, 10):
                 return SplintIniRC(cfg=s, section=section)
             case _:
                 raise SplintException('Invalid parameter type for splint_rc_factory.')
-else: # pragma: no cover
+else:  # pragma: no cover
     def splint_rc_factory(param, section: str = "") -> SplintRC:
         """
         Factory function to create an instance of SplintRC or its subclasses for Python below 3.10.

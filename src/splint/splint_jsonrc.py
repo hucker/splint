@@ -1,7 +1,12 @@
+"""
+Allow the usage of an JSON file as an RC file.  
+"""
 import json
 import pathlib
+
 from splint import SplintException
 from splint import SplintRC
+
 
 class SplintJsonRC(SplintRC):
     """
@@ -19,9 +24,7 @@ class SplintJsonRC(SplintRC):
         try:
             with cfg.open("rt", encoding="utf8") as j:
                 config_data = json.load(j)
-        except (FileNotFoundError, json.JSONDecodeError, AttributeError,PermissionError) as error:
+        except (FileNotFoundError, json.JSONDecodeError, AttributeError, PermissionError) as error:
             raise SplintException(f"JSON config {cfg} error: {error}") from error
 
         return config_data.get(section, {})
-
-

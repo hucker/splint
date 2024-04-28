@@ -1,3 +1,6 @@
+"""
+Allow the usage of an XML file as an RC file.  Not sure why you want this.
+"""
 import pathlib
 import xml.etree.ElementTree as ET
 from splint import SplintException

@@ -2,8 +2,7 @@
 This is the sad place for lonely functions that don't have a place
 """
 
-import re
-import splint.splint_exception as splint_exception
+
 
 def str_to_bool(s: str, default=None) -> bool:
     """ Convert a string value to a boolean."""
@@ -18,4 +17,3 @@ def str_to_bool(s: str, default=None) -> bool:
         return default
 
     raise ValueError(f'Cannot convert {s} to a boolean.')
-
