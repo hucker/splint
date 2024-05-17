@@ -26,7 +26,7 @@ class SplintRC:
         if not isinstance(rc_d, dict):
             raise SplintException(f"SplintRC expects a dictionary but got '{type(rc_d)}'")
 
-        # This is being quite paranoid, but allows for the user to only specifiy what is
+        # This is being quite paranoid, but allows for the user to only specify what is
         # needed rather that having data structures filled with []
         rc_data = {
             'display_name': rc_d.get('display_name', 'NoName'),
@@ -51,8 +51,8 @@ class SplintRC:
                                                            self.tags,
                                                            self.levels])
 
-    def _not_int_list(self, lst):
-        return [item for item in lst if not item.isdigit()]
+    #def _not_int_list(self, lst):
+    #    return [item for item in lst if not item.isdigit()]
 
     def _load_config(self, cfg: str, section: str) -> dict:  # pragma no cover
         raise NotImplementedError
@@ -145,7 +145,7 @@ class SplintRC:
         for ex_pattern_list, attribute in ex_patterns:
             if not attribute:
                 continue
-            if any(re.fullmatch(xpat, attribute) for xpat in ex_pattern_list):
+            if any(re.fullmatch(exclusion, attribute) for exclusion in ex_pattern_list):
                 return False
 
         return True

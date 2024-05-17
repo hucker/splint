@@ -62,7 +62,8 @@ class SplintModule:
         """Add a discovered environment function to the list"""
         self.env_functions.append(func)
 
-    def _add_sys_path(self, module_file):
+    @staticmethod
+    def _add_sys_path(module_file):
         """Add a module's directory to sys.path if it's not already there."""
 
         # Construct a Path object from the provided file path and get its parent directory
@@ -98,7 +99,7 @@ class SplintModule:
 
         # Dir givens you every element in the module object and allows us to look
         # for check functions that look a certain way
-        cfunc_count = 0
+        check_func_count = 0
         for name in dir(module):
             if name.startswith("_"):
                 continue
@@ -114,11 +115,11 @@ class SplintModule:
             # Load check functions.  We number them because we care about the 'file' order
             # The file order will let us sort/resort functions and access file order if we want it.
             if name.startswith(self.check_prefix):
-                cfunc_count += 1
-                obj.index = cfunc_count
+                check_func_count += 1
+                obj.index = check_func_count
                 self.add_check_function(module, obj)
 
-        # Strictly speaking this doesn't need to happenhere, it could be checked later
+        # Strictly speaking this doesn't need to happen here, it could be checked later
         duplicate_ruids = [
             item
             for item, count in Counter(self.ruids()).items()
