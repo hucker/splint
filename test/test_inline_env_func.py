@@ -29,7 +29,7 @@ def test_module_not_in_list(para_env):
 def test_fail_on_none():
     @splint.attributes(tag="tag", phase="phase", level=1, weight=100, fail_on_none=True)
     def env_test_function(var):
-        yield splint.SR(status=True, msg="This will pass if it ever gets here.")
+        yield splint.SR(status=True, msg=f"This will pass if it ever gets here. {var=}")
 
     s_func = splint.SplintFunction(function=env_test_function)
     ch = splint.SplintChecker(check_functions=[s_func], env={'var': None}, auto_setup=True)

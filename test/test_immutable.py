@@ -1,4 +1,5 @@
 """
+
 test_immutable.py
 
 This module contains tests for verifying the immutability of three data structures: ImmutableList,
@@ -213,22 +214,24 @@ def func_set():
 
 
 def test_splint_function_writing_to_env_dict(func_dict):
-    env = {'env_list': [1, 2, 3], 'env_dict': {'a': 10, 'b': 11}, 'env_set': set((1, 2, 3))}
+    env = {'env_list': [1, 2, 3], 'env_dict': {'a': 10, 'b': 11}, 'env_set': {1, 2, 3}}
 
     ch = splint.SplintChecker(check_functions=[func_dict], env=env, auto_setup=True)
     results = ch.run_all()
     assert len(results) == 1
     assert results[0].except_
 
-def test_splint_function_writing_to_env_lsit(func_list):
-    env = {'env_list': [1, 2, 3], 'env_dict': {'a': 10, 'b': 11}, 'env_set': set((1, 2, 3))}
+
+def test_splint_function_writing_to_env_list(func_list):
+    env = {'env_list': [1, 2, 3], 'env_dict': {'a': 10, 'b': 11}, 'env_set': {1, 2, 3}}
     ch = splint.SplintChecker(check_functions=[func_list], env=env, auto_setup=True)
     results = ch.run_all()
     assert len(results) == 1
     assert results[0].except_
 
+
 def test_splint_function_writing_to_env_set(func_set):
-    env = {'env_list': [1, 2, 3], 'env_dict': {'a': 10, 'b': 11}, 'env_set': set((1, 2, 3))}
+    env = {'env_list': [1, 2, 3], 'env_dict': {'a': 10, 'b': 11}, 'env_set': {1, 2, 3}}
     ch = splint.SplintChecker(check_functions=[func_set], env=env, auto_setup=True)
     results = ch.run_all()
     assert len(results) == 1

@@ -1,5 +1,5 @@
 """
-TODO: This file is a mess.  I had issues getting the esting to work correctly.  I'm sure this can be 1/2 the size.
+TODO: This file is a mess.  I had issues getting the testing to work correctly.  I'm sure this can be 1/2 the size.
 """
 
 import pathlib
@@ -99,7 +99,7 @@ def test_fs_fixture_exists(temp_fs: FS):
 
 def test_fs_rule_exists(temp_fs: FS):
     def check_temp_file(filesys: FS):
-        yield from rule_fs.rule_fs_path_exists(filesys, 'test.txt')  # SHould pass
+        yield from rule_fs.rule_fs_path_exists(filesys, 'test.txt')  # Should pass
         yield from rule_fs.rule_fs_path_exists(filesys, 'test1.txt')  # Should fail
 
     sfunc = splint.SplintFunction(check_temp_file)
@@ -111,7 +111,7 @@ def test_fs_rule_exists(temp_fs: FS):
 
 def test_fs_rule_files_exist(temp_fs: FS):
     def check_temp_files(filesys: FS):
-        yield from rule_fs.rule_fs_paths_exist(filesys, ['test.txt', 'test1.txt'])  # SHould pass
+        yield from rule_fs.rule_fs_paths_exist(filesys, ['test.txt', 'test1.txt'])  # Should pass
 
     sfunc = splint.SplintFunction(check_temp_files)
     chk = splint.SplintChecker(check_functions=[sfunc], env={'filesys': temp_fs}, auto_setup=True)

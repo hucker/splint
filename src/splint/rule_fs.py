@@ -1,6 +1,6 @@
 """
-Set of baseline rules that uses the pyfilesystem module to agnostically check on things
-about the file system, file existiting, age etc.
+Set of baseline rules that uses the pyfilesystem module to OS-agnostic checks on things
+about the file system, file existing, age etc.
 """
 import datetime as dt
 import fnmatch
@@ -82,7 +82,7 @@ def sec_format(seconds):
     """
     Convert a given time in seconds to a string expressing the time in a more
     human-readable format.  Of note when calculating months it uses 30-day months which is fine
-    for a few months but at 23 months it has 10 days of er
+    for a few months but at 23 months it has 10 days of error.
 
     Time is rounded down in the largest time units possible (days, hours, minutes, then seconds)
     For time less than 2 days, it's represented in hours. For less than 2 hours, it's in minutes.
@@ -132,7 +132,7 @@ def sec_format(seconds):
 
     # Seconds are special case. For small seconds we report to
     # extra precision since we assume that we are dealing with
-    # times on a human scale rather than on micro-scales.
+    # times on a human scale rather than on micro scales.
     if seconds >= 2:
         return f"{sign}{seconds:.1f} seconds"
 

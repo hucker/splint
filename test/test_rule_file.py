@@ -1,5 +1,6 @@
 import pathlib
 import time
+
 import pytest
 
 from src import splint
@@ -10,8 +11,8 @@ def test_rule_file_exist():
 
     @splint.attributes(tag="tag")
     def check_rule1():
-        for result in splint.rule_path_exists(path_="./rule_files_/my_file.txt"):
-            yield result
+        for result_ in splint.rule_path_exists(path_="./rule_files_/my_file.txt"):
+            yield result_
 
     @splint.attributes(tag="tag")
     def check_rule2():
@@ -31,13 +32,13 @@ def test_rule_large_files():
 
     @splint.attributes(tag="tag")
     def check_rule1():
-        for result in splint.rule_large_files(folder="./rule_files_", pattern="*.txt", max_size=10000):
-            yield result
+        for result_ in splint.rule_large_files(folder="./rule_files_", pattern="*.txt", max_size=10000):
+            yield result_
 
     @splint.attributes(tag="tag")
     def check_rule2():
-        for result in splint.rule_large_files(folder="./rule_files_", pattern="*.txt", max_size=50):
-            yield result
+        for result_ in splint.rule_large_files(folder="./rule_files_", pattern="*.txt", max_size=50):
+            yield result_
 
     s_func1 = splint.SplintFunction(check_rule1, '')
     for result in s_func1():
@@ -51,9 +52,9 @@ def test_rule_large_files():
 
 def test_rule_large_file_bad_setup():
     def check_rule_bad_setup():
-        for result in splint.rule_large_files(folder="./rule_files_", pattern="*.foobar", max_size=-50,
-                                              no_files_pass_status=True):
-            yield result
+        for result_ in splint.rule_large_files(folder="./rule_files_", pattern="*.foobar", max_size=-50,
+                                               no_files_pass_status=True):
+            yield result_
 
     s_func1 = splint.SplintFunction(check_rule_bad_setup)
     for result in s_func1():
@@ -66,15 +67,15 @@ def test_rule_large_files_missing():
 
     @splint.attributes(tag="tag")
     def check_rule_missing_pass():
-        for result in splint.rule_large_files(folder="./rule_files_", pattern="*.foobar", max_size=50,
-                                              no_files_pass_status=True):
-            yield result
+        for result_ in splint.rule_large_files(folder="./rule_files_", pattern="*.foobar", max_size=50,
+                                               no_files_pass_status=True):
+            yield result_
 
     @splint.attributes(tag="tag")
     def check_rule_missing_fail():
-        for result in splint.rule_large_files(folder="./rule_files_", pattern="*.foobar", max_size=50,
-                                              no_files_pass_status=False):
-            yield result
+        for result_ in splint.rule_large_files(folder="./rule_files_", pattern="*.foobar", max_size=50,
+                                               no_files_pass_status=False):
+            yield result_
 
     s_func1 = splint.SplintFunction(check_rule_missing_pass)
     for result in s_func1():
@@ -85,9 +86,8 @@ def test_rule_large_files_missing():
         assert result.status is False
 
 
-
 @pytest.mark.parametrize("days, hours, minutes, seconds", [
-    (0, 0, 0,-1),  # Test case for seconds=-1
+    (0, 0, 0, -1),  # Test case for seconds=-1
     (0, 0, -1, 0),  # Test case for minutes=-1
     (0, -1, 0, 0),  # Test case for hours=-1
     (-1, 0, 0, 0),  # Test case for days=1
@@ -105,6 +105,7 @@ def test_bad_stale_file_setup(days, hours, minutes, seconds):
     for result in s_func():
         assert result.except_
         assert result.status is False
+
 
 def test_stale_file_no_match():
     """No files is an interesting case as it"""
@@ -166,7 +167,7 @@ def test_stale_file():
         for result in s_func1():
             assert result.status
 
-        # Wait for a a bit more than .5 sec
+        # Wait for a bit more than .5 sec
         time.sleep(.6)
 
         for result in s_func1():

@@ -56,9 +56,9 @@ def test_bad_min_max():
 
 def test_allowed_values():
     df = pd.DataFrame({'a': [1, 1, 1, 3, 3, 3, 5, 5, 5]})
-    result1 = list(splint.rule_validate_df_schema(df, columns=['a'], allowed_values=(1, 3, 5)))
-    result2 = list(splint.rule_validate_df_schema(df, columns=['a'], allowed_values=(1, 3, 5, 7)))
-    result3 = list(splint.rule_validate_df_schema(df, columns=['a'], allowed_values=(0, 1)))
+    result1 = list(splint.rule_validate_df_schema(df, columns=['a'], allowed_values=[1, 3, 5]))
+    result2 = list(splint.rule_validate_df_schema(df, columns=['a'], allowed_values=[1, 3, 5, 7]))
+    result3 = list(splint.rule_validate_df_schema(df, columns=['a'], allowed_values=[0, 1]))
 
     assert all([r.status for r in result1])
     assert all([r.status for r in result2])
@@ -129,20 +129,21 @@ def generate_all_permutations(elements):
 
 
 def test_all_column_checks(good_abc_df):
-    """ Make sure that ANY way to specifiy the columns works"""
+    """ Make sure that ANY way to specify the columns works"""
     df = good_abc_df
 
     # Every one of these should pass
     for cols in generate_all_permutations(['a', 'b', 'c', 'd']):
         for type_ in [list, tuple]:
-            tcols = type_(cols)
-            results = list(splint.rule_validate_df_schema(df, columns=tcols))
+            t_cols = type_(cols)
+            results = list(splint.rule_validate_df_schema(df, columns=t_cols))
             for result in results:
                 assert result.status
 
 
 def test_bad_column_checks(good_abc_df):
-    """ We know this dataframe has abcd columns, lets try every way to make abce and make sure they all fail"""
+    """ 
+    We know this dataframe has abcd columns, verify all permutations fail"""
     df = good_abc_df.copy()
     for cols in itertools.permutations(['a', 'b', 'c', 'e']):
         results = list(splint.rule_validate_df_schema(df, columns=cols))

@@ -1,7 +1,7 @@
 """
 These test the rc file classes.
 
-This was built adhoc.  It c(sh)ould be setup to throughly test the
+This was built adhoc.  It could be setup to thoroughly test the
 splint_rc code and then  the dictionaries used to initialize the
 SplintRC class should be written off to JSON and TOML and then the
 exact same tests should be run against the derived classes.
@@ -10,12 +10,7 @@ exact same tests should be run against the derived classes.
 
 import pytest
 
-import splint
-from splint import SplintException
-from splint import splint_jsonrc
 from splint import splint_rc
-from splint import splint_tomlrc
-
 
 
 @pytest.fixture
@@ -29,7 +24,6 @@ def test_data():
     return d
 
 
-
 @pytest.fixture
 def test_neg_data():
     d = {
@@ -40,13 +34,15 @@ def test_neg_data():
     }
     return d
 
+
 def test_simple_summary(test_data):
     rc = splint_rc.SplintRC(rc_d=test_data)
 
     assert rc.tags == ['a', 'b', 'c']
-    assert rc.ruids == ['r1', 'r2','r3']
-    assert rc.phases == ['p1', 'p2','p3']
-    assert rc.levels == ['1','2','3']
+    assert rc.ruids == ['r1', 'r2', 'r3']
+    assert rc.phases == ['p1', 'p2', 'p3']
+    assert rc.levels == ['1', '2', '3']
+
 
 def test_simple_rc(test_data):
     rc = splint_rc.SplintRC(rc_d=test_data)
@@ -54,14 +50,14 @@ def test_simple_rc(test_data):
     assert rc.does_match(ruid='r1')
     assert rc.does_match(phase='p1')
     assert rc.does_match(level='1')
-    assert rc.does_match(ruid='r1',phase='p1')
+    assert rc.does_match(ruid='r1', phase='p1')
     assert rc.does_match(ruid='r1', level='1')
     assert rc.does_match(ruid='r1', tag='a')
-    assert rc.does_match(ruid='r1', tag='a',level='1')
-    assert rc.does_match(ruid='r1', tag='a',phase='p1',level='1')
+    assert rc.does_match(ruid='r1', tag='a', level='1')
+    assert rc.does_match(ruid='r1', tag='a', phase='p1', level='1')
 
 
-def test_simple_failrc(test_data):
+def test_simple_fail_rc(test_data):
     rc = splint_rc.SplintRC(rc_d=test_data)
 
     assert rc.does_match(tag='d') is False
@@ -71,23 +67,22 @@ def test_simple_failrc(test_data):
 
 
 def test_regex_rc(test_data):
-    rc = splint_rc.SplintRC(rc_d={'ruids':'r.*'})
+    rc = splint_rc.SplintRC(rc_d={'ruids': 'r.*'})
 
     assert rc.does_match(ruid='r1')
     assert rc.does_match(ruid='r2')
     assert rc.does_match(ruid='rasdfasdfasdf')
 
-    rc = splint_rc.SplintRC(rc_d={'ruids':r'r\d','phases':r'p\d'})
+    rc = splint_rc.SplintRC(rc_d={'ruids': r'r\d', 'phases': r'p\d'})
 
-    assert rc.does_match(ruid='r1',phase='p1')
-    assert rc.does_match(ruid='r2',phase='p2')
-    assert rc.does_match(ruid='r22',phase='p2') is False
-    assert rc.does_match(ruid='r2',phase='p22') is False
+    assert rc.does_match(ruid='r1', phase='p1')
+    assert rc.does_match(ruid='r2', phase='p2')
+    assert rc.does_match(ruid='r22', phase='p2') is False
+    assert rc.does_match(ruid='r2', phase='p22') is False
 
-    rc = splint_rc.SplintRC(rc_d={'ruids':r'r\d+','phases':r'p\d+'})
-    assert rc.does_match(ruid='r12',phase='p1')
-    assert rc.does_match(ruid='r2',phase='p22')
-
+    rc = splint_rc.SplintRC(rc_d={'ruids': r'r\d+', 'phases': r'p\d+'})
+    assert rc.does_match(ruid='r12', phase='p1')
+    assert rc.does_match(ruid='r2', phase='p22')
 
 
 @pytest.mark.parametrize("rules, ruid, phase, tag, expected", [
@@ -163,15 +158,15 @@ def test_regex_big_rc(rules, ruid, phase, tag, expected):
     ({'levels': '1|2'}, '1', True),
     ({'levels': '1|2|3'}, '2', True),
 ])
-def test_regex_rc(rules, level, expected):
+def test_regex_rc_2(rules, level, expected):
     rc = splint_rc.SplintRC(rc_d=rules)
     assert rc.does_match(level=level) is expected
 
 
 def test_neg():
-    rc = splint_rc.SplintRC(rc_d = {'tags':['t1','-t2'],
-                                    'ruids':['r1', '-r2'],
-                                    'phases':'p1,-p2'})
+    rc = splint_rc.SplintRC(rc_d={'tags': ['t1', '-t2'],
+                                  'ruids': ['r1', '-r2'],
+                                  'phases': 'p1,-p2'})
 
     assert rc.does_match(tag='t1')
     assert rc.does_match(tag='t2') is False
@@ -180,7 +175,5 @@ def test_neg():
     assert rc.does_match(phase='p1')
     assert rc.does_match(phase='p2') is False
 
-    assert rc.does_match(phase='p1',ruid='r1',tag='t2') is False
-    assert rc.does_match(phase='p1',ruid='r1',tag='t1') is True
-
-
+    assert rc.does_match(phase='p1', ruid='r1', tag='t2') is False
+    assert rc.does_match(phase='p1', ruid='r1', tag='t1') is True

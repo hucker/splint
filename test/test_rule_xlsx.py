@@ -18,9 +18,9 @@ Middle	    Yes
 Complete	No
 Post Mortem	No
 Missing
-Missing
-	        Yes
-	        No
+
+            Yes
+            No
 """
 
 import pandas as pd

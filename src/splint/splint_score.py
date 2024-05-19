@@ -12,7 +12,7 @@ class ScoreStrategy(abc.ABC):
     A strategy for scoring the results of a Splint run.
     It is assumed that many scoring strategies could be implemented, this provides a way
     for those strategies to be implemented in code (by providing a class) or from file
-    by providing a name that matches the class strat_name attribute.
+    by providing a name that matches the class stragegy name attribute.
     """
 
     strategy_name = None

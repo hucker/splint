@@ -37,13 +37,13 @@ def test_yielder_counts():
     @splint.attributes(tag="tag", phase="phase", level=1, weight=100, skip=False)
     def func1():
         y = splint.SplintYield()
-        yield from y(splint.SplintResult(status=False, msg=f"Here's a fail"))
+        yield from y(splint.SplintResult(status=False, msg="Here's a fail"))
         yield from y(splint.SplintResult(status=True, msg="Here's a pass"))
         yield from y(splint.SplintResult(y.fail_count == 1 and y.pass_count == 1 and y.count == 2,
                                          msg=f"Should be 1/1 counted {y.pass_count} pass and {y.fail_count} fail."))
         yield from y(splint.SplintResult(y.fail_count == 1 and y.pass_count == 2 and y.count == 3,
                                          msg=f"Should be 2/1 counted {y.pass_count} pass and {y.fail_count} fail."))
-        yield from y(splint.SplintResult(status=False, msg=f"Here's another fail"))
+        yield from y(splint.SplintResult(status=False, msg="Here's another fail"))
         yield from y(splint.SplintResult(y.fail_count == 2 and y.pass_count == 3 and y.count == 5,
                                          msg=f"Should be 2/1 counted {y.pass_count} pass and {y.fail_count} fail."))
         p, f, t = y.counts

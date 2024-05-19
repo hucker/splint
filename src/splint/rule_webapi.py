@@ -6,7 +6,7 @@ Includes:
 
 - `is_mismatch`: Compares two dictionaries, returns the first differing pair.
 
-- `rule_web_api`: Verifies a URL's HTTP response status code and compares returned JSON data.
+- `rule_web_api`: Verifies a URLs HTTP response status code and compares returned JSON data.
 
 Uses the `requests` library for HTTP requests, and handles exceptions accordingly.
 """

@@ -74,7 +74,7 @@ class SplintFunction:
 
         Methods:
         - __str__(): Returns string representation of SplintFunction.
-        - __call__(*args, **kwds): Calls the function and gathers result info.
+        - __call__(*args, **keywords): Calls the function and gathers result info.
         """
 
     def __init__(self, function, module='',

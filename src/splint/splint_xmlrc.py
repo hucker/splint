@@ -2,9 +2,11 @@
 Allow the usage of an XML file as an RC file.  Not sure why you want this.
 """
 import pathlib
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as ElementTree
+
 from splint import SplintException
 from splint import SplintRC
+
 
 class SplintXMLRC(SplintRC):
     """
@@ -24,7 +26,7 @@ class SplintXMLRC(SplintRC):
         """Loads tags, phases and ruids from a given package in the XML file."""
         cfg = pathlib.Path(cfg)
         try:
-            tree = ET.parse(cfg)
+            tree = ElementTree.parse(cfg)
             root = tree.getroot()
 
             package_data = {}
@@ -32,7 +34,7 @@ class SplintXMLRC(SplintRC):
                 for child in pkg:
                     package_data[child.tag] = [elem.text for elem in child.iter() if elem.text.strip()]
 
-        except (FileNotFoundError, ET.ParseError, AttributeError) as error:
+        except (FileNotFoundError, ElementTree.ParseError, AttributeError) as error:
             raise SplintException(f"XML config file {cfg} error: {error}") from error
 
         return package_data

@@ -1,5 +1,5 @@
 """
-This class manages running the checker agains a list of functions.
+This class manages running the checker against a list of functions.
 There is also support for low level progress for functions/classes.
 """
 import datetime as dt
@@ -79,7 +79,6 @@ def _param_str_list(params: List[str] | str,
     """
 
     # Null case...on could argue they meant the empty string as a name
-    # not gonna do that
     if isinstance(params, str) and params.strip() == '':
         return []
 
@@ -117,9 +116,9 @@ def _param_int_list(params: List[str] | int | str) -> List[int]:
     if isinstance(params, int):
         params = [params]
     if isinstance(params, str):
-        sparams = params.split()
+        str_params = params.split()
         try:
-            params = [int(sparam) for sparam in sparams]
+            params = [int(str_param) for str_param in str_params]
         except ValueError as vex:
             raise SplintException(f"Invalid integer parameter in {params}") from vex
 
@@ -214,7 +213,7 @@ class SplintChecker:
     THe life cycle of a checker object is
 
     1) Load what ever packages/modules/functions are associated with a system as
-       a collection of functions that coulde be run.
+       a collection of functions that could be run.
     2) Load any environment that may be needed for the rules.
     2) Optionally filter those functions based on any of the function attributes.
     3) Check all the rules and collect the results while providing status using
@@ -293,7 +292,7 @@ class SplintChecker:
         # If any exception occurs stop processing
         self.abort_on_exception = abort_on_exception
 
-        # These two have the collection of all checkerfunctions from packages, modules, and adhoc
+        # These two have the collection of all checker functions from packages, modules, and adhoc
         self.collected: List[SplintFunction] = []
         self.pre_collected: List[SplintFunction] = []
 
@@ -359,7 +358,7 @@ class SplintChecker:
         """ Load up an arbitrary list of splint functions.
         These functions are tagged with adhoc for module"""
         if isinstance(check_functions, list) and len(check_functions) >= 1:
-            for count,f in enumerate(check_functions,start=1):
+            for count, f in enumerate(check_functions, start=1):
                 if not isinstance(f, SplintFunction):
                     raise SplintException(
                         "Functions must be a list of SplintFunction objects."
@@ -462,7 +461,7 @@ class SplintChecker:
                 function.ruid = template.replace("@id@", f'{id_:04d}')
                 id_ += 1
 
-    def apply_rc(self,rc=None):
+    def apply_rc(self, rc=None):
         """ Apply RC file to collected functions applying includes then excludes. """
         self.rc = rc or self.rc
 
@@ -527,7 +526,7 @@ class SplintChecker:
         are all merged into a dictionary of parameter names and their values.
 
         This works very much like pytest, only without the scoping Parameters
-        taht are needed in multiple places aren't regenerated.
+        that are needed in multiple places aren't regenerated.
         Returns:
 
         """
@@ -562,7 +561,7 @@ class SplintChecker:
     @property
     def levels(self):
         """
-        Return a list of all the levls in the collected functions.
+        Return a list of all the levels in the collected functions.
 
         Returns:
             _type_: _description_
@@ -618,8 +617,8 @@ class SplintChecker:
             env = self.load_environments()
 
             # Shuts up linter
-            result: SplintResult = None
-            function: SplintFunction = None
+            result: SplintResult | None = None
+            function: SplintFunction | None = None
 
             # Count here to enable progress bars
             for count, function in enumerate(self.collected, start=1):

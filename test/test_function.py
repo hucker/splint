@@ -18,14 +18,15 @@ def test__str__(check_func):
     assert check_func.function_name == 'func'
     assert str_value == "SplintFunction(self.function_name='func')"
 
+
 @pytest.mark.parametrize("weight", [True, False, None])
 def test_weight_none(weight):
-
     # Note this will fail if you say SplintException since weights
     with pytest.raises(splint.SplintException):
         @splint.attributes(weight=weight)
         def func():
             yield splint.SR(status=True, msg="Hello")
+
 
 def test_weight_exception():
     @splint.attributes(tag="tag")
@@ -98,11 +99,10 @@ def test_function_bad_weight():
     except splint.SplintException:
         assert True
 
-    except Exception as e:
+    except Exception:
         # The above cases don't work, even though the debugger says the exception is a SplintValueError
         # if I compare type(e) to SplintValueError it says False?
         assert False
-        return
 
 
 def test_function_attributes():
@@ -217,7 +217,7 @@ def test_divide_by_zero():
     assert result.doc == "Test Exception Function"
     assert result.skipped is False
     assert str(result.except_) == "division by zero"
-    assert 'return 1 / 0' in result.traceback  # This might be python version dependent, just trying to be better not None
+    assert 'return 1 / 0' in result.traceback  # Might be python rev dependent, trying to be better not None
     assert result.tag == "DivideByZero"
 
 

@@ -64,12 +64,12 @@ def test_extract_tables_bad():
 
 
 def test_extract_pdf_with_no_table():
-    fname = "./rule_pdf/NoTables.pdf"
-    tables = rule_pdf.extract_tables_from_pdf(fname, pages='all')
+    file_name = "./rule_pdf/NoTables.pdf"
+    tables = rule_pdf.extract_tables_from_pdf(file_name, pages='all')
     assert len(tables) == 0
     assert isinstance(tables, list)
 
-    for result in rule_pdf.rule_from_pdf_rule_ids(fname, rule_id='Rule001'):
+    for _ in rule_pdf.rule_from_pdf_rule_ids(file_name, rule_id='Rule001'):
         pass
     else:
         pass
@@ -82,7 +82,7 @@ def test_pdf_with_repeated_rules():
     tables = rule_pdf.extract_tables_from_pdf(file, required_columns=required, pages='all')
     assert tables
     assert len(tables) == 2
-
+    count = 0
     for count, result in enumerate(rule_pdf.rule_from_pdf_rule_ids(file,
                                                                    rule_id="Rule001",
                                                                    col_names={'note_col': "Description",
@@ -95,7 +95,7 @@ def test_pdf_with_repeated_rules():
     assert count == 36
 
 
-def test_pdf_with_repeated_rules():
+def test_pdf_with_repeated_rules_2():
     """This file has 36 results, but we check for 10 expecting exception"""
     file = './rule_pdf/RepeatedRule.pdf'
     with pytest.raises(SplintException) as e_info:

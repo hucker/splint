@@ -1,4 +1,4 @@
-""" Baseline rules for checking contents of excel files. """
+""" Baseline rules for checking contents of Excel files. """
 import openpyxl
 import pandas as pd
 
@@ -63,7 +63,7 @@ def rule_xlsx_a1_pass_fail(wb: openpyxl.workbook,
                            row_start='1',
                            row_end=None):
     """ This is a very blunt instrument that pulls a true/false value out of
-        a specfic sheet/row/col of an Excel workbook.  It is very unforgiving
+        a specific sheet/row/col of an Excel workbook.  It is very unforgiving
         to format changes in the work book
 
         Using start and end row numbers you can iterate over many items in the notebook.  If row
@@ -72,7 +72,7 @@ def rule_xlsx_a1_pass_fail(wb: openpyxl.workbook,
         """
     sheet = _get_sheet(wb, sheet_name)
 
-    # Hendle Nones.  Presumably this should not be reqiured
+    # Handle Nones.  Presumably this should not be required
     row_start = row_start or '1'
     val_col = val_col or 'B'
     row_start, row_end, auto = _ensure_row_params(row_end, int(row_start))

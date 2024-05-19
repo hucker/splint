@@ -40,18 +40,18 @@ def rule_validate_df_schema(df: pd.DataFrame,
         and a description of the result.
         """
 
-    def check_dtype(col, dtype, dtype_name):
-        if df[col].dtype in dtype:
-            yield SR(status=True, msg=f"Column {col} is of type {dtype_name}.")
+    def check_dtype(col_, dtype, dtype_name):
+        if df[col_].dtype in dtype:
+            yield SR(status=True, msg=f"Column {col_} is of type {dtype_name}.")
         else:
-            yield SR(status=False, msg=f"Column {col} is not of type {dtype_name}.")
+            yield SR(status=False, msg=f"Column {col_} is not of type {dtype_name}.")
 
-    def check_null(col):
-        null_count = df[col].isnull().sum()
+    def check_null(col_):
+        null_count = df[col_].isnull().sum()
         if null_count == 0:
-            yield SR(status=True, msg=f"Column {col} has no null values.")
+            yield SR(status=True, msg=f"Column {col_} has no null values.")
         else:
-            yield SR(status=False, msg=f"Column {col} has {null_count} null values.")
+            yield SR(status=False, msg=f"Column {col_} has {null_count} null values.")
 
     if df is None:
         raise SplintException("Data frame is None.")
@@ -68,28 +68,28 @@ def rule_validate_df_schema(df: pd.DataFrame,
                      msg=f"Columns {set(columns) - set(df.columns)} are not in data frame.")
 
     if no_null_columns:
-        for col in no_null_columns:
-            yield from check_null(col)
+        for column in no_null_columns:
+            yield from check_null(column)
 
     if int_columns:
-        for col in int_columns:
-            yield from check_dtype(col, ['int64', 'int32'], 'int')
+        for column in int_columns:
+            yield from check_dtype(column, ['int64', 'int32'], 'int')
 
     if float_columns:
-        for col in float_columns:
-            yield from check_dtype(col, ['float64', 'float32'], 'float')
+        for column in float_columns:
+            yield from check_dtype(column, ['float64', 'float32'], 'float')
 
     if str_columns:
         for col in str_columns:
             yield from check_dtype(col, ['object'], 'object')
 
     if allowed_values:
-        for col in columns:
-            if df[col].isin(allowed_values).all():
-                yield SR(status=True, msg=f"All values in column {col} are in {allowed_values}.")
+        for column in columns:
+            if df[column].isin(allowed_values).all():
+                yield SR(status=True, msg=f"All values in column {column} are in {allowed_values}.")
             else:
                 yield SR(status=False,
-                         msg=f"Some values in column {col} are not in {allowed_values}.")
+                         msg=f"Some values in column {column} are not in {allowed_values}.")
 
     if row_min_max:
         min_rows, max_rows = row_min_max

@@ -45,7 +45,7 @@ def func3_dup():
 
 @pytest.fixture
 def func4():
-    @splint.attributes(finish_on_fail=True,ruid="suid_4")
+    @splint.attributes(finish_on_fail=True, ruid="suid_4")
     def func():
         """ Because finish on fail is set, this function will only yield 3 results."""
         yield splint.SplintResult(status=True, msg="It works1")
@@ -71,26 +71,23 @@ def test_no_attrs():
 
     sfunc = splint.SplintFunction(func)
 
-    ch =  splint.SplintChecker(check_functions= [sfunc], auto_setup=True)
+    ch = splint.SplintChecker(check_functions=[sfunc], auto_setup=True)
 
     assert ch.collected[0].function == func
     assert ch.collected[0] == sfunc
 
 
-
-
-def test_checker_indexing(func1,func2,func3,func4):
+def test_checker_indexing(func1, func2, func3, func4):
     """Verify that the checker indexes the functions based on the load order"""
     ch = splint.SplintChecker(check_functions=[func1, func2, func3, func4], auto_setup=True)
 
-    for count,func in enumerate(ch.check_functions,start=1):
+    for count, func in enumerate(ch.check_functions, start=1):
         assert count == func.index
         assert 'adhoc' == func.module
 
-
     ch = splint.SplintChecker(check_functions=[func4, func3, func2, func1], auto_setup=True)
 
-    for count,func in enumerate(ch.check_functions,start=1):
+    for count, func in enumerate(ch.check_functions, start=1):
         assert count == func.index
         assert 'adhoc' == func.module
 
@@ -119,7 +116,7 @@ def test_finish_on_fail(func4):
     assert results[2].status is False
 
 
-def test_abort_on_fail(func4,func3):
+def test_abort_on_fail(func4, func3):
     """
     Abort on fail exits the rule checking engine at the first fail
 
@@ -142,7 +139,7 @@ def test_abort_on_fail(func4,func3):
 
     # NOTE: we don't know the order that these functions are run we just know that it will stop early
     # and not get the same result as the function above.
-    assert len(results) < (3+1)
+    assert len(results) < (3 + 1)
 
 
 def test_abort_on_exception(func1, func2, func_exc):
@@ -567,7 +564,7 @@ def test_bad_get_str_list_2(bad_list):
         _ = splint.splint_checker._param_str_list(bad_list)
 
 
-def XXXtest_bad_tag_phase_ruid_strings():
+def xxx_test_bad_tag_phase_ruid_strings():
     """Strings used in attributes can't have illegal characters
 
     This isn't very strict
@@ -592,7 +589,7 @@ def test__get_int_list(params, expect, msg):
 
 
 def test_env_nulls(func1, func2, func3):
-    """ Verify that we detect None values in env varaibles.  This will be important in the future."""
+    """ Verify that we detect None values in env variables.  This will be important in the future."""
 
     ch = splint.SplintChecker(check_functions=[func1, func2, func3], env={'foo': 1, 'fum': None}, auto_setup=True)
     _ = ch.run_all()
@@ -603,7 +600,7 @@ def test_env_nulls(func1, func2, func3):
 
 
 def test_auto_ruids():
-    """Verify that ruids are only autocreated when the auto_ruid is true. """
+    """Verify that ruids are only auto-created when the auto_ruid is true. """
 
     @splint.attributes(tag="t1", level=1, phase='p1')
     def ar_func1():
@@ -621,12 +618,11 @@ def test_auto_ruids():
     for result in results:
         assert result.ruid == ''
 
-    ch = splint.SplintChecker(check_functions=[sfunc1,sfunc2], auto_setup=True, auto_ruid=True)
+    ch = splint.SplintChecker(check_functions=[sfunc1, sfunc2], auto_setup=True, auto_ruid=True)
     results = ch.run_all()
 
-    #NOTE: Order tests are run is not the parameter order in check_functions.
+    # NOTE: Order tests are run is not the parameter order in check_functions.
     assert len(results) == 2
     assert results[0].ruid != results[1].ruid
     assert results[0].func_name != results[1].func_name
-    assert set((results[0].ruid,results[1].ruid)) == set(('__ruid__0001','__ruid__0002'))
-
+    assert {results[0].ruid, results[1].ruid} == {'__ruid__0001', '__ruid__0002'}

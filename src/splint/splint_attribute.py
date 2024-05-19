@@ -26,7 +26,8 @@ DEFAULT_RUID = ""
 DEFAULT_FINISH_ON_FAIL = False  # If a splint function yields fail result stop processing
 DEFAULT_SKIP_ON_NONE = False
 DEFAULT_FAIL_ON_NONE = False
-DEFAULT_INDEX = 1  # All sfunctions are given an index of 1 when created.
+DEFAULT_INDEX = 1  # All splint functions are given an index of 1 when created.
+
 
 def _parse_ttl_string(input_string: str) -> float:
     """
@@ -92,13 +93,12 @@ def attributes(
     # throws exception on bad input
     ttl_minutes = _parse_ttl_string(str(ttl_minutes))
 
-    if weight in [None,True,False] or weight <= 0 :
+    if weight in [None, True, False] or weight <= 0:
         raise SplintException("Weight must be numeric and > than 0.0.  Nominal value is 100.0.")
 
-
-    # Make sure these names don't have bad characters.  Very important for regexs
+    # Make sure these names don't have bad characters.  Very important for regular expressions
     disallowed = ' ,!@#$%^&:?*<>\\/(){}[]<>~`-+=\t\n\'"'
-    for attr_name,attr in (('tag', tag), ('phase', phase), ('ruid', ruid)):
+    for attr_name, attr in (('tag', tag), ('phase', phase), ('ruid', ruid)):
         bad_chars = [c for c in disallowed if c in attr]
         if bad_chars:
             raise SplintException(f"Invalid characters {bad_chars} found in {attr_name} ")

@@ -69,7 +69,7 @@ def test_web_api():
 
 
 def convert_integers_to_strings(d):
-    """This takes my integer test dictionaries and turns them into strings for test purposees"""
+    """This takes my integer test dictionaries and turns them into strings for test purposes"""
     if not d:
         return d
     for key, value in d.items():

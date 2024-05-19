@@ -1,3 +1,5 @@
+import sys
+
 import pytest
 
 from src import splint
@@ -34,13 +36,11 @@ def skip_no_name_pkg():
 
 
 def test_index_in_modules(skip_pkg):
-
     """ Verify that packages read from modules have the check functions indexed correctly """
-    ch = splint.SplintChecker(packages=[skip_pkg],auto_setup=True)
+    ch = splint.SplintChecker(packages=[skip_pkg], auto_setup=True)
 
-    for count,func in enumerate(ch.collected,start=1):
+    for count, func in enumerate(ch.collected, start=1):
         assert count == func.index
-
 
 
 def test_noname_package(skip_no_name_pkg):
@@ -57,9 +57,6 @@ def test_2_package_count(pkg_2_modules):
     assert pkg_2_modules.module_count == 2
 
 
-import sys
-
-
 def test_add_to_path_none(pkg_2_modules):
     old_len = len(sys.path)
     pkg_2_modules._add_folder_to_sys_path(None)
@@ -69,7 +66,7 @@ def test_add_to_path_none(pkg_2_modules):
 
 def test_no_package():
     with pytest.raises(splint.SplintException):
-        _ = splint.SplintPackage(folder="__non_exisitant_folder")
+        _ = splint.SplintPackage(folder="__non_existent_folder")
 
 
 def test_sugar():

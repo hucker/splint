@@ -137,11 +137,11 @@ def test_bad_strategy_class():
 
 
 @pytest.mark.parametrize("scoring_function", [
-    (splint.ScoreBinaryFail),
-    (splint.ScoreBinaryPass),
-    (splint.ScoreByResult),
-    (splint.ScoreByFunctionMean),
-    (splint.ScoreByFunctionBinary),
+    splint.ScoreBinaryFail,
+    splint.ScoreBinaryPass,
+    splint.ScoreByResult,
+    splint.ScoreByFunctionMean,
+    splint.ScoreByFunctionBinary,
 ])
 def test_null_results(scoring_function):
     score = scoring_function()

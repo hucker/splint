@@ -89,7 +89,7 @@ class SplintPackage:
         return 0 if not self.modules else len(self.modules)
 
     def load_modules(self, glob=None) -> List[SplintModule]:
-        """ Find all of the files that match the pattern and load the modules. """
+        """ Find all the files that match the pattern and load the modules. """
         check_file_glob = glob or self.module_glob
 
         for file_path in sorted(self.folder.glob(check_file_glob)):

@@ -1,7 +1,7 @@
 """
 Helper classes to support making environment variables with mutable values be less prone
 to being changed by mistake.  We are under no presumption that we can stop people from
-using a dynamic language.  These classes make a best effort to  prevent the user from
+using a dynamic language.  These classes make the best effort to  prevent the user from
 making edits to environment data that should be constant for the life of a rule
 checking run.
 

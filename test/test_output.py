@@ -26,16 +26,16 @@ def simple2():
 def test_json(simple1, simple2):
     """Test that the as_dict method serializes  nicely"""
     ch = splint.SplintChecker(check_functions=[simple1, simple2], auto_setup=True)
-    results = ch.run_all()
+    _ = ch.run_all()
     d = ch.as_dict()
     assert d['function_count'] == 2
 
     # Important to treat these as sets, don't assume order.
-    assert set(d['levels']) == set([1, 2])
-    assert set(d['ruids']) == set(['ruid_1', 'ruid_2'])
-    assert set(d['tags']) == set(['t1', 't2'])
-    assert set(d['phases']) == set(['proto', 'production'])
-    assert set(d['functions']) == set(['func1', 'func2'])
+    assert set(d['levels']) == {1, 2}
+    assert set(d['ruids']) == {'ruid_1', 'ruid_2'}
+    assert set(d['tags']) == {'t1', 't2'}
+    assert set(d['phases']) == {'proto', 'production'}
+    assert set(d['functions']) == {'func1', 'func2'}
 
     assert d['passed_count'] == 2
     assert d['failed_count'] == 0
@@ -43,7 +43,7 @@ def test_json(simple1, simple2):
 
     # We don't know the order that the functions run in
     for result in d['results']:
-        if result['func_name']== 'func1':
+        if result['func_name'] == 'func1':
             assert result['status'] is True
             assert result['func_name'] == 'func1'
             assert result['msg'] == 'It works1'
