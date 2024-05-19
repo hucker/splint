@@ -585,9 +585,14 @@ And here are the results.
 
 Splint is just a name that sounds cool. When I started this I thought system-lint.
 
+## TOX
+
+The current code base is passes all tests under 3.10, 3.11, 3.12.  `Splint` is not yet passing
+tests on 3.13...mostly because the pip install process fails on M1 mac.
+
 ## TODO
 
 1. Make pip installable.
 2. Fix issue with module having the same name.
 3. By function scoring
-4. Make non-toy showing pdf/excel/csv integration
+4. Make non-toy demo pdf/excel/csv integration for testing "project management" use cases.
