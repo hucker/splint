@@ -21,9 +21,9 @@ class SplintTomlRC(SplintRC):
 
     def _load_config(self, cfg: str, section: str) -> dict:
         """Loads and returns the requested section from a TOML file."""
-        cfg = pathlib.Path(cfg)
+        cfg_file = pathlib.Path(cfg)
         try:
-            with cfg.open("rt", encoding="utf8") as t:
+            with cfg_file.open("rt", encoding="utf8") as t:
                 config_data = toml.load(t)
         except (FileNotFoundError, toml.TomlDecodeError, AttributeError, PermissionError) as error:
             raise SplintException(f"TOML config file {cfg} error: {error}") from error

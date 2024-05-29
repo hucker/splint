@@ -4,7 +4,7 @@ about the file system, file existing, age etc.
 """
 import datetime as dt
 import fnmatch
-from typing import List
+from typing import List,Generator
 
 from fs.base import FS
 from fs.errors import FSError
@@ -12,13 +12,13 @@ from fs.errors import FSError
 from .splint_result import SR
 
 
-def rule_fs_paths_exist(fs_obj: FS, paths: List[str]) -> bool:
+def rule_fs_paths_exist(fs_obj: FS, paths: List[str]) -> Generator[SR, None, None]:
     """ Check a bunch of paths."""
     for path in paths:
         yield from rule_fs_path_exists(fs_obj, path)
 
 
-def rule_fs_path_exists(fs_obj: FS, path_: str) -> bool:
+def rule_fs_path_exists(fs_obj: FS, path_: str) -> Generator[SR, None, None]:
     """Simple rule to check for a file path."""
     yield SR(status=fs_obj.exists(path_), msg=f"The path {path_} on {fs_obj.root_path} exists.")
 
@@ -149,7 +149,7 @@ def rule_fs_oldest_file_age(filesys: FS, max_age_minutes: float = 0,
                             patterns=None,
                             no_files_stat=True,
                             no_files_skip=True,
-                            now_: dt.datetime = None):
+                            now_: dt.datetime|None = None):
     """
     This rule is useful for ensuring that files are being removed in
     a timely manner as in the case where a folder is used to queue up

@@ -2,7 +2,7 @@
 Handles configuration abstraction for splint, includes classes to parse TOML and JSON.
 """
 import re
-from typing import List, Tuple
+from typing import List, Tuple, Any
 
 from .splint_exception import SplintException
 
@@ -15,7 +15,8 @@ class SplintRC:
     """
     Loads configurations from a dictionary.
     """
-    def __init__(self, *, rc_d: dict = None):
+
+    def __init__(self, *, rc_d: dict | None = None):
 
         # Any falsy value ends up being valid...which means that setting
         # rcd=0 will work.
@@ -37,10 +38,14 @@ class SplintRC:
         }
 
         # These will get overwritten, but it is use
-        self.ruids, self.ex_ruids = [], []
-        self.phases, self.ex_phases = [], []
-        self.tags, self.ex_tags = [], []
-        self.levels, self.ex_levels = [], []
+        self.ruids: list[str] = []
+        self.ex_ruids: list[str] = []
+        self.phases: list[str] = []
+        self.ex_phases: list[str] = []
+        self.tags: list[str] = []
+        self.ex_tags: list[str] = []
+        self.levels: list[int] = []
+        self.ex_levels: list[int] = []
 
         self.expand_attributes(rc_data)
         self.name = rc_data['display_name']
@@ -51,14 +56,14 @@ class SplintRC:
                                                            self.tags,
                                                            self.levels])
 
-    #def _not_int_list(self, lst):
+    # def _not_int_list(self, lst):
     #    return [item for item in lst if not item.isdigit()]
 
     def _load_config(self, cfg: str, section: str) -> dict:  # pragma no cover
         raise NotImplementedError
 
     @staticmethod
-    def _separate_values(data: List[str]) -> Tuple[List[str], List[str]]:
+    def _separate_values(data: str | List[str]) -> Tuple[List[str], List[str]]:
         """
         Separate included and excluded values based on sign pre-fixes from the given data.
 
@@ -68,7 +73,7 @@ class SplintRC:
 
         Spaces and commas are treated as separators for the elements in the list. Non-string
         data elements will be converted to strings.
-
+        
         Args:
             data (list or str): A list of data values or a single string to separate.
 
@@ -129,9 +134,15 @@ class SplintRC:
         # This is sort of a hack levels must be integers, this makes any non integer level not match
         level = str(level)
 
-        # Each list of patterns corresponds to a specific input
-        patterns = [(self.ruids, ruid), (self.tags, tag), (self.levels, level), (self.phases, phase)]
-        ex_patterns = [(self.ex_ruids, ruid), (self.ex_tags, tag), (self.ex_levels, level), (self.ex_phases, phase)]
+        # This is a bit problematic because levels are ints not strs
+        patterns: list[tuple[list[Any], str]] = [(self.ruids, ruid),
+                                                 (self.tags, tag),
+                                                 (self.levels, level),
+                                                 (self.phases, phase)]
+        ex_patterns: list[tuple[list[Any], str]] = [(self.ex_ruids, ruid),
+                                                    (self.ex_tags, tag),
+                                                    (self.ex_levels, level),
+                                                    (self.ex_phases, phase)]
 
         # Check if any of the inputs match an inclusion pattern
         if not self.is_inclusion_list_empty:

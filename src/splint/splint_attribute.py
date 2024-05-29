@@ -68,6 +68,8 @@ def _parse_ttl_string(input_string: str) -> float:
         if number < 0.0:
             raise SplintException("TTL must be greater than or equal to 0.0")
         return number
+    
+    return 0.0
 
 
 def attributes(

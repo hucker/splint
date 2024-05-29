@@ -11,7 +11,7 @@ from .splint_exception import SplintException
 from .splint_result import SR
 
 
-def rule_path_exists(path_: str) -> bool:
+def rule_path_exists(path_: str)  -> Generator[SR, None, None]:
     """Simple rule to check for a file path."""
     yield SR(status=pathlib.Path(path_).exists(), msg=f"The path {path_} exists.")
 

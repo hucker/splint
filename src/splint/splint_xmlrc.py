@@ -24,9 +24,9 @@ class SplintXMLRC(SplintRC):
 
     def _load_config(self, cfg: str, section: str) -> dict:
         """Loads tags, phases and ruids from a given package in the XML file."""
-        cfg = pathlib.Path(cfg)
+        cfg_file = pathlib.Path(cfg)
         try:
-            tree = ElementTree.parse(cfg)
+            tree = ElementTree.parse(cfg_file)
             root = tree.getroot()
 
             package_data = {}

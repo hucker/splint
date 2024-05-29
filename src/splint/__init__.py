@@ -48,6 +48,8 @@ from .splint_score import ScoreByFunctionMean  # noqa: F401
 from .splint_score import ScoreByResult  # noqa: F401
 from .splint_score import ScoreStrategy  # noqa: F401
 from .splint_util import str_to_bool  # noqa: F401
+from .splint_util import any_to_str_list  # noqa: F401
+from .splint_util import any_to_int_list  # noqa: F401
 from .splint_rc import SplintRC  # noqa: F401
 from .splint_tomlrc import SplintTomlRC  # noqa: F401
 from .splint_jsonrc import SplintJsonRC  # noqa: F401

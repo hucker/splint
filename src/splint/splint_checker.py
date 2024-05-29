@@ -4,7 +4,7 @@ There is also support for low level progress for functions/classes.
 """
 import datetime as dt
 from abc import ABC, abstractmethod
-from typing import List
+from typing import Any, List
 
 import pandas as pd
 
@@ -58,7 +58,7 @@ class SplintDebugProgress(SplintProgress):
             print("+" if result.status else "-", end="")
 
 
-def _param_str_list(params: List[str] | str,
+def _param_str_list(params: List[str] | str | None,
                     disallowed=' ,!@#$%^&*(){}[]<>~`-+=\t\n\'"') -> List[str]:
     """
     Allow user to specify "foo fum" instead of ["foo","fum"] or slightly more
@@ -79,7 +79,7 @@ def _param_str_list(params: List[str] | str,
     """
 
     # Null case...on could argue they meant the empty string as a name
-    if isinstance(params, str) and params.strip() == '':
+    if params is None or params == [] or isinstance(params, str) and params.strip() == '':
         return []
 
     if isinstance(params, str):
@@ -95,7 +95,7 @@ def _param_str_list(params: List[str] | str,
     return params
 
 
-def _param_int_list(params: List[str] | int | str) -> List[int]:
+def _param_int_list(params: List[str] | List[int] | int | str) -> List[int]:
     """
     Allow user to specify "1 2 3" instead of [1,2,3] or slightly more
     shady 1 instead of [1].  For small numbers this is a wash but for
@@ -110,19 +110,20 @@ def _param_int_list(params: List[str] | int | str) -> List[int]:
 
     """
 
-    if isinstance(params, str) and params.strip() == '':
+    if (isinstance(params, str) and params.strip() == '') or not params:
         return []
-
+    if isinstance(params,list):
+        return [int(v) for v in params]
     if isinstance(params, int):
-        params = [params]
+        return [int(params)]
     if isinstance(params, str):
         str_params = params.split()
         try:
-            params = [int(str_param) for str_param in str_params]
+            return [int(str_param) for str_param in str_params]
         except ValueError as vex:
             raise SplintException(f"Invalid integer parameter in {params}") from vex
 
-    return params
+    raise SplintException(f"Invalid integer parameter list: {params}")
 
 
 def exclude_ruids(ruids: List[str]):
@@ -197,7 +198,7 @@ def keep_phases(phases: List[str]):
     return filter_func
 
 
-def debug_progress(count, msg=None, result: SplintResult = None
+def debug_progress(count, msg: str | None = None, result: SplintResult | None = None
                    ):  # pylint: disable=unused-argument
     """Print a debug message."""
     if msg:
@@ -227,10 +228,10 @@ class SplintChecker:
             packages: List[SplintPackage] | None = None,
             modules: List[SplintModule] | None = None,
             check_functions: List[SplintFunction] | None = None,
-            progress_object: SplintProgress = None,
+            progress_object: SplintProgress | None = None,
             score_strategy: ScoreStrategy | None = None,
             rc: SplintRC | None = None,
-            env=None,
+            env: dict[str, Any] | None = None,
             abort_on_fail=False,
             abort_on_exception=False,
             auto_setup: bool = False,
@@ -277,10 +278,11 @@ class SplintChecker:
         # data.
         if env:
             self.env = self._make_immutable_env(env)
-            self.env_nulls = {}
         else:
             self.env = {}
-            self.env_nulls = {}
+        
+        # THis dict has the environment values that are NULL
+        self.env_nulls:dict[str,Any] = {}
 
         # Connect the progress output to the checker object.  The NoProgress
         # class is a dummy class that does no progress reporting.
@@ -313,7 +315,8 @@ class SplintChecker:
             self.pre_collect()
             self.prepare()
 
-    def _make_immutable_env(self, env: dict) -> dict:
+    @staticmethod
+    def _make_immutable_env(env: dict) -> dict:
         """
         Converts mutable containers in a dictionary to immutable versions.
         """
@@ -331,8 +334,8 @@ class SplintChecker:
 
         return env
 
-    def _process_packages(self,
-                          packages: List[SplintPackage] | None) -> List[SplintPackage]:
+    @staticmethod
+    def _process_packages(packages: List[SplintPackage] | None) -> List[SplintPackage]:
         """ Allow packages to be in various forms"""
         if not packages:
             return []
@@ -342,8 +345,8 @@ class SplintChecker:
             return packages
         raise SplintException('Packages must be a list of SplintPackage objects.')
 
-    def _process_modules(self,
-                         modules: List[SplintModule] | None) -> List[SplintModule]:
+    @staticmethod
+    def _process_modules(modules: List[SplintModule] | None) -> List[SplintModule]:
         """ Allow modules to be in various forms"""
         if not modules:
             return []
@@ -353,8 +356,8 @@ class SplintChecker:
             return modules
         raise SplintException('Modules must be a list of SplintModule objects.')
 
-    def _process_check_funcs(self,
-                             check_functions: List[SplintFunction] | None) -> List[SplintFunction]:
+    @staticmethod
+    def _process_check_funcs(check_functions: List[SplintFunction] | None) -> List[SplintFunction]:
         """ Load up an arbitrary list of splint functions.
         These functions are tagged with adhoc for module"""
         if isinstance(check_functions, list) and len(check_functions) >= 1:
@@ -478,10 +481,10 @@ class SplintChecker:
 
         return self.collected
 
-    def exclude_by_attribute(self, tags: List = None,
-                             ruids: List = None,
-                             levels: List = None,
-                             phases: List = None):
+    def exclude_by_attribute(self, tags: List[str] | str | None = None,
+                             ruids: List[str] | str | None = None,
+                             levels: List[int] | int | None = None,
+                             phases: List[str] | str | None = None)->List[SplintFunction]:
         """ Run everything except the ones that match these attributes """
 
         # Make everything nice lists
@@ -495,12 +498,13 @@ class SplintChecker:
                           f.ruid not in ruids and
                           f.level not in levels and
                           f.phase not in phases]
+        return self.collected
 
     def include_by_attribute(self,
-                             tags: List | str = None,
-                             ruids: List | str = None,
-                             levels: List | str = None,
-                             phases: List | str = None):
+                             tags: List | str | None = None,
+                             ruids: List | str | None = None,
+                             levels: List | str | None = None,
+                             phases: List | str | None = None)->List[SplintFunction]:
         """ Run everything that matches these attributes """
 
         # Make everything nice lists
@@ -518,6 +522,8 @@ class SplintChecker:
                           (f.ruid in ruids) or
                           (f.level in levels) or
                           (f.phase in phases)]
+        
+        return self.collected
 
     def load_environments(self):
         """

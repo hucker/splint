@@ -11,13 +11,13 @@ from .splint_result import SR
 
 
 def rule_validate_df_schema(df: pd.DataFrame,
-                            columns: List[str] = None,
-                            no_null_columns: List[str] = None,
-                            int_columns: List[str] = None,
-                            float_columns: List[str] = None,
-                            str_columns: List[str] = None,
-                            row_min_max: Tuple[int, int] = None,
-                            allowed_values: List = None,
+                            columns: List[str] | None = None,
+                            no_null_columns: List[str] | None = None,
+                            int_columns: List[str] | None = None,
+                            float_columns: List[str] | None = None,
+                            str_columns: List[str] | None = None,
+                            row_min_max: Tuple[int, int] | None = None,
+                            allowed_values: List | None = None,
                             empty_ok: bool = False) -> Generator[SR, None, None]:
     """
         Validate a DataFrame schema based on given conditions.
@@ -66,6 +66,8 @@ def rule_validate_df_schema(df: pd.DataFrame,
         else:
             yield SR(status=False,
                      msg=f"Columns {set(columns) - set(df.columns)} are not in data frame.")
+    else:
+        pass
 
     if no_null_columns:
         for column in no_null_columns:
@@ -112,15 +114,15 @@ def rule_validate_df_schema(df: pd.DataFrame,
 
 
 def rule_validate_df_values_by_col(df: pd.DataFrame,
-                                   positive: List[str] = None,
-                                   non_negative: List[str] = None,
-                                   percent: List[str] = None,
-                                   min_: Tuple[float, List[str]] = None,
-                                   max_: Tuple[float, List[str]] = None,
-                                   negative: List[str] = None,
-                                   non_positive: List[str] = None,
-                                   correlation: List[str] = None,
-                                   probability: List[str] = None):
+                                   positive: List[str] | str | None = None,
+                                   non_negative: List[str] | str | None = None,
+                                   percent: List[str] | str | None = None,
+                                   min_: Tuple[float, List[str]] | None = None,
+                                   max_: Tuple[float, List[str]] | None = None,
+                                   negative: List[str] | str | None = None,
+                                   non_positive: List[str] | str | None = None,
+                                   correlation: List[str] | str | None = None,
+                                   probability: List[str] | str | None = None):
     """
         Validate DataFrame schema based on given conditions. Parameters are as follows:
 

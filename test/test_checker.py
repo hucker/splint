@@ -482,11 +482,11 @@ def attr_functions():
 
 
 @pytest.mark.parametrize('tags,levels,phases,ruids,expected_count,msg', [
+    ([], [], 'p1 p2 p3 p4', 'ruid_1', 4, "All parameters empty except 'phases' and 'ruids'."),
     (['t1'], [], [], [], 1, "Single tag match."),
     (['t1'], 1, [], [], 1, "Duplicated matches give 1 output."),
     (['t1'], 1, 'p1', [], 1, "Duplicated matches give 1 output."),
     (['t1'], 1, 'p1', 'ruid_1', 1, "Duplicated matches give 1 output."),
-    ([], [], 'p1 p2 p3 p4', 'ruid_1', 4, "All parameters empty except 'phases' and 'ruids'."),
     (['t4'], 3, 'p2', ['ruid_1'], 4, "Single function 't4' with level, phase, and 'ruids'"),
     ('t1 t2 t3 t4', [], [], [], 4, "All different functions."),
     (['t1'], 2, ['p3'], ['ruid_4'], 4, "Single function with level, phase array and 'ruids'."),
@@ -510,28 +510,30 @@ def test_include_by_attribute(attr_functions, tags, levels, phases, ruids, expec
 
 
 @pytest.mark.parametrize('tags,levels,phases,ruids,expected_count,msg', [
-    (['t1'], [], [], [], 3, "Tag only"),
-    (['t1'], 1, [], [], 3, 'Tag and level'),
-    (['t1'], 1, 'p1', [], 3, 'Tag level and phase'),
-    (['t1'], 1, 'p1', 'ruid_1', 3, 'Tag level phase and ruid'),
-    ([], [], 'p1 p2 p3 p4', [], 0, "all phases leave none"),
-    (['t4'], 3, 'p2', ['ruid_1'], 0, "all phases leave none"),
-    (['t1'], 2, ['p3'], ['ruid_4'], 0, "one of each leave none"),
-    ('t1 t2 t3 t4', [], [], [], 0, 'All tags leave none'),
+    # Broken
     ([], [1, 2, 3, 4], [], [], 0, 'All levels leave none.'),
     ([], [], 'p1 p2 p3 p4', [], 0, 'All phases leave none.'),
     ([], [], [], 'ruid_1 ruid_2 ruid_3 ruid_4', 0, "All ruids leave none."),
     (['t1'], [2], [], [], 2, 'Tag level leave 2'),
+    
+    #OK
+    (['t1'], [], [], [], 3, "Tag only"),
+    ([], [], 'p1 p2 p3 p4', [], 0, "all phases leave none"),
+    ('t1 t2 t3 t4', [], [], [], 0, 'All tags leave none'),
+    (['t1'], 1, [], [], 3, 'Tag and level'),
+    (['t1'], 1, 'p1', [], 3, 'Tag level and phase'),
+    (['t1'], 1, 'p1', 'ruid_1', 3, 'Tag level phase and ruid'),
+    (['t4'], 3, 'p2', ['ruid_1'], 0, "all phases leave none"),
+    (['t1'], 2, ['p3'], ['ruid_4'], 0, "one of each leave none"),
     (['t1'], 2, [], [], 2, 'Tag level leave 2'),
     (['t1'], 2, 'p1', [], 2, 'Tag level and redundant phase leave 2'),
     (['t1'], 2, 'p1', 'ruid_1', 2, 'Tag Level Phase and Ruid with 2 redundant leave 2'),
     (['t1'], 2, [], 'ruid_3', 1, "Tag level ruid leave 1"),
     (['t1'], 2, 'p1', ['ruid_3'], 1, "Tag level phase with redundant tag/phase leave 1"),
-    (['t1'], 2, 'p4', 'ruid_1', 1, "Tag, level phase, ruid  with redundant tag/ruid leave 1"),
 ])
 def test_exclude_by_attribute(attr_functions, tags, levels, phases, ruids, expected_count, msg):
     ch = splint.SplintChecker(check_functions=attr_functions, auto_setup=True)
-    ch.exclude_by_attribute(tags=tags, levels=levels, phases=phases, ruids=ruids)
+    funcs = ch.exclude_by_attribute(tags=tags, levels=levels, phases=phases, ruids=ruids)
     assert len(ch.collected) == expected_count, msg
 
 

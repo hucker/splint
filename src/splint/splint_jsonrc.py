@@ -20,9 +20,9 @@ class SplintJsonRC(SplintRC):
 
     def _load_config(self, cfg: str, section: str) -> dict:
         """Loads and returns the requested section from a JSON file."""
-        cfg = pathlib.Path(cfg)
+        cfg_file = pathlib.Path(cfg)
         try:
-            with cfg.open("rt", encoding="utf8") as j:
+            with cfg_file.open("rt", encoding="utf8") as j:
                 config_data = json.load(j)
         except (FileNotFoundError, json.JSONDecodeError, AttributeError, PermissionError) as error:
             raise SplintException(f"JSON config {cfg} error: {error}") from error

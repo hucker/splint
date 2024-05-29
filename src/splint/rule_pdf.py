@@ -19,7 +19,7 @@ from .splint_util import str_to_bool
 
 
 def extract_tables_from_pdf(file_path: str,
-                            required_columns: List[str] = ("RuleId", "Note", "Status"),
+                            required_columns: List[str] = ["RuleId", "Note", "Status"],
                             pages: str = 'all') -> List[pd.DataFrame]:
     """
     Extracts tables from a PDF file that include specified columns, and returns them in a list.
@@ -70,8 +70,8 @@ DEFAULT_COL_NAMES = {
 
 def rule_from_pdf_rule_ids(file_path: str,
                            rule_id: str,
-                           default_msg: str = None,
-                           col_names: dict = None,
+                           default_msg: str|None = None,
+                           col_names: dict|None = None,
                            max_results: int = 1,
                            pages="all") -> Generator[SR, None, None]:
     """

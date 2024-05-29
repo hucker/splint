@@ -5,7 +5,7 @@ import traceback
 from collections import Counter
 from dataclasses import asdict, dataclass, field
 from operator import attrgetter
-from typing import List
+from typing import Any, List
 
 from .splint_exception import SplintException
 
@@ -216,7 +216,7 @@ def results_as_dict(results: List[SplintResult]):
     return [result.as_dict() for result in results]
 
 
-def group_by(results: List[SplintResult], keys: List[str]):
+def group_by(results: List[SplintResult], keys: List[str]) -> dict[str, Any]:
     """
     Groups a list of SplintResult by a list of keys.
 
