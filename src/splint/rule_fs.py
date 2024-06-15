@@ -4,7 +4,7 @@ about the file system, file existing, age etc.
 """
 import datetime as dt
 import fnmatch
-from typing import List,Generator
+from typing import Generator, List
 
 from fs.base import FS
 from fs.errors import FSError
@@ -132,7 +132,7 @@ def sec_format(seconds):
 
     # Seconds are special case. For small seconds we report to
     # extra precision since we assume that we are dealing with
-    # times on a human scale rather than on micro scales.
+    # times on a human scale rather than on microscales.
     if seconds >= 2:
         return f"{sign}{seconds:.1f} seconds"
 
@@ -149,7 +149,7 @@ def rule_fs_oldest_file_age(filesys: FS, max_age_minutes: float = 0,
                             patterns=None,
                             no_files_stat=True,
                             no_files_skip=True,
-                            now_: dt.datetime|None = None):
+                            now_: dt.datetime | None = None):
     """
     This rule is useful for ensuring that files are being removed in
     a timely manner as in the case where a folder is used to queue up

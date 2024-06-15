@@ -11,7 +11,7 @@ from .splint_exception import SplintException
 from .splint_result import SR
 
 
-def rule_path_exists(path_: str)  -> Generator[SR, None, None]:
+def rule_path_exists(path_: str) -> Generator[SR, None, None]:
     """Simple rule to check for a file path."""
     yield SR(status=pathlib.Path(path_).exists(), msg=f"The path {path_} exists.")
 
@@ -70,7 +70,7 @@ def rule_stale_files(
 
     # Everything OK, provide some info
     elif count == good_count:
-        yield SR(status=True,msg=f"All {good_count} file(s) are not not stale.")
+        yield SR(status=True, msg=f"All {good_count} file(s) are not not stale.")
 
 
 def rule_large_files(folder: str,

@@ -38,14 +38,14 @@ class SplintPackage:
             function_prefix="check_",
             auto_load=True,
             name=None,
-            env: dict|None = None,
+            env: dict | None = None,
     ):
         self.modules: List[SplintModule] = []
         self.folder: pathlib.Path = pathlib.Path(folder)
         self.module_glob: str = module_glob
         self.function_prefix: str = function_prefix
         self.env: dict = env or {}
-        self.results:list[SplintResult] = []
+        self.results: list[SplintResult] = []
 
         if not name:
             self.name = self.folder.name

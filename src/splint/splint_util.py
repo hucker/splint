@@ -3,7 +3,6 @@ This is the sad place for lonely functions that don't have a place
 """
 
 
-
 def str_to_bool(s: str, default=None) -> bool:
     """ Convert a string value to a boolean."""
     s = s.strip().lower()  # Remove spaces at the beginning/end and convert to lower case
@@ -19,7 +18,7 @@ def str_to_bool(s: str, default=None) -> bool:
     raise ValueError(f'Cannot convert {s} to a boolean.')
 
 
-def any_to_str_list(param: str|list|None,sep=' '):
+def any_to_str_list(param: str | list | None, sep=' '):
     """
     Convert a string to a list of strings or if a list is given make sure it is all strings.
     Args:
@@ -38,9 +37,10 @@ def any_to_str_list(param: str|list|None,sep=' '):
         else:
             return param.split(sep)
     if isinstance(param, list):
-        if all(isinstance(item,str) for item in param):
+        if all(isinstance(item, str) for item in param):
             return param
     raise ValueError('Invalid parameter type, expected all strings.')
+
 
 def any_to_int_list(param: str | list[int] | None, sep=' ') -> list[int]:
     """
@@ -63,6 +63,6 @@ def any_to_int_list(param: str | list[int] | None, sep=' ') -> list[int]:
             raise ValueError(
                 'Invalid parameter value, expected numeric string values that can be converted to integers.')
     if isinstance(param, list):
-        return  [int(x) for x in param]
-    
+        return [int(x) for x in param]
+
     raise ValueError(f'Invalid parameter type in {param}, expected all integers.')

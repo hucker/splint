@@ -24,7 +24,7 @@ class SplintIniRC(SplintRC):
             config.read(cfg, encoding="utf-8")
             if not section:
                 raise SplintException("Section must be provided to read INI RC files.")
-            d = {"tags": config.get(section, "tags"), 
+            d = {"tags": config.get(section, "tags"),
                  "ruids": config.get(section, "ruids"),
                  "phases": config.get(section, "phases")}
 

@@ -112,7 +112,7 @@ def _param_int_list(params: List[str] | List[int] | int | str) -> List[int]:
 
     if (isinstance(params, str) and params.strip() == '') or not params:
         return []
-    if isinstance(params,list):
+    if isinstance(params, list):
         return [int(v) for v in params]
     if isinstance(params, int):
         return [int(params)]
@@ -280,9 +280,9 @@ class SplintChecker:
             self.env = self._make_immutable_env(env)
         else:
             self.env = {}
-        
+
         # THis dict has the environment values that are NULL
-        self.env_nulls:dict[str,Any] = {}
+        self.env_nulls: dict[str, Any] = {}
 
         # Connect the progress output to the checker object.  The NoProgress
         # class is a dummy class that does no progress reporting.
@@ -484,7 +484,7 @@ class SplintChecker:
     def exclude_by_attribute(self, tags: List[str] | str | None = None,
                              ruids: List[str] | str | None = None,
                              levels: List[int] | int | None = None,
-                             phases: List[str] | str | None = None)->List[SplintFunction]:
+                             phases: List[str] | str | None = None) -> List[SplintFunction]:
         """ Run everything except the ones that match these attributes """
 
         # Make everything nice lists
@@ -504,7 +504,7 @@ class SplintChecker:
                              tags: List | str | None = None,
                              ruids: List | str | None = None,
                              levels: List | str | None = None,
-                             phases: List | str | None = None)->List[SplintFunction]:
+                             phases: List | str | None = None) -> List[SplintFunction]:
         """ Run everything that matches these attributes """
 
         # Make everything nice lists
@@ -522,7 +522,7 @@ class SplintChecker:
                           (f.ruid in ruids) or
                           (f.level in levels) or
                           (f.phase in phases)]
-        
+
         return self.collected
 
     def load_environments(self):

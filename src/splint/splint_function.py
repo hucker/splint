@@ -183,14 +183,18 @@ class SplintFunction:
         # Functions are not allowed to update the environment this only
         # needs to run once, rather than on every function call
         for count, arg in enumerate([arg for arg in args if arg is None], start=1):
+            
+            # Make a nice message if there is a ruid for this ruleƒs
+            ruid_msg = f'|{self.ruild}' if self.ruid else ''
+            
             if self.fail_on_none:
                 yield SplintResult(status=False,
-                                   msg=f"Failed due to None argument {count} in func='{self.function_name}'|{self.ruid}",
+                                   msg=f"Failed due to None arg. {count} in func='{self.function_name}'{ruid_msg}",
                                    fail_on_none=True)
                 return
             if self.skip_on_none:
                 yield SplintResult(status=None, skipped=True,
-                                   msg=f"Skipped due to None argument {count} in func='{self.function_name}|{self.ruid}'",
+                                   msg=f"Skipped due to None arg. {count} in func='{self.function_name}{ruid_msg}'",
                                    skip_on_none=True)
                 return
 

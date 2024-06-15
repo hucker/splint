@@ -2,7 +2,7 @@
 Handles configuration abstraction for splint, includes classes to parse TOML and JSON.
 """
 import re
-from typing import List, Tuple, Any
+from typing import Any, List, Tuple
 
 from .splint_exception import SplintException
 
@@ -117,9 +117,11 @@ class SplintRC:
 
     def does_match(self, ruid: str = "", tag: str = "", phase: str = "", level: str = "") -> bool:
         """
-        Determines whether a given `ruid`/`tag`/`phase`/`level` matches any of the inclusions defined, and doesn't match any of the exclusions.
+        Determines whether a given `ruid`/`tag`/`phase`/`level` matches any of the inclusions
+        defined, and doesn't match any of the exclusions.
 
-        With no inclusions defined, all values are included by default. Exclusion matching takes precedent over inclusion matching.
+        With no inclusions defined, all values are included by default. Exclusion matching takes 
+        precedent over inclusion matching.
 
         Args:
             ruid (str): The RUID string to check.
