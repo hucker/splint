@@ -572,14 +572,14 @@ FastAPI example running some rules:
 ## Streamlit Demo
 
 Integrating with the goodness of `streamlit` is a breeze. Here is a non-trivial example
-showing many of the features of `splint` in a `streamlit` app.
+showing many of the features of `splint` in a `streamlit` app.  In 200 lines of code you can select from
+different packages of checks in two different folders, have a full streamlit UI to select the package, tags, 
+levels, ruids and generate colored tabular report.  Integration with streamlit was important.
 
 Here is the setup using a couple of modules in a package folder:
-![Streamlit](./img/streamlit_setup.png)
 
-And here are the results.
+![Streamlit](./img/streamlit_allup.png)
 
-![Streamlit](./img/streamlit_results.png)
 
 ## WTH does `splint` derive from?
 
@@ -588,7 +588,7 @@ Splint is just a name that sounds cool. When I started this I thought system-lin
 ## TOX
 
 The current code base is passes all tests under 3.10, 3.11, 3.12.  `Splint` is not yet passing
-tests on 3.13...mostly because the pip install process fails on M1 mac.
+tests on 3.13...because 3.13 doesn't work on M1 mac.
 
 ## TODO
 
