@@ -184,7 +184,7 @@ class SplintFunction:
         # needs to run once, rather than on every function call
         for count, arg in enumerate([arg for arg in args if arg is None], start=1):
             
-            # Make a nice message if there is a ruid for this ruleƒs
+            # Make a nice message if there is a ruid for this rule
             ruid_msg = f'|{self.ruild}' if self.ruid else ''
             
             if self.fail_on_none:
