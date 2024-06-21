@@ -571,24 +571,39 @@ FastAPI example running some rules:
 
 ## Streamlit Demo
 
-Integrating with the goodness of `streamlit` is a breeze. Here is a non-trivial example
-showing many of the features of `splint` in a `streamlit` app.  In 200 lines of code you can select from
-different packages of checks in two different folders, have a full streamlit UI to select the package, tags, 
-levels, ruids and generate colored tabular report.  Integration with streamlit was important.
+Integration with streamlit was important so I made the way you interact with `splint` work whell with the
+tools that `streamlit` exposes. Integrating with the goodness of `streamlit` is should be a breeze. 
+Here is a non-trivial example showing many of the features of `splint` in a `streamlit` app.  
+In 200 lines of code you can select from packages folders, have a full streamlit UI to select the package, tags, 
+levels, ruids and generate colored tabular report.  
 
 Here is the setup using a couple of modules in a package folder:
 
 ![Streamlit](./img/streamlit_allup.png)
 
 
-## WTH does `splint` derive from?
-
-Splint is just a name that sounds cool. When I started this I thought system-lint.
 
 ## TOX
 
-The current code base is passes all tests under 3.10, 3.11, 3.12.  `Splint` is not yet passing
-tests on 3.13...because 3.13 doesn't work on M1 mac.
+```text
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================= 557 passed, 1 skipped, 44 warnings in 13.09s =================
+  py311: OK (14.01=setup[1.40]+cmd[12.61] seconds)
+  py312: OK (14.80=setup[1.76]+cmd[13.04] seconds)
+  py310: OK (14.45=setup[0.63]+cmd[13.82] seconds)
+  lint: OK (15.09=setup[1.73]+cmd[13.35] seconds)
+  evaluation failed :( (60.75 seconds)
+```
+
+## Lint
+
+```text
+------------------------------------------------------------------
+Your code has been rated at 9.79/10 (previous run: 9.77/10, +0.01)
+```
+## WTH does `splint` derive from?
+
+`Splint` is a name that sounds cool. When I started this project, I thought system-lint.
 
 ## TODO
 

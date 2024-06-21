@@ -114,7 +114,7 @@ class SplintRC:
         self.phases, self.ex_phases = self._separate_values(rc_data.get('phases', []))
         self.levels, self.ex_levels = self._separate_values(rc_data.get('levels', []))
         return
-    
+
     def does_match(self, ruid: str = "", tag: str = "", phase: str = "", level: str = "") -> bool:
         """
         Determines whether a given `ruid`/`tag`/`phase`/`level` matches any of the inclusions
@@ -138,13 +138,13 @@ class SplintRC:
 
         # This is a bit problematic because levels are ints not strs
         patterns: list[tuple[list, str]] = [(self.ruids, ruid),
-                                                 (self.tags, tag),
-                                                 (self.levels, level),
-                                                 (self.phases, phase)]
+                                            (self.tags, tag),
+                                            (self.levels, level),
+                                            (self.phases, phase)]
         ex_patterns: list[tuple[list, str]] = [(self.ex_ruids, ruid),
-                                                    (self.ex_tags, tag),
-                                                    (self.ex_levels, level),
-                                                    (self.ex_phases, phase)]
+                                               (self.ex_tags, tag),
+                                               (self.ex_levels, level),
+                                               (self.ex_phases, phase)]
 
         # Check if any of the inputs match an inclusion pattern
         if not self.is_inclusion_list_empty:

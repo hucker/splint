@@ -59,9 +59,9 @@ def any_to_int_list(param: str | list[int] | None, sep=' ') -> list[int]:
         cleaned_param = param.split(sep)
         try:
             return [int(x) for x in cleaned_param]
-        except ValueError:
+        except ValueError as exc:
             raise ValueError(
-                'Invalid parameter value, expected numeric string values that can be converted to integers.')
+                'Invalid parameter value, expected numeric string values that can be converted to integers.') from exc
     if isinstance(param, list):
         return [int(x) for x in param]
 

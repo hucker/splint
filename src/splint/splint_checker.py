@@ -108,23 +108,23 @@ def _param_int_list(params: list[str] | list[int] | int | str | None) -> list[in
     Returns: List of Integers
 
     """
-    
+
     if isinstance(params, int):
-        return  [params]
-    
+        return [params]
+
     elif isinstance(params, str):
         params = params.split()
-    
-    params = [str(p) for p in params]    
-    
+
+    params = [str(p) for p in params]
+
     # Make sure everything is an iteger
     for param in params:
-        if isinstance(param,str) and param.isdigit():
+        if isinstance(param, str) and param.isdigit():
             continue
         raise SplintException(f"Invalid integer parameter in {param} in {params}")
-        
+
     return [int(param) for param in params]
-    
+
 
 def exclude_ruids(ruids: list[str]):
     """Return a filter function that will exclude the ruids from the list."""
