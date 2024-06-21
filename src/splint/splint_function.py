@@ -8,7 +8,7 @@ import inspect
 import re
 import time
 import traceback
-from typing import Generator, List
+from typing import Generator
 
 from .splint_attribute import get_attribute
 from .splint_exception import SplintException
@@ -127,11 +127,12 @@ class SplintFunction:
         # need, and I'm assuming you aren't building a trading system with this, so you don't
         # care about microseconds.
         self.last_ttl_start = 0  # this will be compared to time.time() for ttl caching
-        self.last_results: List[SplintResult] = []
+        self.last_results: list[SplintResult]  = []
 
         if self.weight in [True, False, None]:
             raise SplintException("Boolean and none types are not allowed for weights.")
-        elif self.weight <= 0.0:
+
+        if self.weight <= 0.0:
             raise SplintException("Weight must be greater than 0.0")
 
         self.allowed_exceptions = allowed_exceptions or (Exception,)
@@ -183,10 +184,10 @@ class SplintFunction:
         # Functions are not allowed to update the environment this only
         # needs to run once, rather than on every function call
         for count, arg in enumerate([arg for arg in args if arg is None], start=1):
-            
+
             # Make a nice message if there is a ruid for this rule
-            ruid_msg = f'|{self.ruild}' if self.ruid else ''
-            
+            ruid_msg = f'|{self.ruid}' if self.ruid else ''
+
             if self.fail_on_none:
                 yield SplintResult(status=False,
                                    msg=f"Failed due to None arg. {count} in func='{self.function_name}'{ruid_msg}",

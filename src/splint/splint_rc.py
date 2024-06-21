@@ -2,7 +2,6 @@
 Handles configuration abstraction for splint, includes classes to parse TOML and JSON.
 """
 import re
-from typing import Any, List, Tuple
 
 from .splint_exception import SplintException
 
@@ -37,7 +36,7 @@ class SplintRC:
             'levels': rc_d.get('levels', [])
         }
 
-        # These will get overwritten, but it is use
+        # These will get overwritten
         self.ruids: list[str] = []
         self.ex_ruids: list[str] = []
         self.phases: list[str] = []
@@ -63,7 +62,7 @@ class SplintRC:
         raise NotImplementedError
 
     @staticmethod
-    def _separate_values(data: str | List[str]) -> Tuple[List[str], List[str]]:
+    def _separate_values(data: str | list[str]) -> tuple[list[str], list[str]]:
         """
         Separate included and excluded values based on sign pre-fixes from the given data.
 
@@ -114,7 +113,8 @@ class SplintRC:
         self.tags, self.ex_tags = self._separate_values(rc_data.get('tags', []))
         self.phases, self.ex_phases = self._separate_values(rc_data.get('phases', []))
         self.levels, self.ex_levels = self._separate_values(rc_data.get('levels', []))
-
+        return
+    
     def does_match(self, ruid: str = "", tag: str = "", phase: str = "", level: str = "") -> bool:
         """
         Determines whether a given `ruid`/`tag`/`phase`/`level` matches any of the inclusions
@@ -137,11 +137,11 @@ class SplintRC:
         level = str(level)
 
         # This is a bit problematic because levels are ints not strs
-        patterns: list[tuple[list[Any], str]] = [(self.ruids, ruid),
+        patterns: list[tuple[list, str]] = [(self.ruids, ruid),
                                                  (self.tags, tag),
                                                  (self.levels, level),
                                                  (self.phases, phase)]
-        ex_patterns: list[tuple[list[Any], str]] = [(self.ex_ruids, ruid),
+        ex_patterns: list[tuple[list, str]] = [(self.ex_ruids, ruid),
                                                     (self.ex_tags, tag),
                                                     (self.ex_levels, level),
                                                     (self.ex_phases, phase)]

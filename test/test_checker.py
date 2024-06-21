@@ -1,4 +1,3 @@
-from typing import List
 
 import pytest
 
@@ -161,7 +160,7 @@ def test_abort_on_exception(func1, func2, func_exc):
     # This run has abort_on_except set to True and since the exception function is the first one
     # it aborts immediately
     ch = splint.SplintChecker(check_functions=[func_exc, func1, func2], auto_setup=True, abort_on_exception=True)
-    results: List[splint.SplintResult] = ch.run_all()
+    results: list[splint.SplintResult] = ch.run_all()
     assert len(results) == 1
     assert results[0].status is False
     assert results[0].except_
@@ -170,7 +169,7 @@ def test_abort_on_exception(func1, func2, func_exc):
 
     # This has the exception in the second spot
     ch = splint.SplintChecker(check_functions=[func1, func_exc, func2], auto_setup=True, abort_on_exception=True)
-    results: List[splint.SplintResult] = ch.run_all()
+    results: list[splint.SplintResult] = ch.run_all()
     assert len(results) == 2
     assert results[1].status is False
     assert results[1].except_
@@ -180,7 +179,7 @@ def test_abort_on_exception(func1, func2, func_exc):
 
     # Stick a perfect run in here with abort_on_ex enabled
     ch = splint.SplintChecker(check_functions=[func1, func2], auto_setup=True, abort_on_exception=True)
-    results: List[splint.SplintResult] = ch.run_all()
+    results: list[splint.SplintResult] = ch.run_all()
     assert len(results) == 2
     assert results[0].status
     assert results[1].status
@@ -579,15 +578,29 @@ def xxx_test_bad_tag_phase_ruid_strings():
 
 
 @pytest.mark.parametrize('params, expect, msg', [
+    ([1], [1], "List with one value."),
+    ([1, 2, 3], [1, 2, 3], "List with multiple values"),
+    ([], [], "List with no values."),
     ("", [], "String with no values."),
     ("1", [1], "String with one value."),
     ("1 2 3", [1, 2, 3], "String with multiple values"),
-    ([], [], "List with no values."),
-    ([1], [1], "List with one value."),
-    ([1, 2, 3], [1, 2, 3], "List with multiple values"),
+
 ])
 def test__get_int_list(params, expect, msg):
-    assert splint.splint_checker._param_int_list(params) == expect, msg
+    value = splint.splint_checker._param_int_list(params) 
+    assert value == expect, msg
+
+@pytest.mark.parametrize('params, msg', [
+    (['a'], "list of strings"),
+    ([1, 2, 3, 'a'], "list numbers and integers"),
+    ('a', "string list"),
+    ('1 a', "string list"),
+    ('1 2 3 a', "string list"),
+])
+def test__bad_int_list(params, msg):
+    with pytest.raises(splint.SplintException):
+        _ = splint.splint_checker._param_int_list(params) 
+        
 
 
 def test_env_nulls(func1, func2, func3):

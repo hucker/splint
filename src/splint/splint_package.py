@@ -20,7 +20,6 @@ The modules are added to the system path for easy import and use in other Python
 """
 import pathlib
 import sys
-from typing import List
 
 from .splint_exception import SplintException
 from .splint_module import SplintModule
@@ -40,7 +39,7 @@ class SplintPackage:
             name=None,
             env: dict | None = None,
     ):
-        self.modules: List[SplintModule] = []
+        self.modules: list[SplintModule] = []
         self.folder: pathlib.Path = pathlib.Path(folder)
         self.module_glob: str = module_glob
         self.function_prefix: str = function_prefix
@@ -89,14 +88,14 @@ class SplintPackage:
         """ Count the number of modules in a package. """
         return 0 if not self.modules else len(self.modules)
 
-    def load_modules(self, glob=None) -> List[SplintModule]:
+    def load_modules(self, glob=None) -> list[SplintModule]:
         """ Find all the files that match the pattern and load the modules. """
         check_file_glob = glob or self.module_glob
 
         for file_path in sorted(self.folder.glob(check_file_glob)):
             module_name = f"{file_path.stem}"
 
-            module = SplintModule(module_name, module_file=file_path, auto_load=True)
+            module = SplintModule(module_name, module_file=str(file_path), auto_load=True)
             self.modules.append(module)
 
         return self.modules

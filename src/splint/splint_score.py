@@ -1,8 +1,7 @@
 """Basic scoring algorithms for Splint test results. """
 
 import abc
-from typing import List
-
+from typing import Any
 from .splint_exception import SplintException
 from .splint_result import SplintResult
 
@@ -18,10 +17,10 @@ class ScoreStrategy(abc.ABC):
     strategy_name: str | None = None
 
     @abc.abstractmethod
-    def score(self, results: List[SplintResult]) -> float:  # pragma: no cover
+    def score(self, results: list[SplintResult]) -> float:  # pragma: no cover
         """Abstract score method"""
 
-    def __call__(self, results: List[SplintResult]):
+    def __call__(self, results: list[SplintResult]):
         return self.score(results)
 
     @classmethod
@@ -47,7 +46,7 @@ class ScoreByResult(ScoreStrategy):
 
     strategy_name = "by_result"
 
-    def score(self, results: List[SplintResult] | None = None) -> float:
+    def score(self, results: list[SplintResult] | None = None) -> float:
         """Weighted result of all results."""
 
         if results is None:
@@ -74,12 +73,12 @@ class ScoreByFunctionBinary(ScoreStrategy):
 
     strategy_name = "by_function_binary"
 
-    def score(self, results: List[SplintResult] | None = None) -> float:
+    def score(self, results: list[SplintResult] | None = None) -> float:
         """If any result on a function fails then the function fails."""
         if results is None:
             return 0.0
 
-        score_functions = {}
+        score_functions:dict[str,Any] = {}
 
         for result in results:
             key = f"{result.pkg_name}.{result.module_name}.{result.func_name}".lstrip(
@@ -108,12 +107,12 @@ class ScoreByFunctionMean(ScoreStrategy):
 
     strategy_name = "by_function_mean"
 
-    def score(self, results: List[SplintResult] | None = None) -> float:
+    def score(self, results: list[SplintResult] | None = None) -> float:
         """Find the average of the results from each function."""
         if results is None:
             return 0.0
 
-        function_results = {}
+        function_results: dict[str,Any] = {}
 
         # Remove any skipped results
         results = [result for result in results if not result.skipped]
@@ -149,7 +148,7 @@ class ScoreBinaryFail(ScoreStrategy):
 
     strategy_name = "by_binary_fail"
 
-    def score(self, results: List[SplintResult] | None) -> float:
+    def score(self, results: list[SplintResult] | None) -> float:
         if results is None:
             return 0.0
 
@@ -165,7 +164,7 @@ class ScoreBinaryPass(ScoreStrategy):
     """Anything passes then the test is a pass. Empty results fail. """
     strategy_name = "by_binary_pass"
 
-    def score(self, results: List[SplintResult] | None) -> float:
+    def score(self, results: list[SplintResult] | None) -> float:
         if results is None:
             return 0.0
 

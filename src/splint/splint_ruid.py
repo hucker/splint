@@ -3,18 +3,17 @@ This module is used to check for RUID files in the system.
 """
 
 from collections import Counter
-from typing import List
 
 from .splint_module import SplintModule
 from .splint_package import SplintPackage
 
 
-def module_ruids(module: SplintModule) -> List[str]:
+def module_ruids(module: SplintModule) -> list[str]:
     """get a list of all the RUIDS in a module"""
     return [function.ruid for function in module.check_functions]
 
 
-def package_ruids(package: SplintPackage) -> List[str]:
+def package_ruids(package: SplintPackage) -> list[str]:
     """get a list of all the RUIDS in a package"""
     ruids = []
     for module in package.modules:
@@ -22,17 +21,17 @@ def package_ruids(package: SplintPackage) -> List[str]:
     return ruids
 
 
-def empty_ruids(ruids: List[str]) -> bool:
+def empty_ruids(ruids: list[str]) -> bool:
     """Check if all ruids are empty"""
     return all((not ruid for ruid in ruids))
 
 
-def valid_ruids(ruids: List[str]) -> bool:
+def valid_ruids(ruids: list[str]) -> bool:
     """Check if all ruids are valid"""
     return len(ruids) == len(set(ruids)) and "" not in ruids
 
 
-def ruid_issues(ruids: List[str]) -> str:
+def ruid_issues(ruids: list[str]) -> str:
     """
     Provide a message about the issues with the RUIDs in the package.
 

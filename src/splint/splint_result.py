@@ -2,10 +2,10 @@
 
 import itertools
 import traceback
+from typing import Any
 from collections import Counter
 from dataclasses import asdict, dataclass, field
 from operator import attrgetter
-from typing import Any, List
 
 from .splint_exception import SplintException
 
@@ -57,7 +57,7 @@ class SplintResult:
     runtime_sec: float = 0.0
 
     # Error Info
-    except_: Exception = None
+    except_: Exception|None = None
     traceback: str = ""
     skipped: bool = False
 
@@ -73,7 +73,7 @@ class SplintResult:
 
     # Mitigations
     mit_msg: str = ""
-    owner_list: List[str] = field(default_factory=list)
+    owner_list: list[str] = field(default_factory=list)
 
     # Bad parameters
     skip_on_none: bool = False
@@ -143,7 +143,7 @@ class SplintYield:
         """Return pass/fail/total yield counts"""
         return self.pass_count, self.fail_count, self.count
 
-    def __call__(self, results: SplintResult | List[SplintResult], fail_only: bool = False):
+    def __call__(self, results: SplintResult | list[SplintResult], fail_only: bool = False):
 
         if isinstance(results, SplintResult):
             results = [results]
@@ -204,19 +204,19 @@ def warn_as_fail(sr: SplintResult):
     return sr
 
 
-def results_as_dict(results: List[SplintResult]):
+def results_as_dict(results: list[SplintResult]):
     """Converts a list of SplintResult to a list of dictionaries.
 
     Args:
-        results (List[SplintResult]): The list of results to convert.
+        results (list[SplintResult]): The list of results to convert.
 
     Returns:
-        List[Dict]: The list of dictionaries.
+        list[Dict]: The list of dictionaries.
     """
     return [result.as_dict() for result in results]
 
 
-def group_by(results: List[SplintResult], keys: List[str]) -> dict[str, Any]:
+def group_by(results: list[SplintResult], keys: list[str]) -> dict[str, Any]:
     """
     Groups a list of SplintResult by a list of keys.
 
@@ -225,8 +225,8 @@ def group_by(results: List[SplintResult], keys: List[str]) -> dict[str, Any]:
     any number of keys.
 
     Args:
-        results (List[SplintResult]): The list of results to group.
-        keys (List[str]): The list of keys to group by.S
+        results (list[SplintResult]): The list of results to group.
+        keys (list[str]): The list of keys to group by.S
 
     """
 
@@ -243,22 +243,22 @@ def group_by(results: List[SplintResult], keys: List[str]) -> dict[str, Any]:
 
     # Sort and group by the first key
     results = sorted(results, key=key_func)
-    results = [(k, list(g)) for k, g in itertools.groupby(results, key=key_func)]
+    group_results: list[tuple[str,Any]] = [(k, list(g)) for k, g in itertools.groupby(results, key=key_func)]
 
     # Recursively group by the remaining keys
     if len(keys) > 1:
-        for i, (k, group) in enumerate(results):
-            results[i] = (k, group_by(group, keys[1:]))
+        for i, (k, group) in enumerate(group_results):
+            group_results[i] = (k, group_by(group, keys[1:]))
 
-    return dict(results)
+    return dict(group_results)
 
 
-def overview(results: List[SplintResult]) -> str:
+def overview(results: list[SplintResult]) -> str:
     """
     Returns an overview of the results.
 
     Args:
-        results (List[SplintResult]): The list of results to summarize.
+        results (list[SplintResult]): The list of results to summarize.
 
     Returns:
         str: A summary of the results.

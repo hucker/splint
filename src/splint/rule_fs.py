@@ -4,26 +4,27 @@ about the file system, file existing, age etc.
 """
 import datetime as dt
 import fnmatch
-from typing import Generator, List
+from typing import Generator
 
 from fs.base import FS
+from fs.osfs import OSFS
 from fs.errors import FSError
 
 from .splint_result import SR
 
 
-def rule_fs_paths_exist(fs_obj: FS, paths: List[str]) -> Generator[SR, None, None]:
+def rule_fs_paths_exist(fs_obj: OSFS, paths: list[str]) -> Generator[SR, None, None]:
     """ Check a bunch of paths."""
     for path in paths:
         yield from rule_fs_path_exists(fs_obj, path)
 
 
-def rule_fs_path_exists(fs_obj: FS, path_: str) -> Generator[SR, None, None]:
+def rule_fs_path_exists(fs_obj: OSFS, path_: str) -> Generator[SR, None, None]:
     """Simple rule to check for a file path."""
     yield SR(status=fs_obj.exists(path_), msg=f"The path {path_} on {fs_obj.root_path} exists.")
 
 
-def human_readable_size(size_in_bytes: int):
+def human_readable_size(size_in_bytes: int)->str:
     """
     Convert a given size in bytes to a human-readable string format.
 
@@ -44,7 +45,7 @@ def human_readable_size(size_in_bytes: int):
     size_in_bytes = abs(size_in_bytes)
 
     while size_in_bytes >= 2048 and index < len(units) - 1:  # 2048 switch to the next unit at 2.00 exactly
-        size_in_bytes /= 1024
+        size_in_bytes = size_in_bytes / 1024
         index += 1
 
     # If the size_in_bytes was negative, switch it back to negative.
@@ -63,7 +64,7 @@ def human_readable_size(size_in_bytes: int):
     return f"{size_in_bytes:.1f} {units[index]}"
 
 
-def rule_fs_file_within_max_size(filesys: FS, path: str, max_file_size: int, skip_if_missing=False):
+def rule_fs_file_within_max_size(filesys: OSFS, path: str, max_file_size: int, skip_if_missing=False):
     """Check if a file exists and its size is within the given max_file_size limit"""
     if not filesys.isfile(path):
         yield SR(status=False, msg=f'File "{path}" does not exist in {filesys.root_path}', skipped=skip_if_missing)
@@ -160,7 +161,7 @@ def rule_fs_oldest_file_age(filesys: FS, max_age_minutes: float = 0,
     if isinstance(patterns, str):
         patterns = patterns.split(',')
 
-    now = (now_ or dt.datetime.utcnow()).replace(tzinfo=dt.timezone.utc)
+    now_ = (now_ or dt.datetime.utcnow()).replace(tzinfo=dt.timezone.utc)
     max_file_age_seconds = dt.timedelta(days=max_age_days,
                                         hours=max_age_hours,
                                         minutes=max_age_minutes,
@@ -184,7 +185,7 @@ def rule_fs_oldest_file_age(filesys: FS, max_age_minutes: float = 0,
     try:
         oldest_file = min(files, key=lambda f: filesys.getinfo(f, namespaces=['details']).modified)
         oldest_file_modified = filesys.getinfo(oldest_file, namespaces=['details']).modified
-        oldest_file_age_seconds = (now - oldest_file_modified).total_seconds()
+        oldest_file_age_seconds = (now_ - oldest_file_modified).total_seconds()
     except FSError as e:
         yield SR(status=False, msg=f"Error during checking file's age: {str(e)}", except_=e)
         return
@@ -198,52 +199,3 @@ def rule_fs_oldest_file_age(filesys: FS, max_age_minutes: float = 0,
     else:
         yield SR(status=False,
                  msg=f'Oldest file "{oldest_file}" is more than {time_str}. File age= {old_str}')
-
-# def rule_fs_youngest_file_age(filesys: FS, min_age_minutes: float = 0, min_age_hours: float = 0,
-#                               min_age_days: float = 0, min_age_seconds: float = 0,
-#                               patterns=None, no_files_status=True,
-#                               now_: dt.datetime = None):
-#     """ UNTESTED """
-#
-#
-#     patterns = patterns or ['*']
-#
-#     if isinstance(patterns, str):
-#         patterns = patterns.split(',')
-#
-#     now = (now_ or dt.datetime.utcnow()).replace(tzinfo=dt.timezone.utc)
-#     min_file_age_seconds = dt.timedelta(days=min_age_days, hours=min_age_hours,
-#                                         minutes=min_age_minutes,
-#                                         seconds=min_age_seconds).total_seconds()
-#
-#     try:
-#         files = filesys.listdir('/')
-#         files = [f for f in files if
-#                  filesys.isfile(f) and any(
-#                      fnmatch.fnmatch(f, pattern) for pattern in patterns)]
-#     except FSError as e:
-#         yield SR(status=False, msg=f"Error during listing files: {str(e)}", except_=e)
-#         return
-#
-#     if not files:
-#         yield SR(status=no_files_status,
-#                  msg=f"No files found in the directory: {filesys.getsyspath('/')}")
-#         return
-#
-#     try:
-#         youngest_file = max(files, key=lambda f: filesys.getinfo(f, namespaces=['details']).modified)
-#         youngest_file_modified = filesys.getinfo(youngest_file, namespaces=['details']).modified
-#         youngest_file_age_seconds = (now - youngest_file_modified).total_seconds()
-#     except FSError as e:
-#         yield SR(status=False, msg=f"Error during checking file's age: {str(e)}", except_=e)
-#         return
-#
-#     time_str = sec_format(min_file_age_seconds)
-#     young_str = sec_format(youngest_file_age_seconds)
-#
-#     if youngest_file_age_seconds >= min_file_age_seconds:
-#         yield SR(status=True,
-#           msg=f'Youngest file "{youngest_file}" is more than minimal permitted age of {time_str}. The age of the file is {young_str}')
-#     else:
-#         yield SR(status=False,
-#                  msg=f'Youngest file "{youngest_file}" is less than minimal permitted age of {time_str}. The age of the file is {young_str}')

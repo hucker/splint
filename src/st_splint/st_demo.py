@@ -13,7 +13,6 @@ to use most of the major feature groups including:
 
 """
 
-from typing import List
 
 import streamlit as st
 
@@ -65,12 +64,12 @@ def display_overview(checker: splint.SplintChecker) -> None:
 def yes_or_none(var):
     return 'Yes' if bool(var) else  ''
 
-def display_results(results: List[splint.SplintResult]):
+def display_results(results: list[splint.SplintResult]):
     """
     Display the results in a Markdown table
 
     Args:
-        results: List of splint results
+        results: list of splint results
     """
     headers = ['Count', 'Status', 'Warn', 'Skipped', 'Tag', 'Level', 'Phase', 'RUID', 'Module Name', 'Function Name', 'Message']
 
@@ -223,7 +222,7 @@ def main():
             checker.progress_callback = SplintStreamlitProgressBar(prog_bar)
 
             # Magic happens here
-            results: List[splint.SplintResult] = checker.run_all()
+            results: list[splint.SplintResult] = checker.run_all()
 
             with st.container(border=True):
                 display_overview(checker)

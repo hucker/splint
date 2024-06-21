@@ -10,7 +10,6 @@ import inspect
 import pathlib
 import sys
 from collections import Counter
-from typing import List
 
 from .splint_exception import SplintException
 from .splint_function import SplintFunction
@@ -25,20 +24,20 @@ class SplintModule:
 
     def __init__(
             self,
-            module_name,
-            module_file,
+            module_name:str,
+            module_file:str,
             check_prefix="check_",
             env_prefix="env_",
-            env_functions=None,
+            env_functions:list | None=None,
             auto_load=True,
-    ):
-        self.module_name = module_name
-        self.check_functions: List[SplintFunction] = []
-        self.env_functions: List = env_functions or []
+    )->None:
+        self.module_name:str = module_name
+        self.check_functions: list[SplintFunction] = []
+        self.env_functions: list = env_functions or []
         self.module = None
-        self.module_file = module_file
-        self.check_prefix = check_prefix
-        self.env_prefix = env_prefix
+        self.module_file:str = module_file
+        self.check_prefix:str = check_prefix
+        self.env_prefix:str = env_prefix
         self.doc = ""
         if auto_load:
             self.load()

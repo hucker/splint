@@ -40,7 +40,7 @@ def rule_stale_files(
     current_time = time.time()
     count = 0
     good_count = 0
-    for count, filepath in enumerate(pathlib.Path(folder).rglob(pattern), start=1):
+    for count, filepath in enumerate(pathlib.Path(folder).rglob(str(pattern)), start=1):
         file_mod_time = filepath.stat().st_mtime
         file_age_in_seconds = current_time - file_mod_time
         if file_age_in_seconds > age_in_seconds:

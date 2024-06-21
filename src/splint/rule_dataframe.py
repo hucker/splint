@@ -1,7 +1,7 @@
 """
 Useful rules for checking data frames.
 """
-from typing import Generator, List, Tuple
+from typing import Generator
 
 import numpy as np
 import pandas as pd
@@ -11,25 +11,25 @@ from .splint_result import SR
 
 
 def rule_validate_df_schema(df: pd.DataFrame,
-                            columns: List[str] | None = None,
-                            no_null_columns: List[str] | None = None,
-                            int_columns: List[str] | None = None,
-                            float_columns: List[str] | None = None,
-                            str_columns: List[str] | None = None,
-                            row_min_max: Tuple[int, int] | None = None,
-                            allowed_values: List | None = None,
+                            columns: list[str] | None = None,
+                            no_null_columns: list[str] | None = None,
+                            int_columns: list[str] | None = None,
+                            float_columns: list[str] | None = None,
+                            str_columns: list[str] | None = None,
+                            row_min_max: tuple[int, int] | None = None,
+                            allowed_values: list | None = None,
                             empty_ok: bool = False) -> Generator[SR, None, None]:
     """
         Validate a DataFrame schema based on given conditions.
 
         Parameters:
         df (pd.DataFrame): DataFrame to be validated.
-        columns (List[str], optional): Columns to validate. Defaults to None.
-        no_null_columns (List[str], optional): Columns without null values. Defaults to None.
-        int_columns (List[str], optional): Integer type columns. Defaults to None.
-        float_columns (List[str], optional): Float type columns. Defaults to None.
-        str_columns (List[str], optional): String type columns. Defaults to None.
-        row_min_max (Tuple[int,int], optional): Min/max row numbers in DataFrame. Defaults None.
+        columns (list[str], optional): Columns to validate. Defaults to None.
+        no_null_columns (list[str], optional): Columns without null values. Defaults to None.
+        int_columns (list[str], optional): Integer type columns. Defaults to None.
+        float_columns (list[str], optional): Float type columns. Defaults to None.
+        str_columns (list[str], optional): String type columns. Defaults to None.
+        row_min_max (tuple[int,int], optional): Min/max row numbers in DataFrame. Defaults None.
         empty_ok (bool, optional): When True, empty DataFrame is valid. Defaults to False.
 
         Raises:
@@ -85,7 +85,7 @@ def rule_validate_df_schema(df: pd.DataFrame,
         for col in str_columns:
             yield from check_dtype(col, ['object'], 'object')
 
-    if allowed_values:
+    if allowed_values and columns:
         for column in columns:
             if df[column].isin(allowed_values).all():
                 yield SR(status=True, msg=f"All values in column {column} are in {allowed_values}.")
@@ -114,27 +114,27 @@ def rule_validate_df_schema(df: pd.DataFrame,
 
 
 def rule_validate_df_values_by_col(df: pd.DataFrame,
-                                   positive: List[str] | str | None = None,
-                                   non_negative: List[str] | str | None = None,
-                                   percent: List[str] | str | None = None,
-                                   min_: Tuple[float, List[str]] | None = None,
-                                   max_: Tuple[float, List[str]] | None = None,
-                                   negative: List[str] | str | None = None,
-                                   non_positive: List[str] | str | None = None,
-                                   correlation: List[str] | str | None = None,
-                                   probability: List[str] | str | None = None):
+                                   positive: list[str] | str | None = None,
+                                   non_negative: list[str] | str | None = None,
+                                   percent: list[str] | str | None = None,
+                                   min_: tuple[float, list[str]] | None = None,
+                                   max_: tuple[float, list[str]] | None = None,
+                                   negative: list[str] | str | None = None,
+                                   non_positive: list[str] | str | None = None,
+                                   correlation: list[str] | str | None = None,
+                                   probability: list[str] | str | None = None):
     """
         Validate DataFrame schema based on given conditions. Parameters are as follows:
 
         Parameters:
         - df (pd.DataFrame): DataFrame to validate.
-        - columns (List[str], optional): Col names to validate. Defaults to None.
-        - no_null_columns (List[str], optional): Cols shouldn't have null values. Defaults to None.
-        - int_columns (List[str], optional): Columns of integer type. Defaults to None.
-        - float_columns (List[str], optional): Columns of float type. Defaults to None.
-        - str_columns (List[str], optional): Columns of string type. Defaults to None.
+        - columns (list[str], optional): Col names to validate. Defaults to None.
+        - no_null_columns (list[str], optional): Cols shouldn't have null values. Defaults to None.
+        - int_columns (list[str], optional): Columns of integer type. Defaults to None.
+        - float_columns (list[str], optional): Columns of float type. Defaults to None.
+        - str_columns (list[str], optional): Columns of string type. Defaults to None.
         - row_min_max (Tuple[int,int], optional): Min/max # of rows in DataFrame. Defaults to None.
-        - allowed_values (List, optional): Allowed values in columns. Defaults to None.
+        - allowed_values (list, optional): Allowed values in columns. Defaults to None.
         - empty_ok (bool, optional): If True, empty DataFrame is valid. Defaults to False.
 
         Raises:

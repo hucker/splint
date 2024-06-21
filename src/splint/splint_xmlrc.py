@@ -2,7 +2,7 @@
 Allow the usage of an XML file as an RC file.  Not sure why you want this.
 """
 import pathlib
-import xml.etree.ElementTree as ElementTree
+from xml.etree import ElementTree
 
 from splint import SplintException
 from splint import SplintRC

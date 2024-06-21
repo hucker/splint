@@ -4,7 +4,7 @@ There is also support for low level progress for functions/classes.
 """
 import datetime as dt
 from abc import ABC, abstractmethod
-from typing import Any, List
+from typing import Any
 
 import pandas as pd
 
@@ -58,8 +58,8 @@ class SplintDebugProgress(SplintProgress):
             print("+" if result.status else "-", end="")
 
 
-def _param_str_list(params: List[str] | str | None,
-                    disallowed=' ,!@#$%^&*(){}[]<>~`-+=\t\n\'"') -> List[str]:
+def _param_str_list(params: list[str] | str | None,
+                    disallowed=' ,!@#$%^&*(){}[]<>~`-+=\t\n\'"') -> list[str]:
     """
     Allow user to specify "foo fum" instead of ["foo","fum"] or slightly more
     shady "foo" instead of ["foo"].  This is strictly for reducing friction
@@ -74,7 +74,6 @@ def _param_str_list(params: List[str] | str | None,
 
     Args:
         params: "foo fum" or ["foo","fum"]
-
 
     """
 
@@ -95,7 +94,7 @@ def _param_str_list(params: List[str] | str | None,
     return params
 
 
-def _param_int_list(params: List[str] | List[int] | int | str) -> List[int]:
+def _param_int_list(params: list[str] | list[int] | int | str | None) -> list[int]:
     """
     Allow user to specify "1 2 3" instead of [1,2,3] or slightly more
     shady 1 instead of [1].  For small numbers this is a wash but for
@@ -104,29 +103,30 @@ def _param_int_list(params: List[str] | List[int] | int | str) -> List[int]:
     NOTE: The separator is the default for split...whitespace
 
     Args:
-        params: "1 2" or [1,2]
+        params: "1 2" or [1,2] or even [1,"2"]
 
     Returns: List of Integers
 
     """
-
-    if (isinstance(params, str) and params.strip() == '') or not params:
-        return []
-    if isinstance(params, list):
-        return [int(v) for v in params]
+    
     if isinstance(params, int):
-        return [int(params)]
-    if isinstance(params, str):
-        str_params = params.split()
-        try:
-            return [int(str_param) for str_param in str_params]
-        except ValueError as vex:
-            raise SplintException(f"Invalid integer parameter in {params}") from vex
+        return  [params]
+    
+    elif isinstance(params, str):
+        params = params.split()
+    
+    params = [str(p) for p in params]    
+    
+    # Make sure everything is an iteger
+    for param in params:
+        if isinstance(param,str) and param.isdigit():
+            continue
+        raise SplintException(f"Invalid integer parameter in {param} in {params}")
+        
+    return [int(param) for param in params]
+    
 
-    raise SplintException(f"Invalid integer parameter list: {params}")
-
-
-def exclude_ruids(ruids: List[str]):
+def exclude_ruids(ruids: list[str]):
     """Return a filter function that will exclude the ruids from the list."""
 
     def filter_func(s_func: SplintFunction):
@@ -135,7 +135,7 @@ def exclude_ruids(ruids: List[str]):
     return filter_func
 
 
-def exclude_tags(tags: List[str]):
+def exclude_tags(tags: list[str]):
     """Return a filter function that will exclude the tags from the list."""
 
     def filter_func(s_func: SplintFunction):
@@ -144,7 +144,7 @@ def exclude_tags(tags: List[str]):
     return filter_func
 
 
-def exclude_levels(levels: List[int]):
+def exclude_levels(levels: list[int]):
     """Return a filter function that will exclude the levels from the list."""
 
     def filter_func(s_func: SplintFunction):
@@ -153,7 +153,7 @@ def exclude_levels(levels: List[int]):
     return filter_func
 
 
-def exclude_phases(phases: List[str]):
+def exclude_phases(phases: list[str]):
     """Return a filter function that will exclude the phases from the list."""
 
     def filter_func(s_func: SplintFunction):
@@ -162,7 +162,7 @@ def exclude_phases(phases: List[str]):
     return filter_func
 
 
-def keep_ruids(ruids: List[str]):
+def keep_ruids(ruids: list[str]):
     """Return a filter function that will keep the ruids from the list."""
 
     def filter_func(s_func: SplintFunction):
@@ -171,7 +171,7 @@ def keep_ruids(ruids: List[str]):
     return filter_func
 
 
-def keep_tags(tags: List[str]):
+def keep_tags(tags: list[str]):
     """Return a filter function that will keep the tags from the list."""
 
     def filter_func(s_func: SplintFunction):
@@ -180,7 +180,7 @@ def keep_tags(tags: List[str]):
     return filter_func
 
 
-def keep_levels(levels: List[int]):
+def keep_levels(levels: list[int]):
     """Return a filter function that will keep the levels from the list."""
 
     def filter_func(s_func: SplintFunction):
@@ -189,7 +189,7 @@ def keep_levels(levels: List[int]):
     return filter_func
 
 
-def keep_phases(phases: List[str]):
+def keep_phases(phases: list[str]):
     """Return a filter function that will keep the phases from the list."""
 
     def filter_func(s_func: SplintFunction):
@@ -225,9 +225,9 @@ class SplintChecker:
 
     def __init__(
             self,
-            packages: List[SplintPackage] | None = None,
-            modules: List[SplintModule] | None = None,
-            check_functions: List[SplintFunction] | None = None,
+            packages: list[SplintPackage] | None = None,
+            modules: list[SplintModule] | None = None,
+            check_functions: list[SplintFunction] | None = None,
             progress_object: SplintProgress | None = None,
             score_strategy: ScoreStrategy | None = None,
             rc: SplintRC | None = None,
@@ -295,12 +295,12 @@ class SplintChecker:
         self.abort_on_exception = abort_on_exception
 
         # These two have the collection of all checker functions from packages, modules, and adhoc
-        self.collected: List[SplintFunction] = []
-        self.pre_collected: List[SplintFunction] = []
+        self.collected: list[SplintFunction] = []
+        self.pre_collected: list[SplintFunction] = []
 
         self.start_time = dt.datetime.now()
         self.end_time = dt.datetime.now()
-        self.results: List[SplintResult] = []
+        self.results: list[SplintResult] = []
         self.auto_ruid = auto_ruid
 
         if not self.packages and not self.modules and not self.check_functions:
@@ -335,7 +335,7 @@ class SplintChecker:
         return env
 
     @staticmethod
-    def _process_packages(packages: List[SplintPackage] | None) -> List[SplintPackage]:
+    def _process_packages(packages: list[SplintPackage] | None) -> list[SplintPackage]:
         """ Allow packages to be in various forms"""
         if not packages:
             return []
@@ -346,7 +346,7 @@ class SplintChecker:
         raise SplintException('Packages must be a list of SplintPackage objects.')
 
     @staticmethod
-    def _process_modules(modules: List[SplintModule] | None) -> List[SplintModule]:
+    def _process_modules(modules: list[SplintModule] | None) -> list[SplintModule]:
         """ Allow modules to be in various forms"""
         if not modules:
             return []
@@ -357,7 +357,7 @@ class SplintChecker:
         raise SplintException('Modules must be a list of SplintModule objects.')
 
     @staticmethod
-    def _process_check_funcs(check_functions: List[SplintFunction] | None) -> List[SplintFunction]:
+    def _process_check_funcs(check_functions: list[SplintFunction] | None) -> list[SplintFunction]:
         """ Load up an arbitrary list of splint functions.
         These functions are tagged with adhoc for module"""
         if isinstance(check_functions, list) and len(check_functions) >= 1:
@@ -377,7 +377,7 @@ class SplintChecker:
 
         raise SplintException("Functions must be a list of SplintFunction objects.")
 
-    def pre_collect(self) -> List[SplintFunction]:
+    def pre_collect(self) -> list[SplintFunction]:
         """
         Collect all the functions from the packages, modules and functions with no filtering.
         This list of functions is will be filtered by the checker before running checks.
@@ -481,10 +481,10 @@ class SplintChecker:
 
         return self.collected
 
-    def exclude_by_attribute(self, tags: List[str] | str | None = None,
-                             ruids: List[str] | str | None = None,
-                             levels: List[int] | int | None = None,
-                             phases: List[str] | str | None = None) -> List[SplintFunction]:
+    def exclude_by_attribute(self, tags: list[str] | str | None = None,
+                             ruids: list[str] | str | None = None,
+                             levels: list[int] | int | None = None,
+                             phases: list[str] | str | None = None) -> list[SplintFunction]:
         """ Run everything except the ones that match these attributes """
 
         # Make everything nice lists
@@ -501,10 +501,10 @@ class SplintChecker:
         return self.collected
 
     def include_by_attribute(self,
-                             tags: List | str | None = None,
-                             ruids: List | str | None = None,
-                             levels: List | str | None = None,
-                             phases: List | str | None = None) -> List[SplintFunction]:
+                             tags: list | str | None = None,
+                             ruids: list | str | None = None,
+                             levels: list | str | None = None,
+                             phases: list | str | None = None) -> list[SplintFunction]:
         """ Run everything that matches these attributes """
 
         # Make everything nice lists
@@ -623,8 +623,8 @@ class SplintChecker:
             env = self.load_environments()
 
             # Shuts up linter
-            result: SplintResult | None = None
-            function: SplintFunction | None = None
+            # result: SplintResult | None = None
+            # function: SplintFunction | None = None
 
             # Count here to enable progress bars
             for count, function in enumerate(self.collected, start=1):
