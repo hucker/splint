@@ -11,6 +11,7 @@ exact same tests should be run against the derived classes.
 import pytest
 
 from splint import splint_rc
+import splint
 
 
 @pytest.fixture
@@ -24,15 +25,7 @@ def test_data():
     return d
 
 
-@pytest.fixture
-def test_neg_data():
-    d = {
-        'tags': ['a', 'b', '-c'],
-        'ruids': ['r1', 'r2', '-r3'],
-        'phases': ['p1', 'p2', '-p3'],
-        'levels': [1, 2, 3]
-    }
-    return d
+
 
 
 def test_simple_summary(test_data):
@@ -42,6 +35,19 @@ def test_simple_summary(test_data):
     assert rc.ruids == ['r1', 'r2', 'r3']
     assert rc.phases == ['p1', 'p2', 'p3']
     assert rc.levels == ['1', '2', '3']
+
+@pytest.mark.parametrize(
+    "bad_type",
+    [
+        [1, 2, 3],
+        (1, 2, 3),
+        {1, 2, 3},
+        1,
+    ],
+)
+def test_bad_rcd(bad_type):
+    with pytest.raises(splint.SplintException) as exec_info:
+        _ = splint_rc.SplintRC(rc_d=bad_type)
 
 
 def test_simple_rc(test_data):

@@ -6,10 +6,6 @@ import re
 from .splint_exception import SplintException
 
 
-class EarlyExitException(SplintException):
-    """Break out of processing early """
-
-
 class SplintRC:
     """
     Loads configurations from a dictionary.
