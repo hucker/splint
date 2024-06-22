@@ -96,6 +96,8 @@ def _param_str_list(params: list[str] | str | None,
 
 def _param_int_list(params: list[str] | list[int] | int | str | None) -> list[int]:
     """
+    That's a lot of options there..
+    
     Allow user to specify "1 2 3" instead of [1,2,3] or slightly more
     shady 1 instead of [1].  For small numbers this is a wash but for
     symmetry with str_list it included it.

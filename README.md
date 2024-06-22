@@ -1,14 +1,15 @@
 # Splint: A Linting Framework
 
-Splint empowers you to create a linting tool for any task by utilizing a declarative style similar to `pytest`.
-With just a few lines of code, you can define rules that integrate into your workflow by providing JSON
-output natively. Connecting to FastAPI or Streamlit is straight forward.
+`Splint` empowers you to create `linting tools` for any task by utilizing a declarative style similar to `pytest`.
+It isn't for code, it is for infrastructure, files, folders, databases etc.  If you are tracking the state of
+many files, folders, logs, databases, websites or the contents of spreadsheets, PDF files `splint` cand simplify
+the task.  With just a few lines of code, you can define rules that integrate into your workflow by providing JSON
+output natively.
 
 ## Overview
 
-Splint transcends traditional code analysis, offering a solution for a wide range of tasks. Inspired by the
-effectiveness
-of `pylint` in identifying and resolving code issues, I envisioned a tool capable of extending this functionality
+`Splint` is a framework that offers a solution to wide range of infrastructure monitoring.  It works similar to how
+`pylint` is used to find issues, I envisioned a tool capable of extending this functionality
 across diverse workflows with minimal setup. Splint allows for easy `linting` of any aspect of a project or
 system, providing access to detailed test results for integration with JSON friendly tools like Streamlit
 and FastAPI.
@@ -67,7 +68,7 @@ target audience.
 
 - **Scope**: Offers comprehensive linting and testing capabilities for any task or system focused on granular pass fail
   tests.
-- **Complexity**: Lightweight and straightforward, designed for end users with detailed testing results and scoring.
+- **Complexity**: Lightweight and straightforward, designed for end users needing detailed testing results and scoring.
 - **Audience**: Consumed by end users across various domains, facilitating rule-based testing with clear insights into
   testing results. A typical go/no-go test has 100's of tests that are run almost exclusively as pass/fail
 - **Visibility**: Concise list of passing and failing rules with extensive detail and filtering capabilities for infrastructure,
@@ -299,7 +300,7 @@ IN addition to the scoring, each function has a weight that is also applied to i
 different rules to have higher weights.
 
 The utility of this is somewhat useless in smaller systems (< 100 rules) since we generally are aiming to
-have 100% pass.  The weighting could be used to determine triage.
+have 100% pass.  
 
 ## What are @attributes?
 
@@ -502,7 +503,7 @@ def check_env2(number_config):
     yield splint.SR(status=number_config == 42, msg=f"Got number {42}")
 ```
 
-## Command Line Demo App For `splinter`:
+## Typer Command Line Demo App For `splinter`:
 
 Included is a light weight `typer` app that allows to point `splint` at a file or folder and check the rules via the
 command
@@ -534,7 +535,7 @@ Usage: splinter.py [OPTIONS]
 ╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 ```
 
-## FastAPI Interface
+## FastAPI Interface Demo
 
 To integrate your rule checking results with a web API using `FastAPI`, you can refer to the `splinter.py` file for a
 straightforward approach to creating a `FastAPI` app from your existing code. No changes are required in your code to
@@ -571,10 +572,10 @@ FastAPI example running some rules:
 
 ## Streamlit Demo
 
-Integration with streamlit was important so I made the way you interact with `splint` work whell with the
-tools that `streamlit` exposes. Integrating with the goodness of `streamlit` is should be a breeze. 
+Integration with `streamlit` was important, so I made the way you interact with `splint` work well with the
+tools that `streamlit` exposes. Integrating with the goodness of `streamlit` is a breeze. 
 Here is a non-trivial example showing many of the features of `splint` in a `streamlit` app.  
-In 200 lines of code you can select from packages folders, have a full streamlit UI to select the package, tags, 
+in 200 lines of code you can select from packages folders, have a full streamlit UI to select the package, tags, 
 levels, ruids and generate colored tabular report.  
 
 Here is the setup using a couple of modules in a package folder:
@@ -585,6 +586,8 @@ Here is the setup using a couple of modules in a package folder:
 
 ## TOX
 
+Python 3.10 to 3.12 and soon to be 3.13.  Python 3.9 was dropped for type hinting support using |.
+
 ```text
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
 ================= 557 passed, 1 skipped, 44 warnings in 13.09s =================
@@ -592,7 +595,6 @@ Here is the setup using a couple of modules in a package folder:
   py312: OK (14.80=setup[1.76]+cmd[13.04] seconds)
   py310: OK (14.45=setup[0.63]+cmd[13.82] seconds)
   lint: OK (15.09=setup[1.73]+cmd[13.35] seconds)
-  evaluation failed :( (60.75 seconds)
 ```
 
 ## Lint
