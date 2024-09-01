@@ -84,6 +84,7 @@ except ImportError:
 # sql alchemy support
 try:
     import sqlalchemy
-    from .rule_sqlachemy import rule_sql_table_schema
+    from .rule_sqlachemy import rule_sql_table_col_name_schema
+    from .rule_sqlachemy import rule_sql_table_schema 
 except ImportError:
     pass
