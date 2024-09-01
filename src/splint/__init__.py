@@ -80,3 +80,10 @@ try:
     from .rule_pdf import rule_from_pdf_rule_ids  # noqa: F401
 except ImportError:
     pass
+
+# sql alchemy support
+try:
+    import sqlalchemy
+    from .rule_sqlachemy import rule_sql_table_schema
+except ImportError:
+    pass
