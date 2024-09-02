@@ -109,8 +109,7 @@ class SplintRC:
         self.tags, self.ex_tags = self._separate_values(rc_data.get('tags', []))
         self.phases, self.ex_phases = self._separate_values(rc_data.get('phases', []))
         self.levels, self.ex_levels = self._separate_values(rc_data.get('levels', []))
-        return
-
+        
     def does_match(self, ruid: str = "", tag: str = "", phase: str = "", level: str = "") -> bool:
         """
         Determines whether a given `ruid`/`tag`/`phase`/`level` matches any of the inclusions

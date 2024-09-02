@@ -1,18 +1,16 @@
-# Splint: A Linting Framework
+# Splint: A `Linting` Framework
 
-`Splint` empowers you to create `linting tools` for any task by utilizing a declarative style similar to `pytest`.
-It isn't for code, it is for infrastructure, files, folders, databases etc.  If you are tracking the state of
-many files, folders, logs, databases, websites or the contents of spreadsheets, PDF files `splint` cand simplify
-the task.  With just a few lines of code, you can define rules that integrate into your workflow by providing JSON
-output natively.
+`Splint` lets you to create `linting tools` for any task by utilizing a declarative style similar to `pytest`.
+It isn't for code, it is for infrastructure, files, folders, databases, project tracking etc.  If you track 
+many files, folders, logs, databases, websites or the contents of spreadsheets, PDF, csv files files `splint`
+can simplify the task by letting you write pytest like tests against your environment.
 
 ## Overview
 
-`Splint` is a framework that offers a solution to wide range of infrastructure monitoring.  It works similar to how
-`pylint` is used to find issues, I envisioned a tool capable of extending this functionality
-across diverse workflows with minimal setup. Splint allows for easy `linting` of any aspect of a project or
-system, providing access to detailed test results for integration with JSON friendly tools like Streamlit
-and FastAPI.
+`Splint` is a framework that offers a solution monitoring files, folders, projects etc.  It works similar to how
+`pylint` finds problems in code.  I envisioned a tool capable of extending this functionality
+across diverse workflows with minimal setup. With a few `check` functions you can easily automate checking
+and generate json data ready to be used as an API, incorporated into a streamlit dashboard or into your code.
 
 The intention is NOT to be a `linter` by parsing the syntax of a programming language, it is meant to be a `linter`
 in the sense that some system has a large set of rules that must be met for the system to be in a good state.  The
@@ -20,23 +18,15 @@ more rules the system adheres to the 'better' it is.
 
 After experimenting with various approaches, including straight application scripting and the extensive
 configuration files, I found that a `pytest`-like framework could offer the flexibility and ease of use 
-I sought. While `pytest` serves a different purpose, its declarative style for writing independent tests, 
-managed by the framework, inspired the development of Splint.
+I sought by offering a simple declarative style.
 
-Splint facilitates running a set of rules against a system, delivering detailed results and a "score" for
-the run. Achieving a 100% score indicates all tests passed, accompanied by a comprehensive list of pass/fail status.
-In case of failures, Splint provides detailed information about the issues encountered, along with a score less
-than 100%.
+For larger projects there are attributes that may be assigned to all of your check functions to allow you
+fine-grained control over running your checks.  For small projects you don't even bother, for large projects
+the tags, levels, phases can all be very useful to running just the tests you care about.
 
-Splint follows a structure familiar to users of `pytest`, defining rules in files as Python functions that seamlessly
-integrate with your application. With minimal boilerplate and automatic detection, writing rule-checking Python code
-becomes straightforward. The autoloaded modules and rule functions support parameters, akin to `pytest`, dynamically
-built from the system's environment.
-
-While the concept may sound intricate, understanding Splint is straightforward for those familiar with `pytest`.
-Its principles have proven effective in environments where end users may not be programmers, offering a clear path to
-identify and correct issues to ensure system compliance. By adhering to agreed-upon rule sets, teams can work
-harmoniously, driving error counts to zero.
+When running your checks against your project `splint` allows you to generate scores. By default each check
+counts as 1 "point" and all the points are added up to a score which is reported as a percentage.  If you
+have more detailed needs you have a lot of control over this mechanism.
 
 ## Why Not pytest, Great Expectations or other popular tools?
 
@@ -76,16 +66,14 @@ target audience.
 
 ## Getting Started with Splint
 
-If you're familiar with `pytest`, getting started with `splint` is a breeze. Similar to `pytest`, `splint` allows
-you to write independent rules that verify the state of your system. These rules should be atomic and able to run in
-any order. If you're accustomed to writing tests with modules starting with "test" and functions beginning with "test",
+If you're familiar with `pytest`, getting started with `splint` is a breeze.  If you're accustomed to writing tests 
+with modules starting with "test" and functions beginning with "test",
 transitioning to `splint` will feel natural. Additionally, if you understand fixtures, you'll find that the concept is
-also available through environments. Every rule can be tagged with various attributes to allow filtering which rules
-to run and organization when reporting results.
+also available through environments. Rule may be tagged with attributes to allow tight control over running checks.
 
 ### Simple Rules
 
-You can start with simple rules that don't even reference `splint` directly:
+You can start with simple rules that don't even reference `splint` directly by returning or yielding a boolean value.
 
 ```python
 from junk import get_drive_space
@@ -98,10 +86,10 @@ def check_yielded_values():
     yield get_drive_space('/fum') > 1_000_000_000
 ```
 
-As you might expect running this will provide 3 passing test results but with very limited feedback.
+As you might expect running this will provide 3 passing test results (assuming the drive space is available) 
+but with very limited feedback.
 
-You can up your game and return status message info:
-From the most simple you could write rules like this:
+You can up your game and return status information by returning or yielding `SplintResults`.
 
 ```python
 from splint import SplintResult, SR
@@ -119,7 +107,9 @@ def check_yielded_values():
 
 As you might expect running this will also provide 3 passing test results with better messages.
 
-Now we can add more complexity. Tag check functions with attributes to allow subsets of checks to be run.
+Now we can add more complexity. Tag check functions with attributes to allow subsets of checks to be run. Below
+two functions are given different tags.  When you make calls to run checks you can specify which tags
+you want to allow to run.  
 
 ```python
 from splint import SplintResult, attributes
@@ -127,14 +117,14 @@ import datetime as dt
 import pathlib
 
 
-@attributes(tag="file")
+@attributes(tag="file_exist")
 def check_file_exists():
     """ Verify this that my_file exists """
     status = pathlib.Path("my_file.csv").exists()
     return SplintResult(status=status, msg="Verify daily CSV file exists")
 
 
-@attributes(tag="file")
+@attributes(tag="file_age")
 def check_file_age():
     file = pathlib.Path("my_file.csv")
     modification_time = file.stat().st_mtime
@@ -148,7 +138,9 @@ def check_file_age():
 ```
 
 And even a bit more complexity pass values to these functions using environments, which are similar to `pytest`
-fixtures.
+fixtures.  Splint detects functions that start with "env_" and calls them prior to running the check functions.
+It builds an environment that can be used to pass parameters to check functions.  Typically, things like database
+connections, filenames, config files are passed around with this mechanism.
 
 ```python
 import datetime as dt
@@ -190,14 +182,14 @@ Splint uses the following hierarchy:
 Typically one works at the module or package level where you have python files that have 1 or more files with rules in
 them.
 
-Each Splint function returns 0-to-N results from its generator function. By convention, if None is returned, the rule
+Each `SplintFunction` returns/yields 0-to-N results from its generator function. By convention, if None is returned, the rule
 was skipped.
 The rule functions that you write don't need to use generators. They can return a variety of output
 (e.g., Boolean, List of Boolean, `SplintResult`, List of `SplintResult`), or you can write a generator that yields
 results as they are checked.
 
 Alternatively you can ignore the file and folder discovery mechanism provide list of rules as regular python
-functions and `Splint` will happily run them for you.
+functions and `Splint` will happily run them for you if pass a list of check functions the make a `SplintChecker`
 
 ```python
 import splint
@@ -290,13 +282,13 @@ but it is in work creating scoring by function.
 
 | Scoring              | Description                                                              |
 |----------------------|--------------------------------------------------------------------------|
-| `by_result`          | Each result from a functon counts as 100%                                |
+| `by_result`          | Each result from a function counts as 100%                               |
 | `by_function_binary` | All tests from a single function must pass to get 100% for the function. |
 | `by_funciton_mean`   | If a function has 3 results and 2 pass the function result is 66%        |
 | `binary_fail`        | If any single result from a function is False, the function score is 0%  |
 | `binary_pass`        | If any single result from a function is True, the function score is 100% |
 
-IN addition to the scoring, each function has a weight that is also applied to it after the scoring to all
+In addition to the scoring, each function has a weight that is also applied to it after the scoring to all
 different rules to have higher weights.
 
 The utility of this is somewhat useless in smaller systems (< 100 rules) since we generally are aiming to
@@ -336,7 +328,7 @@ the system has the same set but some don't apply.
 Or perhaps in an early phase development a subset of rules is applied, and at another a different set of rules is
 applied.
 
-RUIDS allow you to set function level granularity with "simple" config files (THAT CURRENTLY DON'T EXIST)
+RUIDS allow you to set function level granularity with "simple" config files.
 
 RUIDs can be anything hashable (but come on, they should be short strings). Smart-ish values like File-001, Fill-002, '
 smarter' or File-Required, File-Too-Old. Whatever makes sense on the project. As a general rule smart naming conventions
@@ -428,9 +420,9 @@ inside the TTL that was specified. This feature is useful in situations where yo
 in real time for things like dashboards or long-running tasks. You don't need to check a 20MB log file for exceptions
 every minute. When you need TTL, it is very useful.
 
-The status during the TTL period will be the last result. At startup, everything will run since the caches are empty.
+The status during the TTL period will be the __last result that ran__. At startup, everything will run since the caches are empty.
 
-NOTE: ttl_minutes is assumed to be in minutes, should you provide a number without units.  If you want hours days or
+NOTE: `ttl_minutes` is assumed to be in minutes, should you provide a number without units.  If you want hours days or
       seconds you can put the units in the string ("30sec", "1day", ".5 hours")
 
 ```python
@@ -448,13 +440,10 @@ def check_file_age():
 
 Lots of ways.
 
-1) Just give it a bunch of functions in a list would work. Ideally the return SplintResults, but it works if they
-   return booleans or lists of booleans.
-2) Point it to a file and `splint` will find all the functions in that file and call them. (`splint_module`)
+1) Just give it a bunch of functions in a list would work. Ideally the return `SplintResults`.
+2) Point it to a file and `splint` will find all the fucntion that start with`check` and call them. (`splint_module`)
 3) Point it to a folder (or pass it a bunch of filenames) and splint will load each module and collect all the tests (
    `splint_package`)
-
-For me that is as deep as I want things to go.
 
 ## How are environments used?
 

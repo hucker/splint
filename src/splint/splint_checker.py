@@ -629,15 +629,15 @@ class SplintChecker:
             # function: SplintFunction | None = None
 
             # Count here to enable progress bars
-            for count, function in enumerate(self.collected, start=1):
+            for count, function_ in enumerate(self.collected, start=1):
 
                 # Lots of magic here
-                function.env = env
+                function_.env = env
 
                 self.progress_callback(count,
                                        self.function_count,
-                                       f"Func Start {function.function_name}")
-                for result in function():
+                                       f"Func Start {function_.function_name}")
+                for result in function_():
                     yield result
 
                     # Check early exits
@@ -648,15 +648,15 @@ class SplintChecker:
                         raise self.AbortYieldException()
 
                     # Stop yielding from a function
-                    if function.finish_on_fail and result.status is False:
+                    if function_.finish_on_fail and result.status is False:
                         self.progress_callback(count, self.function_count,
-                                               f"Early exit. {function.function_name} failed.")
+                                               f"Early exit. {function_.function_name} failed.")
                         break
                     self.progress_callback(count, self.function_count, "", result)
                 self.progress_callback(count, self.function_count, "Func done.")
 
         except self.AbortYieldException:
-            name = function.function_name if function is not None else "???"
+            name = function_.function_name if function_ is not None else "???"
 
             if self.abort_on_fail:
                 self.progress_callback(count,

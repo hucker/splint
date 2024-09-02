@@ -101,7 +101,8 @@ class SplintEnvDataFrame(pd.DataFrame):
     SplintException.
 
     Similar to ImmutableList and ImmutableDict, this class shields large dataframes from
-    unintentional changes due to Python's dynamic nature.  This is not perfect.
+    unintentional changes due to Python's dynamic nature.  This is not perfect and not
+    intended to be perfect.  I'm just trying to help...
     """
 
     def __init__(self, *args, **kwargs):
@@ -120,8 +121,7 @@ class SplintEnvDataFrame(pd.DataFrame):
     def pop(self, item):
         raise SplintException("Environment DataFrame is immutable, pop is not supported")
 
-    def drop(self, labels=None, axis=0, index=None, columns=None,
-             level=None, inplace=False, errors='raise'):
+    def drop(self, labels=None, axis=0, index=None, columns=None,level=None, inplace=False, errors='raise'):
         raise SplintException("Environment DataFrame is immutable, drop is not supported")
 
     def insert(self, loc, column, value, allow_duplicates=False):
