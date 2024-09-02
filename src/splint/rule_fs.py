@@ -161,7 +161,7 @@ def rule_fs_oldest_file_age(filesys: FS, max_age_minutes: float = 0,
     if isinstance(patterns, str):
         patterns = patterns.split(',')
 
-    now_ = (now_ or dt.datetime.utcnow()).replace(tzinfo=dt.timezone.utc)
+    now_ = (now_ or dt.datetime.now(dt.timezone.utc)).replace(tzinfo=dt.timezone.utc)
     max_file_age_seconds = dt.timedelta(days=max_age_days,
                                         hours=max_age_hours,
                                         minutes=max_age_minutes,
