@@ -3,8 +3,8 @@ Allow the usage of an INI file as an RC file.
 """
 import configparser
 
-from splint import SplintException
-from splint import SplintRC
+from .splint_exception import SplintException
+from .splint_rc import SplintRC
 
 
 class SplintIniRC(SplintRC):

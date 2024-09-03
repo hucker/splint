@@ -4,8 +4,8 @@ Allow the usage of an XML file as an RC file.  Not sure why you want this.
 import pathlib
 from xml.etree import ElementTree
 
-from splint import SplintException
-from splint import SplintRC
+from .splint_exception import SplintException
+from .splint_rc import SplintRC
 
 
 class SplintXMLRC(SplintRC):

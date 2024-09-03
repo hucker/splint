@@ -8,7 +8,7 @@ from typing import Generator
 from sqlalchemy import Engine, MetaData, Table
 from sqlalchemy.sql.type_api import TypeEngine
 
-from splint import SR
+from .splint_result import SR
 
 
 def rule_sql_table_col_name_schema(engine: Engine,

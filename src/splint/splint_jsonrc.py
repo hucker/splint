@@ -4,8 +4,8 @@ Allow the usage of an JSON file as an RC file.
 import json
 import pathlib
 
-from splint import SplintException
-from splint import SplintRC
+from .splint_exception import SplintException
+from .splint_rc import SplintRC
 
 
 class SplintJsonRC(SplintRC):

@@ -112,14 +112,14 @@ def rule_validate_df_schema(df: pd.DataFrame,
         yield SR(status=False,
                  msg="There are no columns to check.")
 
-def convert_to_tuple(input: Tuple[float, list[str] | str] | None) -> Tuple[float, list[str]] | None:
+def convert_to_tuple(input_val: Tuple[float, list[str] | str] | None) -> Tuple[float, list[str]] | None:
     """
     Convert data inf the form (1.23,[1,2]) and (1.23,"1 2") into a tuple
     with the values (1.23,[1,2]) while keeping mypy happy.
     """
-    if input is None:
+    if input_val is None:
         return None
-    value, arr = input
+    value, arr = input_val
     if isinstance(arr, str):
         arr = arr.split(',')
     return value, arr
