@@ -8,11 +8,12 @@ import inspect
 import re
 import time
 import traceback
-from typing import Generator
+from typing import Any, Generator
 
 from .splint_attribute import get_attribute
 from .splint_exception import SplintException
 from .splint_result import SplintResult
+
 
 
 def result_hook_fix_blank_msg(sfunc: "SplintFunction",
@@ -77,21 +78,22 @@ class SplintFunction:
         - __call__(*args, **keywords): Calls the function and gathers result info.
         """
 
-    def __init__(self, function, module='',
-                 allowed_exceptions=None,
-                 env=None,
-                 pre_sr_hooks=None,
-                 post_sr_hooks=None):
+    def __init__(self, function_:Any,
+                 module: str = '',
+                 allowed_exceptions: list[Any] = None,
+                 env: dict[Any, Any] = None,
+                 pre_sr_hooks:Any = None,
+                 post_sr_hooks:Any = None):
         self.env = env or {}
         self.module = module
-        self.function = function
-        self.is_generator = inspect.isgeneratorfunction(function)
-        self.function_name = function.__name__
+        self.function = function_
+        self.is_generator = inspect.isgeneratorfunction(function_)
+        self.function_name = function_.__name__
 
         # Using inspect gets the docstring without the python indent.
-        self.doc = inspect.getdoc(function) or ""
+        self.doc = inspect.getdoc(function_) or ""
 
-        self.parameters = inspect.signature(function).parameters
+        self.parameters = inspect.signature(function_).parameters
         self.result_hooks = [result_hook_fix_blank_msg]
 
         # Allow user to control rewriting the result hooks
@@ -110,24 +112,24 @@ class SplintFunction:
             raise SplintException("post_sr_hooks must be a list")
 
         # This should be a class rather than having to repeat yourself.
-        self.tag = get_attribute(function, "tag")
-        self.level = get_attribute(function, "level")
-        self.phase = get_attribute(function, "phase")
-        self.weight = get_attribute(function, "weight")
-        self.skip = get_attribute(function, "skip")
-        self.ruid = get_attribute(function, "ruid")
-        self.skip_on_none = get_attribute(function, "skip_on_none")
-        self.fail_on_none = get_attribute(function, "fail_on_none")
-        self.ttl_minutes = get_attribute(function, "ttl_minutes")
-        self.finish_on_fail = get_attribute(function, "finish_on_fail")
-        self.index = get_attribute(function, "index")
+        self.tag = get_attribute(function_, "tag")
+        self.level = get_attribute(function_, "level")
+        self.phase = get_attribute(function_, "phase")
+        self.weight = get_attribute(function_, "weight")
+        self.skip = get_attribute(function_, "skip")
+        self.ruid = get_attribute(function_, "ruid")
+        self.skip_on_none = get_attribute(function_, "skip_on_none")
+        self.fail_on_none = get_attribute(function_, "fail_on_none")
+        self.ttl_minutes = get_attribute(function_, "ttl_minutes")
+        self.finish_on_fail = get_attribute(function_, "finish_on_fail")
+        self.index = get_attribute(function_, "index")
 
         # Support Time To Live using the return value of time.time.  Resolution of this
         # is on the order of 10e-6 depending on OS.  In my case this is WAY more than I
         # need, and I'm assuming you aren't building a trading system with this, so you don't
         # care about microseconds.
         self.last_ttl_start = 0  # this will be compared to time.time() for ttl caching
-        self.last_results: list[SplintResult]  = []
+        self.last_results: list[SplintResult] = []
 
         if self.weight in [True, False, None]:
             raise SplintException("Boolean and none types are not allowed for weights.")

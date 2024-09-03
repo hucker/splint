@@ -1,7 +1,7 @@
 """
 Useful rules for checking data frames.
 """
-from typing import Generator
+from typing import Generator, Tuple
 
 import numpy as np
 import pandas as pd
@@ -112,6 +112,18 @@ def rule_validate_df_schema(df: pd.DataFrame,
         yield SR(status=False,
                  msg="There are no columns to check.")
 
+def convert_to_tuple(input: Tuple[float, list[str] | str] | None) -> Tuple[float, list[str]] | None:
+    """
+    Convert data inf the form (1.23,[1,2]) and (1.23,"1 2") into a tuple
+    with the values (1.23,[1,2]) while keeping mypy happy.
+    """
+    if input is None:
+        return None
+    value, arr = input
+    if isinstance(arr, str):
+        arr = arr.split(',')
+    return value, arr
+
 
 def rule_validate_df_values_by_col(df: pd.DataFrame,
                                    positive: list[str] | str | None = None,
@@ -158,11 +170,10 @@ def rule_validate_df_values_by_col(df: pd.DataFrame,
     correlation = correlation.split(',') if isinstance(correlation, str) else correlation
     probability = probability.split(',') if isinstance(probability, str) else probability
 
-    # min_/max_ are (float,str) or (float,list),
     if min_:
-        min_ = (min_[0], min_[1].split(',')) if isinstance(min_[1], str) else min_
+        min_ = convert_to_tuple(min_)
     if max_:
-        max_ = (max_[0], max_[1].split(',')) if isinstance(max_[1], str) else max_
+        max_ = convert_to_tuple(max_)
 
     conditions = [positive, non_negative, negative, non_positive,
                   percent, min_, max_, probability, correlation]

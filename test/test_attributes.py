@@ -4,7 +4,6 @@ import src.splint.splint_attribute as splint_attribute
 import src.splint.splint_exception as splint_exception
 
 
-
 @pytest.mark.parametrize("ttl,units,result", [
     ("0", ["m", "minute", "min"], 0),
     ("0", ["s", "sec", "second", "seconds"], 0),
@@ -49,7 +48,7 @@ def test_phase_attr_exc(invalid_char):
         splint_attribute.attributes(phase=f'test{invalid_char}')
 
 
-@ pytest.mark.parametrize("unit_group,bad_time", [
+@pytest.mark.parametrize("unit_group,bad_time", [
     (["m", "minute", "min", "minutes"], "-0.1"),
     (["m", "minute", "min", "minutes"], "-1"),
     (["m", "minute", "min", "minutes"], "-1.0"),

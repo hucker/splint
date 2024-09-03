@@ -150,7 +150,7 @@ def rule_fs_oldest_file_age(filesys: FS, max_age_minutes: float = 0,
                             patterns=None,
                             no_files_stat=True,
                             no_files_skip=True,
-                            now_: dt.datetime | None = None):
+                            now__: dt.datetime | None = None):
     """
     This rule is useful for ensuring that files are being removed in
     a timely manner as in the case where a folder is used to queue up
@@ -161,7 +161,7 @@ def rule_fs_oldest_file_age(filesys: FS, max_age_minutes: float = 0,
     if isinstance(patterns, str):
         patterns = patterns.split(',')
 
-    now_ = (now_ or dt.datetime.now(dt.timezone.utc)).replace(tzinfo=dt.timezone.utc)
+    now_:dt.datetime = (now__ or dt.datetime.now(dt.timezone.utc)).replace(tzinfo=dt.timezone.utc)
     max_file_age_seconds = dt.timedelta(days=max_age_days,
                                         hours=max_age_hours,
                                         minutes=max_age_minutes,
@@ -184,7 +184,7 @@ def rule_fs_oldest_file_age(filesys: FS, max_age_minutes: float = 0,
 
     try:
         oldest_file = min(files, key=lambda f: filesys.getinfo(f, namespaces=['details']).modified)
-        oldest_file_modified = filesys.getinfo(oldest_file, namespaces=['details']).modified
+        oldest_file_modified:dt.datetime = filesys.getinfo(oldest_file, namespaces=['details']).modified
         oldest_file_age_seconds = (now_ - oldest_file_modified).total_seconds()
     except FSError as e:
         yield SR(status=False, msg=f"Error during checking file's age: {str(e)}", except_=e)

@@ -31,7 +31,7 @@ def test_fail_on_none():
     def env_test_function(var):
         yield splint.SR(status=True, msg=f"This will pass if it ever gets here. {var=}")
 
-    s_func = splint.SplintFunction(function=env_test_function)
+    s_func = splint.SplintFunction(function_=env_test_function)
     ch = splint.SplintChecker(check_functions=[s_func], env={'var': None}, auto_setup=True)
     results = ch.run_all()
 
@@ -45,7 +45,7 @@ def test_skip_on_none():
     def env_test_function(var):
         yield splint.SR(status=True, msg="This will pass if it ever gets here.")
 
-    s_func = splint.SplintFunction(function=env_test_function)
+    s_func = splint.SplintFunction(function_=env_test_function)
     ch = splint.SplintChecker(check_functions=[s_func], env={'var': None}, auto_setup=True)
     results = ch.run_all()
 

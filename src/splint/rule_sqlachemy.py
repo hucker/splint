@@ -47,7 +47,6 @@ def rule_sql_table_col_name_schema(engine: Engine,
 
     # Get the table's metadata
     metadata = MetaData()
-    metadata.bind = engine
     table_obj = Table(table, metadata, autoload_with=engine)
     actual_columns = set(table_obj.columns.keys())
 
@@ -95,7 +94,6 @@ def rule_sql_table_schema(engine: Engine,
 
     # Get the table's metadata
     metadata = MetaData()
-    metadata.bind = engine
     table_obj = Table(table, metadata, autoload_with=engine)
     actual_columns = {column.name: column.type for column in table_obj.columns}
 
