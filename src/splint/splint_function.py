@@ -80,7 +80,7 @@ class SplintFunction:
 
     def __init__(self, function_:Any,
                  module: str = '',
-                 allowed_exceptions: list[Any] = None,
+                 allowed_exceptions: tuple[type[BaseException],...] = None, # So mypy understands types
                  env: dict[Any, Any] = None,
                  pre_sr_hooks:Any = None,
                  post_sr_hooks:Any = None):
@@ -92,7 +92,8 @@ class SplintFunction:
 
         # Using inspect gets the docstring without the python indent.
         self.doc = inspect.getdoc(function_) or ""
-
+        
+        # Store parameter names so they can be filled from environment
         self.parameters = inspect.signature(function_).parameters
         self.result_hooks = [result_hook_fix_blank_msg]
 
@@ -137,6 +138,11 @@ class SplintFunction:
         if self.weight <= 0.0:
             raise SplintException("Weight must be greater than 0.0")
 
+        # This allows the library user to control how lenient the underlying code is
+        # with exceptions.  This is a pain point in the implementation since we don't
+        # really know what exceptions should be caught and indicated in the results
+        # and which ones should cause the system to exit since this is a library, not
+        # final application code.  
         self.allowed_exceptions = allowed_exceptions or (Exception,)
 
     def __str__(self):
@@ -205,7 +211,7 @@ class SplintFunction:
         # so we need a value to be set for count.
         count = 1
 
-        # If they want cacheing this takes care of it.
+        # If we need values from the result cache, then we can just yield them back
         if self.ttl_minutes * 60 + self.last_ttl_start > time.time():
             yield from self.last_results
             return
