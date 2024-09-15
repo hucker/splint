@@ -45,7 +45,7 @@ def human_readable_size(size_in_bytes: int)->str:
     size_in_bytes = abs(size_in_bytes)
 
     while size_in_bytes >= 2048 and index < len(units) - 1:  # 2048 switch to the next unit at 2.00 exactly
-        size_in_bytes = size_in_bytes / 1024
+        size_in_bytes = size_in_bytes / 1024.0
         index += 1
 
     # If the size_in_bytes was negative, switch it back to negative.
