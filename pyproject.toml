@@ -1,3 +1,5 @@
+#  keyring get PyPiUser hucker233
+
 [tool.poetry]
 name = "splint"
 version = "0.1.0"

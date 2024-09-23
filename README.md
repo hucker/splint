@@ -586,6 +586,15 @@ Python 3.10 to 3.12 and soon to be 3.13.  Python 3.9 was dropped for type hintin
   lint: OK (15.09=setup[1.73]+cmd[13.35] seconds)
 ```
 
+## Pyproject TOML
+
+In order to build the project you need to use will need to use some form of keyring in order to extract
+the required secrets.  Something like:
+
+```shell
+keyring get PyPiUser hucker233
+```
+
 ## Lint
 
 ```text

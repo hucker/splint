@@ -4,6 +4,7 @@ about the file system, file existing, age etc.
 """
 import datetime as dt
 import fnmatch
+import humanize
 from typing import Generator
 
 from fs.base import FS
@@ -24,53 +25,22 @@ def rule_fs_path_exists(fs_obj: OSFS, path_: str) -> Generator[SR, None, None]:
     yield SR(status=fs_obj.exists(path_), msg=f"The path {path_} on {fs_obj.root_path} exists.")
 
 
-def human_readable_size(size_in_bytes: int)->str:
-    """
-    Convert a given size in bytes to a human-readable string format.
-
-    Parameters:
-    size_in_bytes (int): The size in bytes to convert.
-
-    Returns:
-    string: The size in bytes, converted to a human-readable format
-    (e.g. 'bytes', 'KB', 'MB', 'GB', 'TB', 'PB'). The result is
-    rounded to the nearest tenth if it is not in bytes. If the original
-    size was negative, the result is also negative.
-    """
-    units = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB']
-    index = 0
-
-    # Convert negative bytes to positive, and remember if it was negative.
-    is_negative = size_in_bytes < 0
-    size_in_bytes = abs(size_in_bytes)
-
-    while size_in_bytes >= 2048 and index < len(units) - 1:  # 2048 switch to the next unit at 2.00 exactly
-        size_in_bytes = size_in_bytes / 1024.0
-        index += 1
-
-    # If the size_in_bytes was negative, switch it back to negative.
-    size_in_bytes = -size_in_bytes if is_negative else size_in_bytes
-
-    # Special case for bytes (no decimal point is needed)
-    if units[index] == 'bytes':
-        # Special case for 1 byte (singular)
-        if abs(size_in_bytes) == 1:
-            return f"{size_in_bytes} byte"
-
-        # Other cases for bytes (plural)
-        return f"{int(size_in_bytes)} bytes"
-
-    # General case
-    return f"{size_in_bytes:.1f} {units[index]}"
+def human_readable_size(size_in_bytes: int,binary=True) -> str:
+    """ Dump bytes in human-readable form"""
+    return humanize.naturalsize(float(size_in_bytes),binary=binary)
 
 
-def rule_fs_file_within_max_size(filesys: OSFS, path: str, max_file_size: int, skip_if_missing=False):
+def rule_fs_file_within_max_size(filesys: OSFS, 
+                                 path: str, 
+                                 max_file_size: int,
+                                 binary: bool = False,
+                                 skip_if_missing=False):
     """Check if a file exists and its size is within the given max_file_size limit"""
     if not filesys.isfile(path):
         yield SR(status=False, msg=f'File "{path}" does not exist in {filesys.root_path}', skipped=skip_if_missing)
     else:
         file_size = filesys.getsize(path)
-        file_size_str = human_readable_size(file_size)
+        file_size_str = human_readable_size(file_size,binary=binary)
         delta = file_size - max_file_size
         # delta_str = human_readable_size(abs(delta))
         if delta < 0:
@@ -161,7 +131,7 @@ def rule_fs_oldest_file_age(filesys: FS, max_age_minutes: float = 0,
     if isinstance(patterns, str):
         patterns = patterns.split(',')
 
-    now_:dt.datetime = (now__ or dt.datetime.now(dt.timezone.utc)).replace(tzinfo=dt.timezone.utc)
+    now_: dt.datetime = (now__ or dt.datetime.now(dt.timezone.utc)).replace(tzinfo=dt.timezone.utc)
     max_file_age_seconds = dt.timedelta(days=max_age_days,
                                         hours=max_age_hours,
                                         minutes=max_age_minutes,
@@ -184,7 +154,7 @@ def rule_fs_oldest_file_age(filesys: FS, max_age_minutes: float = 0,
 
     try:
         oldest_file = min(files, key=lambda f: filesys.getinfo(f, namespaces=['details']).modified)
-        oldest_file_modified:dt.datetime = filesys.getinfo(oldest_file, namespaces=['details']).modified
+        oldest_file_modified: dt.datetime = filesys.getinfo(oldest_file, namespaces=['details']).modified
         oldest_file_age_seconds = (now_ - oldest_file_modified).total_seconds()
     except FSError as e:
         yield SR(status=False, msg=f"Error during checking file's age: {str(e)}", except_=e)

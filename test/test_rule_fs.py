@@ -248,27 +248,48 @@ def test_bad_max_size(temp_fs):
 
 
 @pytest.mark.parametrize("file_size, expected_output", [
-    (1, "1 byte"),
-    (1024, "1024 bytes"),
-    (1048576, "1024.0 KB"),
-    (1073741824, "1024.0 MB"),
-    (1099511627776, "1024.0 GB"),
-    (1500, "1500 bytes"),
-    (1536000, "1500.0 KB"),
-    (1572864000, "1500.0 MB"),
-    (500, "500 bytes"),
-    (500000, "488.3 KB"),
-    (500000000, "476.8 MB"),
-    (500000000000, "465.7 GB"),
-    (500000000000000, "454.7 TB"),
-    (500000000000000000, "444.1 PB"),
     # Edge case to get plural right
-    (0, "0 bytes"),
+    (0, "0 Bytes"),
+    (1, "1 Byte"),
+    (1024, "1.0 kB"),
+    (1048576, "1.0 MB"),
+    (1073741824, "1.1 GB"),
+    (1099511627776, "1.1 TB"),
+    (1500, "1.5 kB"),
+    (1536000, "1.5 MB"),
+    (1572864000, "1.6 GB"),
+    (500, "500 Bytes"),
+    (500000, "500.0 kB"),
+    (500000000, "500.0 MB"),
+    (500000000000, "500.0 GB"),
+    (500000000000000, "500.0 TB"),
+    (500000000000000000, "500.0 PB"),
 ])
 def test_human_readable_size(file_size, expected_output):
-    for sign in [-1, 1]:
-        output = rule_fs.human_readable_size(sign * file_size)
-        if file_size == 0:
-            assert output == "0 bytes"
-        else:
-            assert output == ('-' if sign == -1 else "") + expected_output
+
+    output = rule_fs.human_readable_size(file_size,binary=False)
+    assert output == expected_output
+
+
+@pytest.mark.parametrize("file_size, expected_output", [
+    # Edge case to get plural right
+    (0, "0 Bytes"),
+    (1, "1 Byte"),
+    (1024, "1.0 KiB"),
+    (1048576, "1.0 MiB"),
+    (1073741824, "1.0 GiB"),
+    (1099511627776, "1.0 TiB"),
+    (1500, "1.5 KiB"),
+    (1536000, "1.5 MiB"),
+    (1572864000, "1.5 GiB"),
+    (500, "500 Bytes"),
+    (500000, "488.3 KiB"),
+    (500000000, "476.8 MiB"),
+    (500000000000, "465.7 GiB"),
+    (500000000000000, "454.7 TiB"),
+    (500000000000000000, "444.1 PiB"),
+])
+def test_human_readable_size_binary(file_size, expected_output):
+
+    output = rule_fs.human_readable_size(file_size,binary=True)
+    assert output == expected_output
