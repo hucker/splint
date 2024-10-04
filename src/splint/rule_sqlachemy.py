@@ -53,9 +53,9 @@ def rule_sql_table_col_name_schema(engine: Engine,
     # Verify expected columns exist
     for column in expected_columns:
         if column in actual_columns:
-            yield SR(status=True, msg=f"Column '{column}' is correctly present in table {table}")
+            yield SR(status=True, msg=f"Column '{column}' is present in table {table}")
         else:
-            yield SR(status=False, msg=f"Missing column in table {table}: {column}")
+            yield SR(status=False,msg=f"Column '{column}' is MISSING in table {table}")
 
     # If extra columns existing in the database is OK then don't check
     if not extra_columns_ok:
@@ -65,7 +65,7 @@ def rule_sql_table_col_name_schema(engine: Engine,
         # over the set (that varies with python version).   For small sets this isnt to terrible
         for column in actual_columns:
             if column in extra_columns:
-                yield SR(status=False, msg=f"Unexpected column in table {table}: {column}")
+                yield SR(status=False, msg=f"Column '{column}' is UNEXPECTED in table {table}")
 
 
 def rule_sql_table_schema(engine: Engine,
