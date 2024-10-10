@@ -5,6 +5,7 @@ be interchangeable.
 """
 
 import pytest
+
 from splint import SplintMarkup
 from splint import splint_format
 
@@ -17,8 +18,8 @@ from splint import splint_format
     (splint_format.TAG_CODE, SplintMarkup().code, "Hello, World!", "<<code>>Hello, World!<</code>>"),
     (splint_format.TAG_PASS, SplintMarkup().pass_, "Hello, World!", "<<pass>>Hello, World!<</pass>>"),
     (splint_format.TAG_FAIL, SplintMarkup().fail, "Hello, World!", "<<fail>>Hello, World!<</fail>>"),
-    (splint_format.TAG_SKIP, SplintMarkup().fail, "Hello, World!", "<<skip>>Hello, World!<</skip>>"),
-    (splint_format.TAG_WARN, SplintMarkup().fail, "Hello, World!", "<<warn>>Hello, World!<</warn>>"),
+    (splint_format.TAG_SKIP, SplintMarkup().skip, "Hello, World!", "<<skip>>Hello, World!<</skip>>"),
+    (splint_format.TAG_WARN, SplintMarkup().warn, "Hello, World!", "<<warn>>Hello, World!<</warn>>"),
     (splint_format.TAG_EXPECTED, SplintMarkup().expected, "Hello, World!", "<<expected>>Hello, World!<</expected>>"),
     (splint_format.TAG_ACTUAL, SplintMarkup().actual, "Hello, World!", "<<actual>>Hello, World!<</actual>>"),
     (splint_format.TAG_RED, SplintMarkup().red, "Hello, World!", "<<red>>Hello, World!<</red>>"),
@@ -32,6 +33,7 @@ from splint import splint_format
 ])
 def test_all_tags(tag, func, input, expected_output):
     assert func(input) == expected_output
+
 
 @pytest.mark.parametrize("markup_func,input,expected_output", [
     (SplintMarkup().bold, "Hello, World!", "Hello, World!"),
@@ -59,8 +61,8 @@ def test_splint_render_text(markup_func, input, expected_output):
     render_text = splint_format.SplintRenderText()
     formatted_input = markup_func(input)
     assert render_text.render(formatted_input) == expected_output
-    
-    
+
+
 @pytest.mark.parametrize("markup_func,input,expected_output", [
     (SplintMarkup().bold, "Hello, World!", "**Hello, World!**"),
     (SplintMarkup().italic, "Hello, World!", "*Hello, World!*"),
@@ -90,7 +92,8 @@ def test_splint_basic_markdown(markup_func, input, expected_output):
     formatted_input = markup_func(input)
     output = markdown_render.render(formatted_input)
     assert output == expected_output
-    
+
+
 @pytest.mark.parametrize("markup_func,input,expected_output", [
     (SplintMarkup().bold, "Hello, World!", "[bold]Hello, World![/bold]"),
     (SplintMarkup().italic, "Hello, World!", "[italic]Hello, World![/italic]"),
@@ -117,6 +120,7 @@ def test_splint_basic_rich(markup_func, input, expected_output):
     formatted_input = markup_func(input)
     output = rich_render.render(formatted_input)
     assert output == expected_output
+
 
 @pytest.mark.parametrize("markup_func,input,expected_output", [
     (SplintMarkup().bold, "Hello, World!", "<b>Hello, World!</b>"),
@@ -145,6 +149,7 @@ def test_splint_basic_html_renderer(markup_func, input, expected_output):
     output = html_renderer.render(formatted_input)
     assert output == expected_output
 
+
 @pytest.mark.parametrize("markup_func, input, expected_output", [
     (SplintMarkup().bold, "Hello, World!", "**Hello, World!**"),
     (SplintMarkup().italic, "Hello, World!", "*Hello, World!*"),
@@ -171,26 +176,26 @@ def test_splint_basic_streamlit_renderer(markup_func, input, expected_output):
     formatted_input = markup_func(input)
     output = streamlit_renderer.render(formatted_input)
     assert output == expected_output
-    
-    
+
+
 @pytest.mark.parametrize("markup_func", [
     SplintMarkup().bold,
     SplintMarkup().italic,
     SplintMarkup().underline,
     SplintMarkup().strikethrough,
     SplintMarkup().code,
-    SplintMarkup().pass_, 
-    SplintMarkup().fail, 
+    SplintMarkup().pass_,
+    SplintMarkup().fail,
     SplintMarkup().expected,
     SplintMarkup().actual,
-    SplintMarkup().red, 
-    SplintMarkup().green, 
-    SplintMarkup().blue, 
+    SplintMarkup().red,
+    SplintMarkup().green,
+    SplintMarkup().blue,
     SplintMarkup().yellow,
     SplintMarkup().orange,
     SplintMarkup().purple,
-    SplintMarkup().black, 
-    SplintMarkup().white, 
+    SplintMarkup().black,
+    SplintMarkup().white,
 ])
 def test_splint_render_text_with_empty_string(markup_func):
     """All markups with null inputs should map to null outputs."""

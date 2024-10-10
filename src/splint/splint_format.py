@@ -92,11 +92,10 @@ class SplintMarkup:
     markdown you will run into issues if you try deeply nest (or even nest) some tags.
        
     """
-     
-    # If you don't like my delimiters pick your own.
-    
 
-    def __init__(self,open_delim:str="<<@>>",close_delim:str="<</@>>"):
+    # If you don't like my delimiters pick your own.
+
+    def __init__(self, open_delim: str = "<<@>>", close_delim: str = "<</@>>"):
         """
         Init only allows you to specify open and close delimiters.
         
@@ -106,19 +105,18 @@ class SplintMarkup:
         """
         self.open_delim = open_delim
         self.close_delim = close_delim
-        
+
         if open_delim == close_delim:
             raise ValueError("Open and close delimiters for markup should not be the same.")
-        
-    def open_tag(self,tag: str) -> str:
-        """if tag is 'red' open tag is <<red>>"""
-        odl = self.open_delim.replace("@",tag)
-        return odl
 
+    def open_tag(self, tag: str) -> str:
+        """if tag is 'red' open tag is <<red>>"""
+        odl = self.open_delim.replace("@", tag)
+        return odl
 
     def close_tag(self, tag: str) -> str:
         """If  tag is 'red' close tag is <</red>>"""
-        cdl = self.close_delim.replace("@",tag)
+        cdl = self.close_delim.replace("@", tag)
         return cdl
 
     def _tag(self, id_, msg):
@@ -153,9 +151,10 @@ class SplintMarkup:
 
     def pass_(self, msg):
         return self._tag('pass', msg)
+
     def warn(self, msg):
         return self._tag('warn', msg)
-    
+
     def skip(self, msg):
         return self._tag('skip', msg)
 
@@ -189,7 +188,7 @@ class SplintAbstractRender(ABC):
     Base class for all splint renderers.  This has a list of all supported tags, the abstract
     render method and a concrete cleanup that removes all unrendered tags.
     """
-    
+
     # List of all known tags.  We need the list of all tags because code will need to run through all
     # tags and remove them if they aren't formatted.
     tags = [TAG_BOLD, TAG_ITALIC, TAG_UNDERLINE, TAG_STRIKETHROUGH, TAG_DATA, TAG_EXPECTED, TAG_ACTUAL, TAG_FAIL,
@@ -197,7 +196,7 @@ class SplintAbstractRender(ABC):
             TAG_WARN, TAG_SKIP]
 
     @abstractmethod
-    def render(self, msg): # pragma: no cover
+    def render(self, msg):  # pragma: no cover
         pass
 
     def cleanup(self, msg):
@@ -254,7 +253,7 @@ class SplintBasicRich(SplintRenderText):
         replacements = {TAG_BOLD: ('[bold]', '[/bold]'),
                         TAG_ITALIC: ('[italic]', '[/italic]'),
                         TAG_UNDERLINE: ('[u]', '[/u]'),
-                        TAG_STRIKETHROUGH:('[strike]','[/strike]'),
+                        TAG_STRIKETHROUGH: ('[strike]', '[/strike]'),
                         TAG_PASS: ('[green]', '[/green]'),
                         TAG_FAIL: ('[red]', '[/red]'),
                         TAG_WARN: ('[orange]', '[/orange]'),
@@ -344,8 +343,8 @@ class SplintBasicHTMLRenderer(SplintRenderText):
         for md, replacement in replacements.items():
             open_tag = fmt.open_tag(md)
             close_tag = fmt.close_tag(md)
-            
-            msg = msg.replace(open_tag,replacement[0]).replace(close_tag,replacement[1])
+
+            msg = msg.replace(open_tag, replacement[0]).replace(close_tag, replacement[1])
 
         # Phase 2 replace all unused tags.
         msg = self.cleanup(msg)
