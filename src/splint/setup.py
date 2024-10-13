@@ -1,7 +1,7 @@
 """Baseline setup file """
 
 # pragma no cover
-from setuptools import find_packages, setup # type: ignore
+from setuptools import find_packages, setup  # type: ignore
 
 # Mostly AI generated setup.
 setup(

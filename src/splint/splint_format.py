@@ -122,66 +122,87 @@ class SplintMarkup:
         return cdl
 
     def _tag(self, id_, msg):
+        """Create a generic tag string like <<code>>x=1<</code>>"""
         return f'{self.open_tag(id_)}{msg}{self.close_tag(id_)}'
 
     def bold(self, msg):
+        """Create bold tag function. """
         return self._tag('b', msg)
 
     def italic(self, msg):
+        """Create italic tag function. """
         return self._tag('i', msg)
 
     def underline(self, msg):
+        """Create underline tag function."""
         return self._tag('u', msg)
 
     def strikethrough(self, msg):
+        """Create strikethrough tag function. """
         return self._tag('s', msg)
 
     def code(self, msg):
+        """Create code tag function. """
         return self._tag('code', msg)
 
     def data(self, msg):
+        """Create data tag function. """
         return self._tag('data', msg)
 
     def expected(self, msg):
+        """Create expected tag function. """
         return self._tag('expected', msg)
 
     def actual(self, msg):
+        """Create actual tag function. """
         return self._tag('actual', msg)
 
     def fail(self, msg):
+        """Create fail tag function. """
         return self._tag('fail', msg)
 
     def pass_(self, msg):
+        """Create pass tag function. """
         return self._tag('pass', msg)
 
     def warn(self, msg):
+        """Create warn tag function. """
         return self._tag('warn', msg)
 
     def skip(self, msg):
+        """Create skip tag funciton. """
         return self._tag('skip', msg)
 
     def red(self, msg):
+        """Create red tag function. """
         return self._tag('red', msg)
 
     def blue(self, msg):
+        """Create blue tag function. """
         return self._tag('blue', msg)
 
     def green(self, msg):
+        """Create green tag function. """
         return self._tag('green', msg)
 
     def yellow(self, msg):
+        """Create yellow tag function. """
         return self._tag('yellow', msg)
 
     def orange(self, msg):
+        """Create orange tag function. """
         return self._tag('orange', msg)
 
     def purple(self, msg):
+        """Create purple tag function. """
         return self._tag('purple', msg)
 
     def black(self, msg):
+        """Create black tag function. """
         return self._tag('black', msg)
 
     def white(self, msg):
+        """Create white tag function. """
         return self._tag('white', msg)
 
 
@@ -199,7 +220,7 @@ class SplintAbstractRender(ABC):
 
     @abstractmethod
     def render(self, msg):  # pragma: no cover
-        pass
+        """Base class render method"""
 
     def cleanup(self, msg):
         """
@@ -227,7 +248,10 @@ class SplintRenderText(SplintAbstractRender):
 
 
 class SplintBasicMarkdown(SplintRenderText):
+    "Markdown render class"
+
     def render(self, msg):
+        """Basic markdown render method that converts tags to markdown"""
         fmt = SplintMarkup()
         replacements = {TAG_BOLD: '**',
                         TAG_ITALIC: '*',
@@ -250,7 +274,10 @@ class SplintBasicMarkdown(SplintRenderText):
 
 
 class SplintBasicRich(SplintRenderText):
+    """Rich render class"""
+
     def render(self, msg):
+        """Basic markdown render method that converts tags to rich formatted code"""
         fmt = SplintMarkup()
         replacements = {TAG_BOLD: ('[bold]', '[/bold]'),
                         TAG_ITALIC: ('[italic]', '[/italic]'),
@@ -281,7 +308,11 @@ class SplintBasicRich(SplintRenderText):
 
 
 class SplintBasicStreamlitRenderer(SplintRenderText):
+    """Streamlit renderer class."""
+
     def render(self, msg):
+        """Basic markdown render method that converts tags to streamlit format strings"""
+
         fmt = SplintMarkup()
         replacements = {
             TAG_BOLD: ('**', '**'),
@@ -317,7 +348,11 @@ class SplintBasicStreamlitRenderer(SplintRenderText):
 
 
 class SplintBasicHTMLRenderer(SplintRenderText):
+    """HTML renderer"""
+
     def render(self, msg):
+        """Basic markdown render method that converts tags to html"""
+
         fmt = SplintMarkup()
         replacements = {
             TAG_BOLD: ('<b>', '</b>'),

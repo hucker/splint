@@ -1,6 +1,8 @@
+"""Sample splint module with check functions"""
+
 import time
 
-import src.splint as splint
+from src import splint
 from splint import SR
 
 

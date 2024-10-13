@@ -4,12 +4,12 @@ about the file system, file existing, age etc.
 """
 import datetime as dt
 import fnmatch
-import humanize
 from typing import Generator
 
+import humanize
 from fs.base import FS
-from fs.osfs import OSFS
 from fs.errors import FSError
+from fs.osfs import OSFS
 
 from .splint_result import SR
 
@@ -25,13 +25,13 @@ def rule_fs_path_exists(fs_obj: OSFS, path_: str) -> Generator[SR, None, None]:
     yield SR(status=fs_obj.exists(path_), msg=f"The path {path_} on {fs_obj.root_path} exists.")
 
 
-def human_readable_size(size_in_bytes: int,binary=True) -> str:
+def human_readable_size(size_in_bytes: int, binary=True) -> str:
     """ Dump bytes in human-readable form"""
-    return humanize.naturalsize(float(size_in_bytes),binary=binary)
+    return humanize.naturalsize(float(size_in_bytes), binary=binary)
 
 
-def rule_fs_file_within_max_size(filesys: OSFS, 
-                                 path: str, 
+def rule_fs_file_within_max_size(filesys: OSFS,
+                                 path: str,
                                  max_file_size: int,
                                  binary: bool = False,
                                  skip_if_missing=False):
@@ -40,7 +40,7 @@ def rule_fs_file_within_max_size(filesys: OSFS,
         yield SR(status=False, msg=f'File "{path}" does not exist in {filesys.root_path}', skipped=skip_if_missing)
     else:
         file_size = filesys.getsize(path)
-        file_size_str = human_readable_size(file_size,binary=binary)
+        file_size_str = human_readable_size(file_size, binary=binary)
         delta = file_size - max_file_size
         # delta_str = human_readable_size(abs(delta))
         if delta < 0:

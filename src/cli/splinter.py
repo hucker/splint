@@ -4,9 +4,10 @@ import json
 import pathlib
 import sys
 
-import splint_api
 import typer
 import uvicorn
+
+import splint_api
 
 s = pathlib.Path('./src').resolve()
 sys.path.insert(0, str(s))
@@ -47,14 +48,14 @@ def pretty_print_json(json_obj):
 
 @app.command()
 def run_checks(
-    module: str = typer.Option(None, '-m', '--mod', help='The module to run rules against.'),
-    pkg: str = typer.Option(None, '--pkg', help='The package to run rules against.'),
-    json_file: str = typer.Option(None, '-j', '--json', help='The JSON file to write results to.'),
-    flat: bool = typer.Option(False, '-f', '--flat', help='Should the output be flat or a hierarchy.'),
-    score: bool = typer.Option(False, '-s', '--score', help='Print the score of the rules.'),
-    api: bool = typer.Option(False, '-a', '--api', help='Start FastAPI.'),
-    port: int = typer.Option(8000, '-p', '--port', help='FastAPI Port'),
-    verbose: bool = typer.Option(False, '-v', '--verbose', help='Enable verbose output.'),
+        module: str = typer.Option(None, '-m', '--mod', help='The module to run rules against.'),
+        pkg: str = typer.Option(None, '--pkg', help='The package to run rules against.'),
+        json_file: str = typer.Option(None, '-j', '--json', help='The JSON file to write results to.'),
+        flat: bool = typer.Option(False, '-f', '--flat', help='Should the output be flat or a hierarchy.'),
+        score: bool = typer.Option(False, '-s', '--score', help='Print the score of the rules.'),
+        api: bool = typer.Option(False, '-a', '--api', help='Start FastAPI.'),
+        port: int = typer.Option(8000, '-p', '--port', help='FastAPI Port'),
+        verbose: bool = typer.Option(False, '-v', '--verbose', help='Enable verbose output.'),
 ):
     """Run Splint checks on a given package or module from command line."""
 

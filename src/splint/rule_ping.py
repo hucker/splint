@@ -5,6 +5,7 @@ This module provides functions for using ping to verify network connectivity.
 """
 
 import ping3
+
 from .splint_result import SR
 
 NO_HOSTS_MSG = "No hosts provided for ping."
@@ -47,8 +48,3 @@ def rule_ping_check(hosts: str | list, timeout_ms: float = 4000.0, skip_on_none=
         except Exception as pe:
             # Document your exception handling logic here
             yield SR(status=False, msg=f"Host {host} not found: {pe}")
-
-        
-
-    
-    

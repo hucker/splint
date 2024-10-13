@@ -2,6 +2,7 @@
 
 import abc
 from typing import Any
+
 from .splint_exception import SplintException
 from .splint_result import SplintResult
 
@@ -78,7 +79,7 @@ class ScoreByFunctionBinary(ScoreStrategy):
         if results is None:
             return 0.0
 
-        score_functions:dict[str,Any] = {}
+        score_functions: dict[str, Any] = {}
 
         for result in results:
             key = f"{result.pkg_name}.{result.module_name}.{result.func_name}".lstrip(
@@ -112,7 +113,7 @@ class ScoreByFunctionMean(ScoreStrategy):
         if results is None:
             return 0.0
 
-        function_results: dict[str,Any] = {}
+        function_results: dict[str, Any] = {}
 
         # Remove any skipped results
         results = [result for result in results if not result.skipped]

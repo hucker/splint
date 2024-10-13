@@ -19,7 +19,6 @@ def rule_path_exists(path_: str) -> Generator[SR, None, None]:
         yield SR(status=False, msg=f"The path {path_} does NOT exist.")
 
 
-
 def rule_stale_files(
         folder: str | pathlib.Path,
         pattern: str | pathlib.Path,
@@ -62,7 +61,7 @@ def rule_stale_files(
                 unit = "seconds"
             age_msg = f"age = {file_age:.2f} {unit} {age_in_seconds=}"
             yield SR(status=False, msg=f"Stale file {filepath} {age_msg}"
-            )
+                     )
         else:
             good_count += 1
 

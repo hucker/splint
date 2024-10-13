@@ -121,7 +121,7 @@ class SplintEnvDataFrame(pd.DataFrame):
     def pop(self, item):
         raise SplintException("Environment DataFrame is immutable, pop is not supported")
 
-    def drop(self, labels=None, axis=0, index=None, columns=None,level=None, inplace=False, errors='raise'):
+    def drop(self, labels=None, axis=0, index=None, columns=None, level=None, inplace=False, errors='raise'):
         raise SplintException("Environment DataFrame is immutable, drop is not supported")
 
     def insert(self, loc, column, value, allow_duplicates=False):

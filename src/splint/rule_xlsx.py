@@ -57,7 +57,7 @@ def _ensure_row_params(row_end, row_start: int):
 
 
 def rule_xlsx_a1_pass_fail(wb: openpyxl.workbook.Workbook,
-                           sheet_name:str | None=None,
+                           sheet_name: str | None = None,
                            desc_col='A',
                            val_col='B',
                            row_start='1',

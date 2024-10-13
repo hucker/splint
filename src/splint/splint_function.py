@@ -15,7 +15,6 @@ from .splint_exception import SplintException
 from .splint_result import SplintResult
 
 
-
 def result_hook_fix_blank_msg(sfunc: "SplintFunction",
                               result: SplintResult) -> SplintResult:
     """Fix the message of a result if it is blank.
@@ -78,12 +77,12 @@ class SplintFunction:
         - __call__(*args, **keywords): Calls the function and gathers result info.
         """
 
-    def __init__(self, function_:Any,
+    def __init__(self, function_: Any,
                  module: str = '',
-                 allowed_exceptions: tuple[type[BaseException],...] = None, # So mypy understands types
+                 allowed_exceptions: tuple[type[BaseException], ...] = None,  # So mypy understands types
                  env: dict[Any, Any] = None,
-                 pre_sr_hooks:Any = None,
-                 post_sr_hooks:Any = None):
+                 pre_sr_hooks: Any = None,
+                 post_sr_hooks: Any = None):
         self.env = env or {}
         self.module = module
         self.function = function_
@@ -92,7 +91,7 @@ class SplintFunction:
 
         # Using inspect gets the docstring without the python indent.
         self.doc = inspect.getdoc(function_) or ""
-        
+
         # Store parameter names so they can be filled from environment
         self.parameters = inspect.signature(function_).parameters
         self.result_hooks = [result_hook_fix_blank_msg]
@@ -113,23 +112,23 @@ class SplintFunction:
             raise SplintException("post_sr_hooks must be a list")
 
         # This should be a class rather than having to repeat yourself.
-        self.tag:str = get_attribute(function_, "tag")
-        self.level:int = get_attribute(function_, "level")
-        self.phase:str = get_attribute(function_, "phase")
-        self.weight:float = get_attribute(function_, "weight")
-        self.skip:bool = get_attribute(function_, "skip")
-        self.ruid:str = get_attribute(function_, "ruid")
-        self.skip_on_none:bool = get_attribute(function_, "skip_on_none")
-        self.fail_on_none:bool = get_attribute(function_, "fail_on_none")
-        self.ttl_minutes:float = get_attribute(function_, "ttl_minutes")
-        self.finish_on_fail:bool = get_attribute(function_, "finish_on_fail")
+        self.tag: str = get_attribute(function_, "tag")
+        self.level: int = get_attribute(function_, "level")
+        self.phase: str = get_attribute(function_, "phase")
+        self.weight: float = get_attribute(function_, "weight")
+        self.skip: bool = get_attribute(function_, "skip")
+        self.ruid: str = get_attribute(function_, "ruid")
+        self.skip_on_none: bool = get_attribute(function_, "skip_on_none")
+        self.fail_on_none: bool = get_attribute(function_, "fail_on_none")
+        self.ttl_minutes: float = get_attribute(function_, "ttl_minutes")
+        self.finish_on_fail: bool = get_attribute(function_, "finish_on_fail")
         self.index = get_attribute(function_, "index")
 
         # Support Time To Live using the return value of time.time.  Resolution of this
         # is on the order of 10e-6 depending on OS.  In my case this is WAY more than I
         # need, and I'm assuming you aren't building a trading system with this, so you don't
         # care about microseconds.
-        self.last_ttl_start:float = 0.0  # this will be compared to time.time() for ttl caching
+        self.last_ttl_start: float = 0.0  # this will be compared to time.time() for ttl caching
         self.last_results: list[SplintResult] = []
 
         if self.weight in [True, False, None]:
@@ -142,7 +141,7 @@ class SplintFunction:
         # with exceptions.  This is a pain point in the implementation since we don't
         # really know what exceptions should be caught and indicated in the results
         # and which ones should cause the system to exit since this is a library, not
-        # final application code.  
+        # final application code.
         self.allowed_exceptions = allowed_exceptions or (Exception,)
 
     def __str__(self):
@@ -182,7 +181,7 @@ class SplintFunction:
             Iterator[SplintResult]:
         """
         # Call the stored function and collect information about the result
-        start_time:float = time.time()
+        start_time: float = time.time()
 
         # Function returns a generator that needs to be iterated over
         args = self._get_parameter_values()
@@ -225,7 +224,7 @@ class SplintFunction:
             if not self.is_generator:
                 # If the function is not a generator, then just call it
                 results = self.function(*args)
-                end_time= time.time()
+                end_time = time.time()
                 if isinstance(results, SplintResult):
                     results = [results]
 

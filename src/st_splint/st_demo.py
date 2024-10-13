@@ -13,27 +13,42 @@ to use most of the major feature groups including:
 
 """
 
-
 import streamlit as st
 
-import src.splint as splint
+from src import splint
 
 st.set_page_config(layout='wide')
 
 
-def color(c,t):
+def color(c, t):
+    """Streamlit color format"""
     return f':{c}[{t}]'
+
+
 def green(text):
-    return color('green',text)
+    """Streamlit green formatter."""
+    return color('green', text)
+
+
 def orange(text):
-    return color('orange',text)
+    """Streamlit orange formatter. """
+    return color('orange', text)
+
+
 def blue(text):
-    return color('blue',text)
+    """Streamlit blue formatter. """
+    return color('blue', text)
+
 
 def red(text):
-    return color('red',text)
+    """Streamlit red formatter. """
+    return color('red', text)
+
+
 def violet(text):
-    return color('violet',text)
+    """Streamlit violet formatter."""
+    return color('violet', text)
+
 
 def display_overview(checker: splint.SplintChecker) -> None:
     """
@@ -61,8 +76,11 @@ def display_overview(checker: splint.SplintChecker) -> None:
     # Display the Markdown table in Streamlit
     st.markdown(markdown_table)
 
+
 def yes_or_none(var):
-    return 'Yes' if bool(var) else  ''
+    """Syntactic sugar."""
+    return 'Yes' if bool(var) else ''
+
 
 def display_results(results: list[splint.SplintResult]):
     """
@@ -71,7 +89,8 @@ def display_results(results: list[splint.SplintResult]):
     Args:
         results: list of splint results
     """
-    headers = ['Count', 'Status', 'Warn', 'Skipped', 'Tag', 'Level', 'Phase', 'RUID', 'Module Name', 'Function Name', 'Message']
+    headers = ['Count', 'Status', 'Warn', 'Skipped', 'Tag', 'Level', 'Phase', 'RUID', 'Module Name', 'Function Name',
+               'Message']
 
     # Start with the table headers and separators created as f-strings
     table = [
@@ -89,7 +108,7 @@ def display_results(results: list[splint.SplintResult]):
         table.append(
             f"| {count} | {c_f(r.status)} | {orange(yes_or_none(r.warn_msg))} | {violet(yes_or_none(r.skipped))}| {blue(r.tag)} | {r.level} | {r.phase} | {r.ruid} | {c_f(r.module_name)} | {c_f(r.func_name)} |{c_f(r.msg)} |")
 
-    # Convert the list of rows into a single string with line breaks
+        # Convert the list of rows into a single string with line breaks
     markdown_table = "\n".join(table)
 
     st.markdown(markdown_table)
@@ -155,12 +174,9 @@ class SplintStreamlitProgressBar(splint.SplintProgress):
         as a result which is the detailed results.  Presumably some progress systems
         would watch the result metadata while others would be content with the message.
         """
-        if max_count <= 0:
-            max_count = 1
-        if current_count > max_count:
-            current_count = max_count
-        percent = current_count / float(max_count)
-        percent = max(0, min(1.0, percent))
+        max_count = max(max_count, 1)
+        current_count = min(current_count, max_count)
+        percent = min(max(0, current_count / float(max_count)), 1.0)
         self.progress_bar.progress(percent, msg)
 
 

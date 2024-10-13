@@ -2,13 +2,14 @@
 
 import itertools
 import traceback
-from typing import Any
 from collections import Counter
 from dataclasses import asdict, dataclass, field
 from operator import attrgetter
+from typing import Any
 
 from .splint_exception import SplintException
 from .splint_format import SplintMarkup
+
 
 @dataclass
 class SplintResult:
@@ -49,9 +50,9 @@ class SplintResult:
     msg: str = ""
     info_msg: str = ""
     warn_msg: str = ""
-    
+
     msg_rendered = ""
-    
+
     # Function Info
     doc: str = ""
 
@@ -59,7 +60,7 @@ class SplintResult:
     runtime_sec: float = 0.0
 
     # Error Info
-    except_: Exception|None = None
+    except_: Exception | None = None
     traceback: str = ""
     skipped: bool = False
 
@@ -80,9 +81,9 @@ class SplintResult:
     # Bad parameters
     skip_on_none: bool = False
     fail_on_none: bool = False
-    
+
     mku = SplintMarkup()
-    
+
     def __post_init__(self):
         # Automatically grab the traceback for better debugging.
         if self.except_ is not None and not self.traceback:
@@ -247,7 +248,7 @@ def group_by(results: list[SplintResult], keys: list[str]) -> dict[str, Any]:
 
     # Sort and group by the first key
     results = sorted(results, key=key_func)
-    group_results: list[tuple[str,Any]] = [(k, list(g)) for k, g in itertools.groupby(results, key=key_func)]
+    group_results: list[tuple[str, Any]] = [(k, list(g)) for k, g in itertools.groupby(results, key=key_func)]
 
     # Recursively group by the remaining keys
     if len(keys) > 1:

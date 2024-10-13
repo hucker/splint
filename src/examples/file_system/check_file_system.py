@@ -1,4 +1,5 @@
-import splint.rule_files as rule_files
+"""Sample splint module with check functions"""
+from splint import rule_files
 from src import splint
 
 

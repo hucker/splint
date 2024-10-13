@@ -217,7 +217,9 @@ async def check_phase(phases: str) -> dict:
     matched_funcs = [func for func in __splint_checker.collected if func.phase in phases]
     return run_matched(matched_funcs, f"{phases=}")
 
+
 @app.get("/apple-touch-icon-precomposed.png")
 @app.get("/apple-touch-icon.png")
 def get_apple_touch_icon():
+    """Return something for an icon"""
     return FileResponse('apple_touch_icon.png')  # assumes you have an "images" directory your icon is located there
