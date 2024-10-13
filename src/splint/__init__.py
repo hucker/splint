@@ -6,8 +6,6 @@ from .rule_files import rule_large_files  # noqa: F401
 from .rule_files import rule_max_files  # noqa: F401
 from .rule_files import rule_path_exists  # noqa: F401
 from .rule_files import rule_stale_files  # noqa: F401
-from .rule_webapi import rule_url_200  # noqa: F401
-from .rule_webapi import rule_web_api  # noqa: F401
 from .splint_attribute import attributes  # noqa: F401
 from .splint_attribute import get_attribute  # noqa: F401
 # from .splint_attribute import _convert_to_minutes # noqa:F401
@@ -61,6 +59,21 @@ from .splint_format import SplintBasicMarkdown
 from .splint_format import SplintBasicRich
 from .splint_format import SplintBasicHTMLRenderer
 from .splint_format import SplintBasicStreamlitRenderer
+
+# webapi using requests
+try:
+    import requests
+    from .rule_webapi import rule_url_200  # noqa: F401
+    from .rule_webapi import rule_web_api  # noqa: F401
+except ImportError:
+    pass
+
+# ping rules
+try:
+    import ping3
+    from .rule_ping import rule_ping_check  # noqa: F401
+except ImportError:
+    pass
 
 # dataframe rules
 try:

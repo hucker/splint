@@ -1,4 +1,3 @@
-import pytest
 
 from src import splint
 from src.splint.rule_webapi import is_mismatch
@@ -26,48 +25,59 @@ def test_bad_urls():
         assert not result.status
 
 
-def test_bad_web_api():
-    @splint.attributes(tag="tag")
-    def check_rule1():
-        yield from splint.rule_web_api(url='https://swapi.dev/api/mylittepony',
-                                       json_d={'name': 'Luke Skywalker'})
 
-    # This will fail because the API request will fail
-    for result in check_rule1():
-        assert not result.status
+def test_missing_web_api():
 
-    # This runs the same test but tells that it expects a 404.  More exhaustive testing
-    # could be performed here, but  we aren't testing requests.  This shows that we can
-    # detect status from
+    # Try to get a non existent webapi end point
     @splint.attributes(tag="tag")
     def check_rule2():
-        yield from splint.rule_web_api(url='https://swapi.dev/api/mylittepony',
+        yield from splint.rule_web_api(url='https://httpbin.org/json1',
                                        json_d={'name': 'Luke Skywalker'},
-                                       expected_response=404)
+                                       expected_response=404,
+                                       timeout_sec=3)
 
     for result in check_rule2():
         assert result.status
 
 
-@pytest.mark.skip(reason="The API was shut down so it always 404s")
+
 def test_web_api():
+    expected_json = {
+        "slideshow": {
+            "author": "Yours Truly",
+            "date": "date of publication",
+            "slides": [
+                {
+                    "title": "Wake up to WonderWidgets!",
+                    "type": "all"
+                },
+                {
+                    "items": [
+                        "Why <em>WonderWidgets</em> are great",
+                        "Who <em>buys</em> WonderWidgets"
+                    ],
+                    "title": "Overview",
+                    "type": "all"
+                }
+            ],
+            "title": "Sample Slide Show"
+        }
+    }
     @splint.attributes(tag="tag")
     def check_rule1():
-        yield from splint.rule_web_api(url='https://swapi.dev/api/people/1',
-                                       json_d={'name': 'Luke Skywalker', 'height': '172', 'mass': '77'})
-
-    @splint.attributes(tag="tag")
-    def check_rule_bad_mass():
-        yield from splint.rule_web_api(url='https://swapi.dev/api/people/1',
-                                       json_d={'name': 'Luke Skywalker', 'height': '172', 'mass': '78'})
-
-    for result in check_rule_bad_mass():
-        assert not result.status
+        yield from splint.rule_web_api(url='https://httpbin.org/json',
+                                       json_d=expected_json,
+                                       timeout_sec=10)
+    
 
     for result in check_rule1():
         assert result.status
-
-
+    
+    # Now make it fail
+    expected_json["slideshow"]["author"] = "Chuck"
+    for result in check_rule1():
+        assert not result.status
+        
 def convert_integers_to_strings(d):
     """This takes my integer test dictionaries and turns them into strings for test purposes"""
     if not d:

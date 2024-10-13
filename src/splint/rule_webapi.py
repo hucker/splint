@@ -61,28 +61,33 @@ def is_mismatch(dict1, dict2):
     return None  # Return None if it is a subset.
 
 
-def rule_web_api(url: str, json_d: dict, timeout_sec=5, expected_response=200):
-    """Simple rule check to verify that URL is active."""
-    response = requests.get(url, timeout=timeout_sec)
+def rule_web_api(url: str, json_d: dict, timeout_sec=5, expected_response=200, timeout_expected=False):
+    """Simple rule check to verify that URL is active and handles timeouts."""
 
-    if response.status_code != expected_response:
-        yield SR(status=False, msg=f"URL {url} returned {response.status_code}")
-        return
+    try:
 
-    # This handles an expected failure by return true but not checking the json
-    if expected_response != 200:
-        yield SR(status=True,
-                 msg=f"URL {url} returned {response.status_code}, no JSON comparison needed.")
-        return
+        response = requests.get(url, timeout=timeout_sec)
 
-    response_json: dict = response.json()
-    # d_status = verify_dicts(response_json, json_d)
+        if response.status_code != expected_response:
+            yield SR(status=False, msg=f"URL {url} returned {response.status_code}")
+            return
 
-    d_status = is_mismatch(json_d, response_json)
+        # This handles an expected failure by return true but not checking the json
+        if expected_response != 200:
+            yield SR(status=True,
+                     msg=f"URL {url} returned {response.status_code}, no JSON comparison needed.")
+            return
 
-    if d_status is None:
-        yield SR(status=True,
-                 msg=f"URL {url} returned the expected JSON {json_d}")
-    else:
-        yield SR(status=False,
-                 msg=f"URL {url} did not match at key {d_status}")
+        response_json: dict = response.json()
+        # d_status = verify_dicts(response_json, json_d)
+
+        d_status = is_mismatch(json_d, response_json)
+
+        if d_status is None:
+            yield SR(status=True,
+                     msg=f"URL {url} returned the expected JSON {json_d}")
+        else:
+            yield SR(status=False,
+                     msg=f"URL {url} did not match at key {d_status}")
+    except (requests.exceptions.ReadTimeout, requests.exceptions.Timeout):
+        yield SR(status=timeout_expected, msg=f"URL {url} timed out.")
