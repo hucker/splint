@@ -17,7 +17,7 @@ from .splint_rc import SplintRC
 from .splint_result import SplintResult
 from .splint_ruid import empty_ruids, ruid_issues, valid_ruids
 from .splint_score import ScoreByResult, ScoreStrategy
-
+from .splint_format import SplintRenderText,SplintAbstractRender
 
 # pylint: disable=R0903
 class SplintProgress(ABC):
@@ -234,6 +234,7 @@ class SplintChecker:
             score_strategy: ScoreStrategy | None = None,
             rc: SplintRC | None = None,
             env: dict[str, Any] | None = None,
+            renderer:SplintAbstractRender=None,
             abort_on_fail=False,
             abort_on_exception=False,
             auto_setup: bool = False,
@@ -274,7 +275,11 @@ class SplintChecker:
 
         # Allow an RC object to be specified.
         self.rc = rc
-
+        
+        # In order to support rendered output a render object must be provided
+        # if none are provided we create one
+        self.renderer = renderer or SplintRenderText()
+        
         # If we are provided with an environment we save it off but first wrap it in
         # a class that guards reasonably against writes to the underlying environment
         # data.
@@ -638,6 +643,11 @@ class SplintChecker:
                                        self.function_count,
                                        f"Func Start {function_.function_name}")
                 for result in function_():
+                    
+                    # Render the message if needed.  The render happens right before it is yielded so it "knows" as 
+                    # much as possible at this point.
+                    result.msg_rendered = result.msg if not self.renderer else self.renderer.render(result.msg)
+                    
                     yield result
 
                     # Check early exits

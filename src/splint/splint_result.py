@@ -8,7 +8,7 @@ from dataclasses import asdict, dataclass, field
 from operator import attrgetter
 
 from .splint_exception import SplintException
-
+from .splint_format import SplintMarkup
 
 @dataclass
 class SplintResult:
@@ -49,7 +49,9 @@ class SplintResult:
     msg: str = ""
     info_msg: str = ""
     warn_msg: str = ""
-
+    
+    msg_rendered = ""
+    
     # Function Info
     doc: str = ""
 
@@ -78,7 +80,9 @@ class SplintResult:
     # Bad parameters
     skip_on_none: bool = False
     fail_on_none: bool = False
-
+    
+    mku = SplintMarkup()
+    
     def __post_init__(self):
         # Automatically grab the traceback for better debugging.
         if self.except_ is not None and not self.traceback:

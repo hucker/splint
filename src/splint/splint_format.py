@@ -100,7 +100,9 @@ class SplintMarkup:
         Init only allows you to specify open and close delimiters.
         
         The assumption is that you want markup that looks like <<bold>> <</bold>> and this
-        defaults to that.  But if you don't like the <<>> then you can change it.
+        __init__ defaults to those delimiters.  
+        
+        If you don't like the <<>> then you can change it.
         
         """
         self.open_delim = open_delim
@@ -111,12 +113,12 @@ class SplintMarkup:
 
     def open_tag(self, tag: str) -> str:
         """if tag is 'red' open tag is <<red>>"""
-        odl = self.open_delim.replace("@", tag)
+        odl = self.open_delim.replace("@", tag.strip())
         return odl
 
     def close_tag(self, tag: str) -> str:
         """If  tag is 'red' close tag is <</red>>"""
-        cdl = self.close_delim.replace("@", tag)
+        cdl = self.close_delim.replace("@", tag.strip())
         return cdl
 
     def _tag(self, id_, msg):

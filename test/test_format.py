@@ -9,6 +9,9 @@ import pytest
 from splint import SplintMarkup
 from splint import splint_format
 
+def test_format_exc():
+    with pytest.raises(ValueError):
+        _ = SplintMarkup(open_delim='<@>', close_delim='<@>')
 
 @pytest.mark.parametrize("tag,func,input,expected_output", [
     (splint_format.TAG_BOLD, SplintMarkup().bold, "Hello, World!", "<<b>>Hello, World!<</b>>"),

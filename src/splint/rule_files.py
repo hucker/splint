@@ -13,7 +13,11 @@ from .splint_result import SR
 
 def rule_path_exists(path_: str) -> Generator[SR, None, None]:
     """Simple rule to check for a file path."""
-    yield SR(status=pathlib.Path(path_).exists(), msg=f"The path {path_} exists.")
+    if pathlib.Path(path_).exists():
+        yield SR(status=True, msg=f"The path {path_} doest exist.")
+    else:
+        yield SR(status=False, msg=f"The path {path_} does NOT exist.")
+
 
 
 def rule_stale_files(
@@ -56,9 +60,8 @@ def rule_stale_files(
             else:
                 file_age = file_age_in_seconds
                 unit = "seconds"
-            yield SR(
-                status=False,
-                msg=f"Stale file {filepath} age = {file_age:.2f} {unit} {age_in_seconds=}"
+            age_msg = f"age = {file_age:.2f} {unit} {age_in_seconds=}"
+            yield SR(status=False, msg=f"Stale file {filepath} {age_msg}"
             )
         else:
             good_count += 1
