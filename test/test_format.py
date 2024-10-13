@@ -119,7 +119,7 @@ def test_splint_basic_markdown(markup_func, input, expected_output):
     (SplintMarkup().white, "Hello, World!", "[white]Hello, World![/white]"),
 ])
 def test_splint_basic_rich(markup_func, input, expected_output):
-    rich_render = splint_format.SplintBasicRich()
+    rich_render = splint_format.SplintBasicRichRenderer()
     formatted_input = markup_func(input)
     output = rich_render.render(formatted_input)
     assert output == expected_output

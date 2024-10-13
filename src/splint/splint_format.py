@@ -205,6 +205,12 @@ class SplintMarkup:
         """Create white tag function. """
         return self._tag('white', msg)
 
+# Create in instance of the mark up class that can easily be used.  This instance
+# is a shorthand that makes writing f-strings more compact and have access to a global
+# markup formatter.  I have no thought that there will be multiple markups running at
+# the same time, though I can image multiple renderers running at the same time, the
+# obvious example being writing to a log file and a web interface or markdown file.
+SM = SplintMarkup()
 
 class SplintAbstractRender(ABC):
     """
@@ -273,7 +279,7 @@ class SplintBasicMarkdown(SplintRenderText):
         return self.cleanup(msg)
 
 
-class SplintBasicRich(SplintRenderText):
+class SplintBasicRichRenderer(SplintRenderText):
     """Rich render class"""
 
     def render(self, msg):

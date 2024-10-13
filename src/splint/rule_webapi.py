@@ -15,6 +15,7 @@ import requests
 from requests.exceptions import RequestException
 
 from .splint_result import SR
+from .splint_format import SM
 
 
 def rule_url_200(urls, expected_status=200, timeout_sec=5):
@@ -23,17 +24,19 @@ def rule_url_200(urls, expected_status=200, timeout_sec=5):
     for url in urls:
         try:
             response = requests.get(url, timeout=timeout_sec)
+            url_str = SM.code(url)
+            code_str = SM.code(response.status_code)
 
             if response.status_code == expected_status:
-                yield SR(status=True, msg=f"URL {url} returned {response.status_code}")
+                yield SR(status=True, msg=f"URL {url_str} returned {code_str}")
             else:
                 yield SR(
                     status=response.status_code == expected_status,
-                    msg=f"URL {url} returned {response.status_code}",
+                    msg=f"URL {url_str} returned {code_str}",
                 )
 
         except RequestException as ex:
-            yield SR(status=False, msg=f"URL {url} exception.", except_=ex)
+            yield SR(status=False, msg=f"URL{SM.code(url)} exception.", except_=ex)
 
 
 def is_mismatch(dict1, dict2):
@@ -69,13 +72,13 @@ def rule_web_api(url: str, json_d: dict, timeout_sec=5, expected_response=200, t
         response = requests.get(url, timeout=timeout_sec)
 
         if response.status_code != expected_response:
-            yield SR(status=False, msg=f"URL {url} returned {response.status_code}")
+            yield SR(status=False, msg=f"URL {SM.code(url)} returned {SM.code(response.status_code)}")
             return
 
         # This handles an expected failure by return true but not checking the json
         if expected_response != 200:
             yield SR(status=True,
-                     msg=f"URL {url} returned {response.status_code}, no JSON comparison needed.")
+                     msg=f"URL {SM.code(url)} returned {SM.code(response.status_code)}, no JSON comparison needed.")
             return
 
         response_json: dict = response.json()
@@ -85,9 +88,9 @@ def rule_web_api(url: str, json_d: dict, timeout_sec=5, expected_response=200, t
 
         if d_status is None:
             yield SR(status=True,
-                     msg=f"URL {url} returned the expected JSON {json_d}")
+                     msg=f"URL {SM.code(url)} returned the expected JSON {SM.code(json_d)}")
         else:
             yield SR(status=False,
-                     msg=f"URL {url} did not match at key {d_status}")
+                     msg=f"URL {SM.code(url)} did not match at key {d_status}")
     except (requests.exceptions.ReadTimeout, requests.exceptions.Timeout):
-        yield SR(status=timeout_expected, msg=f"URL {url} timed out.")
+        yield SR(status=timeout_expected, msg=f"URL {SM.code(url)} timed out.")

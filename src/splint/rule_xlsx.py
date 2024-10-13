@@ -4,6 +4,7 @@ import pandas as pd
 
 from .splint_exception import SplintException
 from .splint_result import SR
+from .splint_format import SM
 from .splint_util import str_to_bool
 
 SHEET1 = "Sheet1"
@@ -97,9 +98,9 @@ def rule_xlsx_a1_pass_fail(wb: openpyxl.workbook.Workbook,
             desc = ""
 
         if str_to_bool(value):
-            yield SR(status=True, msg=f"{desc}-Passed")
+            yield SR(status=True, msg=f"{SM.expected(desc)}-Passed")
         else:
-            yield SR(status=False, msg=f"{desc}-Failed")
+            yield SR(status=False, msg=f"{SM.expected(desc)}-Failed")
 
 
 def rule_xlsx_df_pass_fail(df: pd.DataFrame, desc_col: str, val_col: str, skip_on_none=False):
@@ -116,19 +117,19 @@ def rule_xlsx_df_pass_fail(df: pd.DataFrame, desc_col: str, val_col: str, skip_o
         if pd.isnull(row_dict[val_col]):
             if skip_on_none:
                 yield SR(status=None, skipped=True,
-                         msg=f"Null value detected in column={val_col}")
+                         msg=f"Null value detected in column={SM.expected(val_col)}")
             else:
                 yield SR(status=False,
-                         msg=f"Null value detected in column={val_col}")
+                         msg=f"Null value detected in column={SM.expected(val_col)}")
             continue
 
         if pd.isnull(row_dict[desc_col]):
             if skip_on_none:
                 yield SR(status=None, skipped=True,
-                         msg=f"Null description detected in column={desc_col}")
+                         msg=f"Null description detected in column={SM.expected(desc_col)}")
             else:
                 yield SR(status=False,
-                         msg=f"Null description detected in column={desc_col}")
+                         msg=f"Null description detected in column={SM.expected(desc_col)}")
             continue
 
         description = row_dict[desc_col]

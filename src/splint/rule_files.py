@@ -9,14 +9,16 @@ from typing import Generator
 
 from .splint_exception import SplintException
 from .splint_result import SR
+from .splint_format import SM
 
 
 def rule_path_exists(path_: str) -> Generator[SR, None, None]:
     """Simple rule to check for a file path."""
+    path_str = SM.code(path_)
     if pathlib.Path(path_).exists():
-        yield SR(status=True, msg=f"The path {path_} doest exist.")
+        yield SR(status=True, msg=f"The path {path_str} doest exist.")
     else:
-        yield SR(status=False, msg=f"The path {path_} does NOT exist.")
+        yield SR(status=False, msg=f"The path {path_str} does NOT exist.")
 
 
 def rule_stale_files(
@@ -60,7 +62,7 @@ def rule_stale_files(
                 file_age = file_age_in_seconds
                 unit = "seconds"
             age_msg = f"age = {file_age:.2f} {unit} {age_in_seconds=}"
-            yield SR(status=False, msg=f"Stale file {filepath} {age_msg}"
+            yield SR(status=False, msg=f"Stale file {SM.code(filepath)} {SM.code(age_msg)}"
                      )
         else:
             good_count += 1
@@ -68,11 +70,11 @@ def rule_stale_files(
     # Nothing to check
     if count == 0:
         yield SR(status=no_files_pass_status,
-                 msg=f"No files found matching {pattern} in {folder}.")
+                 msg=f"No files found matching {SM.code(pattern)} in {SM.code(folder)}.")
 
     # Everything OK, provide some info
     elif count == good_count:
-        yield SR(status=True, msg=f"All {good_count} file(s) are not not stale.")
+        yield SR(status=True, msg=f"All {SM.code(good_count)} file(s) are not not stale.")
 
 
 def rule_large_files(folder: str,
@@ -92,11 +94,11 @@ def rule_large_files(folder: str,
         if size_bytes > max_size:
             yield SR(
                 status=False,
-                msg=f"Large file {filepath}, {size_bytes} bytes, exceeds limit of {max_size} bytes",
+                msg=f"Large file {SM.code(filepath)}, {SM.code(size_bytes)} bytes, exceeds limit of {SM.code(max_size)} bytes",
             )
     if count == 0:
         yield SR(status=no_files_pass_status,
-                 msg=f"No files found matching {pattern} in {folder}.")
+                 msg=f"No files found matching {SM.code(pattern)} in {SM.code(folder)}.")
 
 
 def rule_max_files(folders: list, max_files: list | int, pattern: str = '*'):
@@ -111,7 +113,7 @@ def rule_max_files(folders: list, max_files: list | int, pattern: str = '*'):
         max_files = [max_files] * len(folders)
 
     if len(folders) != len(max_files):
-        raise SplintException("Number of folders and max_files must be the same.")
+        raise SplintException(f"Number of folders and max_files {max_files} must be the same.")
 
     for folder, max_file in zip(folders, max_files):
         count = 0
@@ -121,7 +123,7 @@ def rule_max_files(folders: list, max_files: list | int, pattern: str = '*'):
 
         if count <= max_file:
             yield SR(status=True,
-                     msg=f"Folder {folder} contains less than or equal to {max_file} files.")
+                     msg=f"Folder {SM.code(folder)} contains less than or equal to {SM.code(max_file)} files.")
         else:
             yield SR(status=False,
-                     msg=f"Folder {folder} contains greater than {max_file} files.")
+                     msg=f"Folder {SM.code(folder)} contains greater than {SM.code(max_file)} files.")

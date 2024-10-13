@@ -60,7 +60,7 @@ def test_row_col_pass_fail_with_sheet(sheet, desc_col, val_col, row_start, expec
 
     # Verify that we got the status correct and that the messages are correct
     assert results[0].status is expected_status
-    assert results[0].msg == expected_msg
+    assert results[0].msg_rendered == expected_msg
 
 
 @pytest.mark.parametrize('sheet, desc_col, val_col, row_start, expected_status, expected_msg', testdata)
@@ -76,7 +76,7 @@ def test_row_col_pass_fail_with_no_sheet(sheet, desc_col, val_col, row_start, ex
 
     # Verify that we got the status correct and that the messages are correct
     assert results[0].status is expected_status
-    assert results[0].msg == expected_msg
+    assert results[0].msg_rendered == expected_msg
 
 
 @pytest.mark.parametrize('sheet, desc_col, val_col, row, expected_status, expected_msg', testdata)
@@ -95,7 +95,7 @@ def test_row_col_pass_fail_with_sheet_from_env(sheet, desc_col, val_col, row, ex
 
     # Verify that we got the status correct and that the messages are correct
     assert results[0].status is expected_status
-    assert results[0].msg == expected_msg
+    assert results[0].msg_rendered == expected_msg
 
 
 def test_row_col_pass_fail_with_auto_detect():

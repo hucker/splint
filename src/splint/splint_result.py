@@ -82,7 +82,7 @@ class SplintResult:
     skip_on_none: bool = False
     fail_on_none: bool = False
 
-    mku = SplintMarkup()
+    mu = SplintMarkup()
 
     def __post_init__(self):
         # Automatically grab the traceback for better debugging.

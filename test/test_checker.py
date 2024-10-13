@@ -2,6 +2,7 @@
 import pytest
 
 from src import splint
+from splint import SM
 
 
 @pytest.fixture
@@ -641,3 +642,56 @@ def test_auto_ruids():
     assert results[0].ruid != results[1].ruid
     assert results[0].func_name != results[1].func_name
     assert {results[0].ruid, results[1].ruid} == {'__ruid__0001', '__ruid__0002'}
+
+
+
+@pytest.mark.parametrize("renderer,expected", [
+    (None, "It works1 hello"),
+    (splint.SplintBasicMarkdown(), "It works1 `hello`"),
+    (splint.SplintRenderText(), "It works1 hello"),
+    (splint.SplintBasicStreamlitRenderer(), "It works1 `hello`"),    
+    (splint.SplintBasicRichRenderer(), "It works1 hello"),
+    (splint.SplintBasicHTMLRenderer(), "It works1 <code>hello</code>"),
+])
+def test_check_render_p(renderer, expected):
+    """
+    Check that the rendering works as expected for each type at the system level.
+    
+    These renderers are test in more detail in their unit tests.  This just shows that
+    the generated text matches that of the rendered that is configured.
+    """
+    
+    @splint.attributes(tag="t1", level=1, phase='p1')
+    def render_func1():
+        yield splint.SplintResult(status=True, msg=f"It works1 {SM.code('hello')}")
+
+    rfunc1 = splint.SplintFunction(render_func1)
+    ch = splint.SplintChecker(check_functions=[rfunc1], auto_setup=True, renderer=renderer)
+    results = ch.run_all()
+
+    assert len(results) == 1
+    assert results[0].status == True
+    assert results[0].msg == "It works1 <<code>>hello<</code>>"
+    assert results[0].msg_rendered == expected
+    
+@pytest.mark.parametrize("renderer,expected", [
+    (None, "It works1 hello"),
+    (splint.SplintRenderText(), "It works1 hello"),
+    (splint.SplintBasicMarkdown(), "It works1 hello"),
+    (splint.SplintBasicStreamlitRenderer(), "It works1 :red[hello]"),    
+    (splint.SplintBasicRichRenderer(), "It works1 [red]hello[/red]"),
+    (splint.SplintBasicHTMLRenderer(),  """It works1 <span style="color:red">hello</span>"""),
+])
+def test_check_render_color(renderer, expected):
+    @splint.attributes(tag="t1", level=1, phase='p1')
+    def render_func1():
+        yield splint.SplintResult(status=True, msg=f"It works1 {SM.red('hello')}")
+
+    rfunc1 = splint.SplintFunction(render_func1)
+    ch = splint.SplintChecker(check_functions=[rfunc1], auto_setup=True, renderer=renderer)
+    results = ch.run_all()
+
+    assert len(results) == 1
+    assert results[0].status == True
+    assert results[0].msg == "It works1 <<red>>hello<</red>>"
+    assert results[0].msg_rendered == expected
