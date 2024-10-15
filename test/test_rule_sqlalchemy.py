@@ -64,20 +64,20 @@ def engine_alltypes():
         (
                 ['id', 'name', 'email', 'age'],
                 [
-                    splint.SplintResult(status=True, msg="Column 'id' is present in table users"),
-                    splint.SplintResult(status=True, msg="Column 'name' is present in table users"),
-                    splint.SplintResult(status=True, msg="Column 'email' is present in table users"),
-                    splint.SplintResult(status=True, msg="Column 'age' is present in table users")
+                    splint.SplintResult(status=True, msg="Column <<code>>id<</code>> is present in table <<code>>users<</code>>"),
+                    splint.SplintResult(status=True, msg="Column <<code>>name<</code>> is present in table <<code>>users<</code>>"),
+                    splint.SplintResult(status=True, msg="Column <<code>>email<</code>> is present in table <<code>>users<</code>>"),
+                    splint.SplintResult(status=True, msg="Column <<code>>age<</code>> is present in table <<code>>users<</code>>")
                 ]
         ),
         (
                 ['id', 'name', 'email', 'age', 'unexpected'],
                 [
-                    splint.SplintResult(status=True, msg="Column 'id' is present in table users"),
-                    splint.SplintResult(status=True, msg="Column 'name' is present in table users"),
-                    splint.SplintResult(status=True, msg="Column 'email' is present in table users"),
-                    splint.SplintResult(status=True, msg="Column 'age' is present in table users"),
-                    splint.SplintResult(status=False, msg="Column 'unexpected' is MISSING in table users")
+                    splint.SplintResult(status=True, msg="Column <<code>>id<</code>> is present in table <<code>>users<</code>>"),
+                    splint.SplintResult(status=True, msg="Column <<code>>name<</code>> is present in table <<code>>users<</code>>"),
+                    splint.SplintResult(status=True, msg="Column <<code>>email<</code>> is present in table <<code>>users<</code>>"),
+                    splint.SplintResult(status=True, msg="Column <<code>>age<</code>> is present in table <<code>>users<</code>>"),
+                    splint.SplintResult(status=False, msg="Column <<code>>unexpected<</code>> is MISSING in table <<code>>users<</code>>")
                 ]
         ),
     ],
@@ -85,11 +85,12 @@ def engine_alltypes():
 def test_rule_sql_table_schema(engine, expected_columns, expected_results):
     # Call the function with the expected columns list
     results = list(splint.rule_sql_table_col_name_schema(engine, 'users', expected_columns))
+     
+    for e, r in zip(results, expected_results):
+        assert e.status == r.status
+        assert r.msg == e.msg
+        assert r.status == e.status
 
-    # NOTE: This is a bit tricky, you would think you could just compare the lists, but the code that runs
-    #       the rule fills in other low level details that we aren't concerned with
-    bools = list(r.msg == e.msg and r.status == e.status for e, r in zip(results, expected_results))
-    assert all(bools)
 
 
 @pytest.mark.parametrize(
@@ -98,17 +99,17 @@ def test_rule_sql_table_schema(engine, expected_columns, expected_results):
         (
                 ['name', 'email', 'age'],
                 [
-                    splint.SplintResult(status=True, msg="Column 'name' is correctly present in table users"),
-                    splint.SplintResult(status=True, msg="Column 'email' is correctly present in table users"),
-                    splint.SplintResult(status=True, msg="Column 'age' is correctly present in table users")
+                    splint.SplintResult(status=True, msg="Column <<code>>name<</code>> is correctly present in table <<code>>users<</code>>"),
+                    splint.SplintResult(status=True, msg="Column <<code>>email<</code>> is correctly present in table <<code>>users<</code>>"),
+                    splint.SplintResult(status=True, msg="Column <<code>>age<</code>> is correctly present in table <<code>>users<</code>>")
                 ]
         ),
         (
                 ['id', 'name', 'email'],
                 [
-                    splint.SplintResult(status=True, msg="Column 'id' is correctly present in table users"),
-                    splint.SplintResult(status=True, msg="Column 'name' is correctly present in table users"),
-                    splint.SplintResult(status=True, msg="Column 'email' is correctly present in table users"),
+                    splint.SplintResult(status=True, msg="Column <<code>>id<</code>> is correctly present in table <<code>>users<</code>>"),
+                    splint.SplintResult(status=True, msg="Column <<code>>name<</code>> is correctly present in table <<code>>users<</code>>"),
+                    splint.SplintResult(status=True, msg="Column <<code>>email<</code>> is correctly present in table <<code>>users<</code>>"),
                 ]
         ),
     ],
@@ -154,10 +155,10 @@ def test_rule_sql_table_bad_extra_columns(engine):
     # Call the function with the expected columns list
     results = list(splint.rule_sql_table_col_name_schema(engine, table='users', expected_columns=['id', 'name'],
                                                          extra_columns_ok=False))
-    msgs = ["Column 'id' is present in table users",
-            "Column 'name' is present in table users",
-            "Column 'age' is UNEXPECTED in table users",
-            "Column 'email' is UNEXPECTED in table users",
+    msgs = ["Column <<code>>id<</code>> is present in table <<code>>users<</code>>",
+            "Column <<code>>name<</code>> is present in table <<code>>users<</code>>",
+            "Column <<code>>age<</code>> is UNEXPECTED in table <<code>>users<</code>>",
+            "Column <<code>>email<</code>> is UNEXPECTED in table <<code>>users<</code>>",
             ]
 
     # This is very screwy, but I've had issues with different versions of python returning the results
@@ -165,7 +166,6 @@ def test_rule_sql_table_bad_extra_columns(engine):
     # then I check that each message is in the result set.⁄
     # This is not ideal and should be refactored
     assert len(set([result.msg for result in results])) == 4
-
     for result in results:
         assert (result.status is False) if "UNEXPECTED" in result.msg else (result.status is True)
         assert result.msg in msgs

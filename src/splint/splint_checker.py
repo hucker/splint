@@ -4,7 +4,7 @@ There is also support for low level progress for functions/classes.
 """
 import datetime as dt
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Sequence
 
 import pandas as pd
 
@@ -59,7 +59,7 @@ class SplintDebugProgress(SplintProgress):
             print("+" if result.status else "-", end="")
 
 
-def _param_str_list(params: list[str] | str | None,
+def _param_str_list(params: Sequence[str] | str | None,
                     disallowed=' ,!@#$%^&*(){}[]<>~`-+=\t\n\'"') -> list[str]:
     """
     Allow user to specify "foo fum" instead of ["foo","fum"] or slightly more
@@ -489,10 +489,10 @@ class SplintChecker:
 
         return self.collected
 
-    def exclude_by_attribute(self, tags: list[str] | str | None = None,
-                             ruids: list[str] | str | None = None,
-                             levels: list[int] | int | None = None,
-                             phases: list[str] | str | None = None) -> list[SplintFunction]:
+    def exclude_by_attribute(self, tags: Sequence[str] | str | None = None,
+                             ruids: Sequence[str] | str | None = None,
+                             levels: Sequence[int] | int | None = None,
+                             phases: Sequence[str] | str | None = None) -> list[SplintFunction]:
         """ Run everything except the ones that match these attributes """
 
         # Make everything nice lists

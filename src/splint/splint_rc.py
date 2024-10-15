@@ -2,7 +2,7 @@
 Handles configuration abstraction for splint, includes classes to parse TOML and JSON.
 """
 import re
-
+from typing import Sequence
 from .splint_exception import SplintException
 
 
@@ -33,14 +33,14 @@ class SplintRC:
         }
 
         # These will get overwritten
-        self.ruids: list[str] = []
-        self.ex_ruids: list[str] = []
-        self.phases: list[str] = []
-        self.ex_phases: list[str] = []
-        self.tags: list[str] = []
-        self.ex_tags: list[str] = []
-        self.levels: list[int] = []
-        self.ex_levels: list[int] = []
+        self.ruids: Sequence[str] = []
+        self.ex_ruids: Sequence[str] = []
+        self.phases: Sequence[str] = []
+        self.ex_phases: Sequence[str] = []
+        self.tags: Sequence[str] = []
+        self.ex_tags: Sequence[str] = []
+        self.levels: Sequence[int] = []
+        self.ex_levels: Sequence[int] = []
 
         self.expand_attributes(rc_data)
         self.name = rc_data['display_name']
@@ -58,7 +58,7 @@ class SplintRC:
         raise NotImplementedError
 
     @staticmethod
-    def _separate_values(data: str | list[str]) -> tuple[list[str], list[str]]:
+    def _separate_values(data: str | Sequence[str]) -> tuple[Sequence[str], Sequence[str]]:
         """
         Separate included and excluded values based on sign pre-fixes from the given data.
 
@@ -70,7 +70,7 @@ class SplintRC:
         data elements will be converted to strings.
         
         Args:
-            data (list or str): A list of data values or a single string to separate.
+            data (Sequence or str): A list of data values or a single string to separate.
 
         Returns:
             tuple: A tuple containing two lists; the first list consists of included values

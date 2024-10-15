@@ -2,47 +2,12 @@
 from src import splint
 from src.splint.rule_webapi import is_mismatch
 
+import pytest
 
-def test_urls():
-    urls = ["https://www.google.com", "https://www.yahoo.com", "https://www.bing.com"]
-
-    @splint.attributes(tag="tag")
-    def check_rule1():
-        yield from splint.rule_url_200(urls=urls)
-
-    for result in check_rule1():
-        assert result.status
-
-
-def test_bad_urls():
-    urls = ["https://www.google.com/doesnotexist", "https://www.yahooXXXXXX"]
-
-    @splint.attributes(tag="tag")
-    def check_rule1():
-        yield from splint.rule_url_200(urls=urls)
-
-    for result in check_rule1():
-        assert not result.status
-
-
-
-def test_missing_web_api():
-
-    # Try to get a non existent webapi end point
-    @splint.attributes(tag="tag")
-    def check_rule2():
-        yield from splint.rule_web_api(url='https://httpbin.org/json1',
-                                       json_d={'name': 'Luke Skywalker'},
-                                       expected_response=404,
-                                       timeout_sec=3)
-
-    for result in check_rule2():
-        assert result.status
-
-
-
-def test_web_api():
-    expected_json = {
+@pytest.fixture
+def expected_json():
+    """This is a default response from the test web api"""
+    return {
         "slideshow": {
             "author": "Yours Truly",
             "date": "date of publication",
@@ -63,6 +28,69 @@ def test_web_api():
             "title": "Sample Slide Show"
         }
     }
+
+def test_urls():
+    urls = ["https://www.google.com", "https://www.yahoo.com", "https://www.bing.com"]
+
+    @splint.attributes(tag="tag")
+    def check_rule1():
+        yield from splint.rule_url_200(urls=urls)
+
+    for result in check_rule1():
+        assert result.status
+
+def test_urls_as_strings():
+    urls = "https://www.google.com https://www.yahoo.com https://www.bing.com"
+
+    @splint.attributes(tag="tag")
+    def check_rule1():
+        yield from splint.rule_url_200(urls=urls)
+
+    for result in check_rule1():
+        assert result.status
+        
+def test_bad_urls():
+    urls = ["https://www.google.com/doesnotexist", "https://www.yahooXXXXXX"]
+
+    @splint.attributes(tag="tag")
+    def check_rule1():
+        yield from splint.rule_url_200(urls=urls)
+
+    for result in check_rule1():
+        assert not result.status
+
+
+
+def test_missing_web_api():
+
+    # Try to get a non-existent webapi end point
+    @splint.attributes(tag="tag")
+    def check_rule2():
+        yield from splint.rule_web_api(url='https://httpbin.org/json1',
+                                       json_d={'name': 'Luke Skywalker'},
+                                       expected_response=404,
+                                       timeout_sec=3)
+
+    for result in check_rule2():
+        assert result.status
+
+
+
+
+def test_wrong_response(expected_json):
+    @splint.attributes(tag="tag")
+    def check_rule1():
+        yield from splint.rule_web_api(url='https://httpbin.org/json',
+                                       json_d=expected_json,
+                                       expected_response=404,  # Returns 200
+                                       timeout_sec=10)
+
+    for result in check_rule1():
+        assert result.status is False
+
+
+
+def test_web_api(expected_json):
     @splint.attributes(tag="tag")
     def check_rule1():
         yield from splint.rule_web_api(url='https://httpbin.org/json',
@@ -89,6 +117,9 @@ def convert_integers_to_strings(d):
             convert_integers_to_strings(value)
     return d
 
+def test_mismatch_fail():
+    assert is_mismatch(1,{}) is False
+    assert is_mismatch({},1) is False
 
 def test_get_difference():
     tests = [

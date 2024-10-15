@@ -3,17 +3,18 @@ Set of baseline rules that uses the pyfilesystem module to OS-agnostic checks on
 about the file system, file existing, age etc.
 """
 
-from typing import Generator
+from typing import Generator,Sequence
 
 from sqlalchemy import Engine, MetaData, Table
 from sqlalchemy.sql.type_api import TypeEngine
 
 from .splint_result import SR
+from .splint_format import SM
 
 
 def rule_sql_table_col_name_schema(engine: Engine,
                                    table: str,
-                                   expected_columns: list[str],
+                                   expected_columns: Sequence[str],
                                    extra_columns_ok: bool = True) -> Generator[SR, None, None]:
     """
     Take a connection, a table, and column names and verify that the table has those columns.
@@ -53,19 +54,19 @@ def rule_sql_table_col_name_schema(engine: Engine,
     # Verify expected columns exist
     for column in expected_columns:
         if column in actual_columns:
-            yield SR(status=True, msg=f"Column '{column}' is present in table {table}")
+            yield SR(status=True, msg=f"Column {SM.code(column)} is present in table {SM.code(table)}")
         else:
-            yield SR(status=False, msg=f"Column '{column}' is MISSING in table {table}")
+            yield SR(status=False, msg=f"Column {SM.code(column)} is MISSING in table {SM.code(table)}")
 
     # If extra columns existing in the database is OK then don't check
     if not extra_columns_ok:
         extra_columns = actual_columns - set(expected_columns)
 
         # This is very subtle.  We want the ordering of actual columns here  rather than iterating
-        # over the set (that varies with python version).   For small sets this isnt to terrible
+        # over the set (that varies with python version).   For small sets this isn't to terrible
         for column in actual_columns:
             if column in extra_columns:
-                yield SR(status=False, msg=f"Column '{column}' is UNEXPECTED in table {table}")
+                yield SR(status=False, msg=f"Column {SM.code(column)} is UNEXPECTED in table {SM.code(table)}")
 
 
 def rule_sql_table_schema(engine: Engine,
@@ -111,16 +112,16 @@ def rule_sql_table_schema(engine: Engine,
             if unqualified_actual_type == unqualified_expected_type:
                 # pylint: disable=line-too-long
                 yield SR(status=True,
-                         msg=f"Column '{expected_column}' of type '{expected_type}' is correctly present in table {table}")
+                         msg=f"Column {SM.expected(expected_column)} of type {SM.expected(expected_type)} is correctly present in table {SM.code(table)}")
             else:
                 # pylint: disable=line-too-long
                 yield SR(status=False,
-                         msg=f"Column '{expected_column}' has incorrect type. Expected: '{unqualified_expected_type}', got: '{unqualified_actual_type}'")
+                         msg=f"Column {SM.expected(expected_column)}  has incorrect type. Expected: {SM.expected(unqualified_expected_type)} , got: {SM.actual(unqualified_actual_type)}")
         else:
-            yield SR(status=False, msg=f"Missing column in table {table}: {expected_column}")
+            yield SR(status=False, msg=f"Missing column in table {table}: {SM.expected(expected_column)} ")
 
     # If extra columns existing in the database is OK then don't check
     if not extra_columns_ok:
         extra_columns = set(actual_columns.keys()) - set(column for column, _ in expected_columns)
         for column in extra_columns:
-            yield SR(status=False, msg=f"Unexpected column in table {table}: {column}")
+            yield SR(status=False, msg=f"Unexpected column in table {SM.code(table)}: {SM.code(column)}")

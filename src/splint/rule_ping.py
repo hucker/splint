@@ -3,17 +3,19 @@ This module provides functions for using ping to verify network connectivity.
 
 
 """
+from typing import Generator
 
 import ping3
 
-from .splint_result import SR
 from .splint_format import SM
+from .splint_result import SR
 
 NO_HOSTS_MSG = "No hosts provided for ping."
 MIN_LATENCY_MS = 0.0001
 
 
-def rule_ping_check(hosts: str | list, timeout_ms: float = 4000.0, skip_on_none=False, fail_on_none=False) -> SR:
+def rule_ping_check(hosts: str | list, timeout_ms: float = 4000.0, skip_on_none=False, pass_on_none=False) -> Generator[
+    SR, None, None]:
     """
     Given a sequence of hosts perform ping checks against each of them given a single timeout
     value.  This function handles the following:
@@ -22,18 +24,20 @@ def rule_ping_check(hosts: str | list, timeout_ms: float = 4000.0, skip_on_none=
     hosts = ["google.com"]   as is
     Args:
         hosts: string with list of hosts or list of hosts
-        timeout_ms: Time in milliseconds.
+        timeout_ms(4000): Time in milliseconds.
+        skip_on_none(False): If true an empty host list is a skip
+        pass_on_none(False): If try the tests passes on empty host list
     Yields:
         list of results
     """
-    hosts = hosts.split() if isinstance(hosts, str) else hosts
+    hosts = hosts.replace(',',' ').split() if isinstance(hosts, str) else hosts
 
     if len(hosts) == 0:
         if skip_on_none:
             yield SR(status=True, skipped=True, msg=NO_HOSTS_MSG)
             return
         else:
-            yield SR(status=not fail_on_none, msg=NO_HOSTS_MSG)
+            yield SR(status=pass_on_none, msg=NO_HOSTS_MSG)
             return
 
     for host in hosts:
@@ -41,7 +45,8 @@ def rule_ping_check(hosts: str | list, timeout_ms: float = 4000.0, skip_on_none=
             latency = ping3.ping(host, timeout=timeout_ms, unit='ms')
 
             if latency is False:
-                yield SR(status=False, msg=f"No ping response from server {SM.code(host)} timeout = {timeout_ms:0.1f} ms")
+                yield SR(status=False,
+                         msg=f"No ping response from server {SM.code(host)} timeout = {timeout_ms:0.1f} ms")
             elif latency < MIN_LATENCY_MS:
                 latency_str = f"{MIN_LATENCY_MS:0.1f}"
                 yield SR(status=True, msg=f"Host {SM.code(host)} is up: response time < {SM.code(latency_str)} ms")

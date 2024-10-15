@@ -8,7 +8,7 @@ RuleId  Description Status
 
 """
 
-from typing import Generator
+from typing import Generator,Sequence
 
 import camelot  # type: ignore
 import pandas as pd
@@ -19,7 +19,7 @@ from .splint_util import str_to_bool
 
 
 def extract_tables_from_pdf(file_path: str,
-                            required_columns: list[str] | None = None,
+                            required_columns: Sequence[str] | None = None,
                             pages: str = 'all') -> list[pd.DataFrame]:
     """
     Extracts tables from a PDF file that include specified columns, and returns them in a list.

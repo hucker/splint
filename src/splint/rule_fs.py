@@ -4,7 +4,7 @@ about the file system, file existing, age etc.
 """
 import datetime as dt
 import fnmatch
-from typing import Generator
+from typing import Generator,Sequence
 
 import humanize
 from fs.base import FS
@@ -14,7 +14,7 @@ from fs.osfs import OSFS
 from .splint_result import SR
 
 
-def rule_fs_paths_exist(fs_obj: OSFS, paths: list[str]) -> Generator[SR, None, None]:
+def rule_fs_paths_exist(fs_obj: OSFS, paths: Sequence[str]) -> Generator[SR, None, None]:
     """ Check a bunch of paths."""
     for path in paths:
         yield from rule_fs_path_exists(fs_obj, path)

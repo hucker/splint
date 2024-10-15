@@ -1,7 +1,7 @@
 """
 Useful rules for checking data frames.
 """
-from typing import Generator, Tuple
+from typing import Generator, Sequence, Tuple
 
 import numpy as np
 import pandas as pd
@@ -11,24 +11,24 @@ from .splint_result import SR
 
 
 def rule_validate_df_schema(df: pd.DataFrame,
-                            columns: list[str] | None = None,
-                            no_null_columns: list[str] | None = None,
-                            int_columns: list[str] | None = None,
-                            float_columns: list[str] | None = None,
-                            str_columns: list[str] | None = None,
+                            columns: Sequence[str] | None = None,
+                            no_null_columns: Sequence[str] | None = None,
+                            int_columns: Sequence[str] | None = None,
+                            float_columns: Sequence[str] | None = None,
+                            str_columns: Sequence[str] | None = None,
                             row_min_max: tuple[int, int] | None = None,
-                            allowed_values: list | None = None,
+                            allowed_values: Sequence | None = None,
                             empty_ok: bool = False) -> Generator[SR, None, None]:
     """
         Validate a DataFrame schema based on given conditions.
 
         Parameters:
         df (pd.DataFrame): DataFrame to be validated.
-        columns (list[str], optional): Columns to validate. Defaults to None.
-        no_null_columns (list[str], optional): Columns without null values. Defaults to None.
-        int_columns (list[str], optional): Integer type columns. Defaults to None.
-        float_columns (list[str], optional): Float type columns. Defaults to None.
-        str_columns (list[str], optional): String type columns. Defaults to None.
+        columns (Sequence[str], optional): Columns to validate. Defaults to None.
+        no_null_columns (Sequence[str], optional): Columns without null values. Defaults to None.
+        int_columns (Sequence[str], optional): Integer type columns. Defaults to None.
+        float_columns (Sequence[str], optional): Float type columns. Defaults to None.
+        str_columns (Sequence[str], optional): String type columns. Defaults to None.
         row_min_max (tuple[int,int], optional): Min/max row numbers in DataFrame. Defaults None.
         empty_ok (bool, optional): When True, empty DataFrame is valid. Defaults to False.
 
@@ -113,7 +113,7 @@ def rule_validate_df_schema(df: pd.DataFrame,
                  msg="There are no columns to check.")
 
 
-def convert_to_tuple(input_val: Tuple[float, list[str] | str] | None) -> Tuple[float, list[str]] | None:
+def convert_to_tuple(input_val: Tuple[float, Sequence[str] | str] | None) -> Tuple[float, Sequence[str]] | None:
     """
     Convert data inf the form (1.23,[1,2]) and (1.23,"1 2") into a tuple
     with the values (1.23,[1,2]) while keeping mypy happy.
@@ -127,27 +127,27 @@ def convert_to_tuple(input_val: Tuple[float, list[str] | str] | None) -> Tuple[f
 
 
 def rule_validate_df_values_by_col(df: pd.DataFrame,
-                                   positive: list[str] | str | None = None,
-                                   non_negative: list[str] | str | None = None,
-                                   percent: list[str] | str | None = None,
-                                   min_: tuple[float, list[str]] | None = None,
-                                   max_: tuple[float, list[str]] | None = None,
-                                   negative: list[str] | str | None = None,
-                                   non_positive: list[str] | str | None = None,
-                                   correlation: list[str] | str | None = None,
-                                   probability: list[str] | str | None = None):
+                                   positive: Sequence[str] | str | None = None,
+                                   non_negative: Sequence[str] | str | None = None,
+                                   percent: Sequence[str] | str | None = None,
+                                   min_: tuple[float, Sequence[str]] | None = None,
+                                   max_: tuple[float, Sequence[str]] | None = None,
+                                   negative: Sequence[str] | str | None = None,
+                                   non_positive: Sequence[str] | str | None = None,
+                                   correlation: Sequence[str] | str | None = None,
+                                   probability: Sequence[str] | str | None = None):
     """
         Validate DataFrame schema based on given conditions. Parameters are as follows:
 
         Parameters:
         - df (pd.DataFrame): DataFrame to validate.
-        - columns (list[str], optional): Col names to validate. Defaults to None.
-        - no_null_columns (list[str], optional): Cols shouldn't have null values. Defaults to None.
-        - int_columns (list[str], optional): Columns of integer type. Defaults to None.
-        - float_columns (list[str], optional): Columns of float type. Defaults to None.
-        - str_columns (list[str], optional): Columns of string type. Defaults to None.
+        - columns (Sequence[str], optional): Col names to validate. Defaults to None.
+        - no_null_columns (Sequence[str], optional): Cols shouldn't have null values. Defaults to None.
+        - int_columns (Sequence[str], optional): Columns of integer type. Defaults to None.
+        - float_columns (Sequence[str], optional): Columns of float type. Defaults to None.
+        - str_columns (Sequence[str], optional): Columns of string type. Defaults to None.
         - row_min_max (Tuple[int,int], optional): Min/max # of rows in DataFrame. Defaults to None.
-        - allowed_values (list, optional): Allowed values in columns. Defaults to None.
+        - allowed_values (Sequence, optional): Allowed values in columns. Defaults to None.
         - empty_ok (bool, optional): If True, empty DataFrame is valid. Defaults to False.
 
         Raises:

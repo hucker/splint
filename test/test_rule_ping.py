@@ -1,4 +1,5 @@
 import pytest
+
 import splint
 
 
@@ -7,41 +8,55 @@ import splint
 def urls():
     return ["www.google.com", "www.yahoo.com", "www.bing.com"]
 
+
 @pytest.fixture
 def bad_urls():
-    return ["asdfaasf", "123", "", None,"bad.url.foo"]
+    return ["asdfaasf", "123", "", None, "bad.url.foo"]
+
 
 def test_empty_rule_ping(urls):
-    """ Verify single url is tested """
-
-    @splint.attributes(tag="tag")
-    def check_rule_ping_pass():
-        yield from splint.rule_ping_check("",fail_on_none=False)
+    """ Verify url is tested fail"""
 
     @splint.attributes(tag="tag")
     def check_rule_ping_fail():
-        yield from splint.rule_ping_check("",fail_on_none=True)
+        yield from splint.rule_ping_check("", pass_on_none=False)
+        yield from splint.rule_ping_check([], pass_on_none=False)
 
-    for result in check_rule_ping_pass():
-        assert result.status
-        
     for result in check_rule_ping_fail():
         assert not result.status
 
 
-def test_skip_ping():
+def test_empty_rule_ping_pass(urls):
+    """ Verify empty url is tested pass """
+
+    @splint.attributes(tag="tag")
+    def check_rule_ping_pass():
+        yield from splint.rule_ping_check("", pass_on_none=True)
+        yield from splint.rule_ping_check([], pass_on_none=True)
+
+    for result in check_rule_ping_pass():
+        assert result.status
+
+
+def test_skip_ping_true():
     @splint.attributes(tag="tag")
     def check_rule_ping_skip():
-        yield from splint.rule_ping_check("",skip_on_none=True)
-    @splint.attributes(tag="tag")
-    def check_rule_ping_not_skipped():
-        yield from splint.rule_ping_check("",skip_on_none=False)
-    
+        yield from splint.rule_ping_check("", skip_on_none=True)        
+        yield from splint.rule_ping_check([], skip_on_none=True)
+
     for result in check_rule_ping_skip():
         assert result.skipped
-    
+
+
+def test_skip_ping_false():
+    @splint.attributes(tag="tag")
+    def check_rule_ping_not_skipped():
+        yield from splint.rule_ping_check("", skip_on_none=False)
+        yield from splint.rule_ping_check([], skip_on_none=False)
+
     for result in check_rule_ping_not_skipped():
         assert not result.skipped
+
 
 def test_rule_ping(urls):
     """ Verify single url is tested """
@@ -68,8 +83,6 @@ def test_rule_pings(urls):
     assert count == len(urls) - 1
 
 
-    
-    
 def test_nonexistent_host(bad_urls):
     """ Verify that a nonexistent URL fails appropriately """
 
@@ -78,4 +91,4 @@ def test_nonexistent_host(bad_urls):
         yield from splint.rule_ping_check(bad_urls)
 
     for result in check_nonexistent_url():
-        assert not result.status  
+        assert not result.status
