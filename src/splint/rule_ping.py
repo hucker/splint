@@ -42,11 +42,12 @@ def rule_ping_check(hosts: str | list, timeout_ms: float = 4000.0, skip_on_none=
 
     for host in hosts:
         try:
+            # All of this to make this call
             latency = ping3.ping(host, timeout=timeout_ms, unit='ms')
-
+            timeout_str = f'{timeout_ms:0.1f}'
             if latency is False:
                 yield SR(status=False,
-                         msg=f"No ping response from server {SM.code(host)} timeout = {timeout_ms:0.1f} ms")
+                         msg=f"No ping response from server {SM.code(host)} timeout = {SM.code(timeout_str)} ms")
             elif latency < MIN_LATENCY_MS:
                 latency_str = f"{MIN_LATENCY_MS:0.1f}"
                 yield SR(status=True, msg=f"Host {SM.code(host)} is up: response time < {SM.code(latency_str)} ms")

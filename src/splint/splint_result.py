@@ -4,8 +4,9 @@ import itertools
 import traceback
 from collections import Counter
 from dataclasses import asdict, dataclass, field
+from functools import wraps
 from operator import attrgetter
-from typing import Any,Sequence 
+from typing import Any, Generator, Sequence 
 
 from .splint_exception import SplintException
 from .splint_format import SplintMarkup
@@ -116,6 +117,8 @@ class SplintYield:
         yield from gen(SR(True,"Info...")
     if not gen.yielded:
         yield from gen(SR(False,"Nothing to do"))
+    if show_summary:
+        yield SR(status=self.fail_count==0,msg=f"{self.pass_count} passes and {self.fail_count} fails")
 
     """
 
@@ -147,9 +150,23 @@ class SplintYield:
     def counts(self):
         """Return pass/fail/total yield counts"""
         return self.pass_count, self.fail_count, self.count
+    
+    def increment_counter(self, result: SplintResult) -> None:
+        self._count += 1
+        if not result.status:
+            self._fail_count += 1
+    def results(self, results: SplintResult | list[SplintResult])-> Generator[SplintResult, None, None]:
+        """
+        This lets you pass a result or results to be yielded and mimics the way splint results
+        work in other places where traditional result collection is used, for example code
+        that returns a list of SplintResults
+        Args:
+            results: one or list of splint results
+            fail_only: 
 
-    def __call__(self, results: SplintResult | list[SplintResult], fail_only: bool = False):
+        Returns:
 
+        """
         if isinstance(results, SplintResult):
             results = [results]
         # elif isinstance(results, list) and isinstance(results[0], SplintResult):
@@ -157,10 +174,55 @@ class SplintYield:
         else:
             raise SplintException(f"Unknown result type {type(results)}")
         for result in results:
-            self._count += 1
-            self._fail_count += 0 if result.status else 1
+            self.increment_counter(result)
             yield result
 
+    
+    def __call__(self,*args,**kwargs) -> Generator[SplintResult, None, None]:
+        """
+        Syntactic sugar for making yielding look just like creating the SR object at each
+        invocation of yield.  The code mimics creating a SplintResult manually
+        since the *args/**kwargs are passed through via a functools.wrapper. 
+        
+        y.results(SR(status=True,msg="Did it work?"))
+        
+        Overriding call allows this code to work correctly without having to manually
+        instantiate a SplintResult.  This is purely syntactic sugar.
+        
+        y(status=True,msg="Did it work?")
+        
+                
+        Args:
+            *args: For SplintResult 
+            **kwargs: For SplintResult
+        """
+        @wraps(SplintResult.__init__)
+        def wrapper(*args, **kwargs):
+            """
+            Make the __call__ method have the same parameter list as the splintResult.__init__
+            method.
+            
+            Args:
+                *args: 
+                **kwargs: 
+
+            Returns:
+
+            """ 
+            return SplintResult(*args, **kwargs)
+        
+        result = wrapper(*args,**kwargs)
+        self.increment_counter(result)
+        yield result
+        
+
+    def _yield_result(self,result):
+        """
+        Keep track of statistics in one place by counting runs and fails.
+        """
+        self._count+=1
+        self._fail_count += 0 if result.status else 1
+        yield result
 
 # Result transformers do one of three things, nothing and pass the result on, modify the result
 # or return None to indicate that the result should be dropped.  What follows are some
