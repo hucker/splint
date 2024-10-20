@@ -6,7 +6,7 @@ from collections import Counter
 from dataclasses import asdict, dataclass, field
 from functools import wraps
 from operator import attrgetter
-from typing import Any, Generator, Sequence 
+from typing import Any, Generator, Sequence
 
 from .splint_exception import SplintException
 from .splint_format import SplintMarkup
@@ -83,6 +83,9 @@ class SplintResult:
     skip_on_none: bool = False
     fail_on_none: bool = False
 
+    # Indicate summary results, so they can be filtered
+    summary_result: bool = False
+
     mu = SplintMarkup()
 
     def __post_init__(self):
@@ -122,9 +125,35 @@ class SplintYield:
 
     """
 
-    def __init__(self):
+    def __init__(self, summary_only=False, summary_name=""):
+        """
+        The splint yield class allows you to use the yield mechanism while also tracking
+        pass fail status of the generator.  Using this class allows for a separation of
+        concerns so your top level code doesn't end up counting passes and fails.
+        
+        When you test is complete you can query the yield object and report that
+        statistics without a bunch of overhead.
+        
+        If you set summary_only to true, no messages will be yielded, but you 
+        can yield the summary message manually when you are done with the test.
+        
+        If you provide a name to this init then a generic summary message can be
+        generated like this:
+        
+        y = SplintYield("Generic Test")
+        # yield a bunch of tests perhaps 3 pass and 1 fails
+        y.yield_summary()
+        
+        SR(status=False,msg="Generic Test had 3 pass and 1 fail results for 66.7%.")
+        
+        Args:
+            summary_only(bool): Defaults to False
+            name: Defaults to ""
+        """
         self._count = 0
         self._fail_count = 0
+        self.summary_only = summary_only
+        self.summary_name = summary_name
 
     @property
     def yielded(self):
@@ -150,12 +179,13 @@ class SplintYield:
     def counts(self):
         """Return pass/fail/total yield counts"""
         return self.pass_count, self.fail_count, self.count
-    
+
     def increment_counter(self, result: SplintResult) -> None:
         self._count += 1
         if not result.status:
             self._fail_count += 1
-    def results(self, results: SplintResult | list[SplintResult])-> Generator[SplintResult, None, None]:
+
+    def results(self, results: SplintResult | list[SplintResult]) -> Generator[SplintResult, None, None]:
         """
         This lets you pass a result or results to be yielded and mimics the way splint results
         work in other places where traditional result collection is used, for example code
@@ -175,12 +205,12 @@ class SplintYield:
             raise SplintException(f"Unknown result type {type(results)}")
         for result in results:
             self.increment_counter(result)
-            yield result
+            if not self.summary_only:
+                yield result
 
-    
-    def __call__(self,*args,**kwargs) -> Generator[SplintResult, None, None]:
+    def __call__(self, *args, **kwargs) -> Generator[SplintResult, None, None]:
         """
-        Syntactic sugar for making yielding look just like creating the SR object at each
+        Syntactic sugar to make yielding look just like creating the SR object at each
         invocation of yield.  The code mimics creating a SplintResult manually
         since the *args/**kwargs are passed through via a functools.wrapper. 
         
@@ -191,11 +221,15 @@ class SplintYield:
         
         y(status=True,msg="Did it work?")
         
+        Under the covers all the parameters to this function are forward to the creation of
+        the underlying SplintResult inside the wrapper.
+        
                 
         Args:
             *args: For SplintResult 
             **kwargs: For SplintResult
         """
+
         @wraps(SplintResult.__init__)
         def wrapper(*args, **kwargs):
             """
@@ -208,21 +242,22 @@ class SplintYield:
 
             Returns:
 
-            """ 
+            """
             return SplintResult(*args, **kwargs)
-        
-        result = wrapper(*args,**kwargs)
-        self.increment_counter(result)
-        yield result
-        
 
-    def _yield_result(self,result):
-        """
-        Keep track of statistics in one place by counting runs and fails.
-        """
-        self._count+=1
-        self._fail_count += 0 if result.status else 1
-        yield result
+        result = wrapper(*args, **kwargs)
+        self.increment_counter(result)
+        if not self.summary_only:
+            yield result
+
+    def yield_summary(self, msg="") -> Generator[SplintResult, None, None]:
+
+        if not msg:
+            name = self.summary_name or self.__call__.__name__
+            msg = f"{name} had {self.pass_count} pass and {self.fail_count} fail."
+
+        yield SplintResult(status=self.fail_count == 0, msg=msg, summary_result=True)
+
 
 # Result transformers do one of three things, nothing and pass the result on, modify the result
 # or return None to indicate that the result should be dropped.  What follows are some

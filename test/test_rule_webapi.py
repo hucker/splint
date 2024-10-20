@@ -48,6 +48,17 @@ def test_urls_as_strings():
 
     for result in check_rule1():
         assert result.status
+    
+    
+def test_urls_summary_only():
+    urls = "https://www.google.com https://www.yahoo.com https://www.bing.com"
+
+    @splint.attributes(tag="tag")
+    def check_rule1():
+        yield from splint.rule_url_200(urls=urls,summary_only=True)
+
+    for result in check_rule1():
+        assert result.status
         
 def test_bad_urls():
     urls = ["https://www.google.com/doesnotexist", "https://www.yahooXXXXXX"]

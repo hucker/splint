@@ -8,8 +8,8 @@ import time
 from typing import Generator
 
 from .splint_exception import SplintException
-from .splint_result import SR
 from .splint_format import SM
+from .splint_result import SR
 
 
 def rule_path_exists(path_: str) -> Generator[SR, None, None]:

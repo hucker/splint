@@ -3,8 +3,8 @@ import openpyxl
 import pandas as pd
 
 from .splint_exception import SplintException
-from .splint_result import SR
 from .splint_format import SM
+from .splint_result import SR
 from .splint_util import str_to_bool
 
 SHEET1 = "Sheet1"

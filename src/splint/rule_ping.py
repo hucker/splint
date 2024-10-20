@@ -30,7 +30,7 @@ def rule_ping_check(hosts: str | list, timeout_ms: float = 4000.0, skip_on_none=
     Yields:
         list of results
     """
-    hosts = hosts.replace(',',' ').split() if isinstance(hosts, str) else hosts
+    hosts = hosts.replace(',', ' ').split() if isinstance(hosts, str) else hosts
 
     if len(hosts) == 0:
         if skip_on_none:

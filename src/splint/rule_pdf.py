@@ -8,7 +8,7 @@ RuleId  Description Status
 
 """
 
-from typing import Generator,Sequence
+from typing import Generator, Sequence
 
 import camelot  # type: ignore
 import pandas as pd

@@ -4,7 +4,7 @@ about the file system, file existing, age etc.
 """
 import datetime as dt
 import fnmatch
-from typing import Generator,Sequence
+from typing import Generator, Sequence
 
 import humanize
 from fs.base import FS

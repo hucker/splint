@@ -3,6 +3,7 @@ Handles configuration abstraction for splint, includes classes to parse TOML and
 """
 import re
 from typing import Sequence
+
 from .splint_exception import SplintException
 
 

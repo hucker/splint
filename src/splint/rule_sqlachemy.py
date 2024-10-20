@@ -3,13 +3,13 @@ Set of baseline rules that uses the pyfilesystem module to OS-agnostic checks on
 about the file system, file existing, age etc.
 """
 
-from typing import Generator,Sequence
+from typing import Generator, Sequence
 
 from sqlalchemy import Engine, MetaData, Table
 from sqlalchemy.sql.type_api import TypeEngine
 
-from .splint_result import SR
 from .splint_format import SM
+from .splint_result import SR
 
 
 def rule_sql_table_col_name_schema(engine: Engine,

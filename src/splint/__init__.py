@@ -22,14 +22,13 @@ from .splint_checker import keep_phases  # noqa: F401
 from .splint_checker import keep_ruids  # noqa: F401
 from .splint_checker import keep_tags  # noqa: F401
 from .splint_exception import SplintException  # noqa: F401
+from .splint_format import SM
 from .splint_format import SplintBasicHTMLRenderer
 from .splint_format import SplintBasicMarkdown
 from .splint_format import SplintBasicRichRenderer
 from .splint_format import SplintBasicStreamlitRenderer
 from .splint_format import SplintMarkup
 from .splint_format import SplintRenderText
-from .splint_format import SM
-
 # from .splint_exception import SplintTypeError  # noqa: F401
 # from .splint_exception import SplintValueError  # noqa: F401
 from .splint_function import SplintFunction  # noqa: F401

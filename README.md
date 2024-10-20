@@ -173,6 +173,9 @@ def check_file_age(csv_file):
 
 ## How is Splint Organized?
 
+A common use case is to have check functions saved in python code files that python can discover via the import
+mechanism allowing files to be more or less, automatically detected.
+
 Splint uses the following hierarchy:
 
     SplintPackage` (one or more SplintModules in a folder)

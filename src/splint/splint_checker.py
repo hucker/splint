@@ -60,7 +60,7 @@ class SplintDebugProgress(SplintProgress):
 
 
 def _param_str_list(params: Sequence[str] | str | None,
-                    disallowed=' ,!@#$%^&*(){}[]<>~`-+=\t\n\'"') -> list[str]:
+                    disallowed=' ,!@#$%^&*(){}[]<>~`-+=\t\n\'"') -> Sequence[str]:
     """
     Allow user to specify "foo fum" instead of ["foo","fum"] or slightly more
     shady "foo" instead of ["foo"].  This is strictly for reducing friction
