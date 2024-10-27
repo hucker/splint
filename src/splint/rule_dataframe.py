@@ -8,6 +8,7 @@ import pandas as pd
 
 from .splint_exception import SplintException
 from .splint_result import SR
+from .splint_format import SM
 
 
 def rule_validate_df_schema(df: pd.DataFrame,
@@ -44,7 +45,7 @@ def rule_validate_df_schema(df: pd.DataFrame,
         if df[col_].dtype in dtype:
             yield SR(status=True, msg=f"Column {col_} is of type {dtype_name}.")
         else:
-            yield SR(status=False, msg=f"Column {col_} is NOT of type {dtype_name}.")
+            yield SR(status=False, msg=f"Column {col_} is {SM.bold('NOT')} of type {dtype_name}.")
 
     def check_null(col_):
         null_count = df[col_].isnull().sum()
@@ -188,14 +189,14 @@ def rule_validate_df_values_by_col(df: pd.DataFrame,
                 yield SR(status=True, msg=f"All values in {col} are positive.")
 
             else:
-                yield SR(status=False, msg=f"All values in {col} are NOT positive.")
+                yield SR(status=False, msg=f"All values in {col} are {SM.bold('NOT')}  positive.")
 
     if non_negative:
         for col in non_negative:
             if np.all(df[col] >= 0):
                 yield SR(status=True, msg=f"All values in {col} are non-negative.")
             else:
-                yield SR(status=False, msg=f"All values in {col} are NOT non-negative.")
+                yield SR(status=False, msg=f"All values in {col} are {SM.bold('NOT')} non-negative.")
 
     if percent:
         # Just check 0-100
@@ -203,7 +204,7 @@ def rule_validate_df_values_by_col(df: pd.DataFrame,
             if np.all((df[col] >= 0) & (df[col] <= 100)):
                 yield SR(status=True, msg=f"All values in {col} are  a percent.")
             else:
-                yield SR(status=False, msg=f"All values in {col} are NOT a percent.")
+                yield SR(status=False, msg=f"All values in {col} are {SM.bold('NOT')} a percent.")
 
     if probability:
         for col in probability:
@@ -211,7 +212,7 @@ def rule_validate_df_values_by_col(df: pd.DataFrame,
             if np.all((df[col] >= 0.0) & (df[col] <= 1.0)):
                 yield SR(status=True, msg=f"All values in {col} are probabilities.", )
             else:
-                yield SR(status=False, msg=f"All values in {col} are NOT probabilities.")
+                yield SR(status=False, msg=f"All values in {col} are {SM.bold('NOT')} probabilities.")
 
     if correlation:
         for col in correlation:
@@ -219,7 +220,7 @@ def rule_validate_df_values_by_col(df: pd.DataFrame,
             if np.all((df[col] >= -1.0) & (df[col] <= 1.0)):
                 yield SR(status=True, msg=f"All values in {col} are correlations.", )
             else:
-                yield SR(status=False, msg=f"All values in {col} are NOT correlations.")
+                yield SR(status=False, msg=f"All values in {col} are {SM.bold('NOT')} correlations.")
 
     if min_:
         val, cols = min_
@@ -227,7 +228,7 @@ def rule_validate_df_values_by_col(df: pd.DataFrame,
             if np.all((df[col] >= val)):
                 yield SR(status=True, msg=f"All values in {col} are > {val}")
             else:
-                yield SR(status=False, msg=f"All values in {col} are NOT > {val}")
+                yield SR(status=False, msg=f"All values in {col} are {SM.bold('NOT')} > {val}")
 
     if max_:
         val, cols = max_
@@ -235,18 +236,18 @@ def rule_validate_df_values_by_col(df: pd.DataFrame,
             if np.all((df[col] <= val)):
                 yield SR(status=True, msg=f"All values in {col} are < {val}")
             else:
-                yield SR(status=False, msg=f"All values in {col} are NOT < {val}")
+                yield SR(status=False, msg=f"All values in {col} are {SM.bold('NOT')} < {val}")
 
     if negative:
         for col in negative:
             if np.all(df[col] < 0):
                 yield SR(status=True, msg=f"All values in {col} are negative.")
             else:
-                yield SR(status=False, msg=f"All values in {col} are NOT negative.")
+                yield SR(status=False, msg=f"All values in {col} are {SM.bold('NOT')} negative.")
 
     if non_positive:
         for col in non_positive:
             if np.all(df[col] <= 0):
                 yield SR(status=True, msg=f"All values in {col} are non-positive.")
             else:
-                yield SR(status=False, msg=f"All values in {col} are NOT non-positive.")
+                yield SR(status=False, msg=f"All values in {col} are {SM.bold('NOT')} non-positive.")

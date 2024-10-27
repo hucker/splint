@@ -23,6 +23,7 @@ def result_hook_fix_blank_msg(sfunc: "SplintFunction",
     a useful message if the user did not provide one.
 
     Args:
+        sfunc (SplintFunction): The function to fix       
         result (SplintResult): The result to rewrite.
 
     Returns:
@@ -162,10 +163,10 @@ class SplintFunction:
         if self.ttl_minutes:
             self.last_results.append(result)
 
-    def __call__(self, *args, **kwds) -> Generator[SplintResult, None, None]:
+    def __call__(self, *args, **kwargs) -> Generator[SplintResult, None, None]:
         """Call the user provided function and collect information about the result.
 
-        This is the heart of the system.  Each of these functions checks something
+        This is the heart of Splint.  Each of these functions checks something
         in the system using the provided function and feedback.  Each function is
         a generator (or just a function that pretends to be a generator). This code
         manages the details that we'd prefer to handle in the core of the system
@@ -245,7 +246,7 @@ class SplintFunction:
 
             else:
                 # Functions can return multiple results, track them with a count attribute.
-                for count, result in enumerate(self.function(*args, **kwds), start=1):
+                for count, result in enumerate(self.function(*args, **kwargs), start=1):
                     end_time = time.time()
 
                     if isinstance(result, bool):

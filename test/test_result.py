@@ -17,6 +17,7 @@ def test_total_results(results):
     """ Test to verify the total results """
     assert len(results) == 7
 
+    
 
 def test_fail_only_filter(results):
     """ Test to verify the fail_only filter function """

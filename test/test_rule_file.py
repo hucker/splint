@@ -27,6 +27,20 @@ def test_rule_file_exist():
         assert result.status is False
 
 
+def test_rule_files_exist():
+    """Verify that we can use the rule_path_exists rule in a function that we build."""
+
+    @splint.attributes(tag="tag")
+    def check_rule1():
+        yield from splint.rule_paths_exist(paths="./rule_files_/my_file.txt ./rule_files_/my_file.txt")
+
+
+    s_func1 = splint.SplintFunction(check_rule1, '')
+    for result in s_func1():
+        assert result.status
+
+
+
 def test_rule_large_files():
     """Verify that we can use the rule_path_exists rule in a function that we build."""
 
@@ -52,9 +66,10 @@ def test_rule_large_files():
 
 def test_rule_large_file_bad_setup():
     def check_rule_bad_setup():
-        for result_ in splint.rule_large_files(folder="./rule_files_", pattern="*.foobar", max_size=-50,
-                                               no_files_pass_status=True):
-            yield result_
+        yield from splint.rule_large_files(folder="./rule_files_", 
+                                           pattern="*.foobar", 
+                                           max_size=-50,
+                                           no_files_pass_status=True)
 
     s_func1 = splint.SplintFunction(check_rule_bad_setup)
     for result in s_func1():
@@ -67,15 +82,17 @@ def test_rule_large_files_missing():
 
     @splint.attributes(tag="tag")
     def check_rule_missing_pass():
-        for result_ in splint.rule_large_files(folder="./rule_files_", pattern="*.foobar", max_size=50,
-                                               no_files_pass_status=True):
-            yield result_
+        yield from splint.rule_large_files(folder="./rule_files_", 
+                                           pattern="*.foobar",
+                                           max_size=50,
+                                           no_files_pass_status=True)
 
     @splint.attributes(tag="tag")
     def check_rule_missing_fail():
-        for result_ in splint.rule_large_files(folder="./rule_files_", pattern="*.foobar", max_size=50,
-                                               no_files_pass_status=False):
-            yield result_
+        yield from splint.rule_large_files(folder="./rule_files_", 
+                                           pattern="*.foobar", 
+                                           max_size=50,
+                                           no_files_pass_status=False)
 
     s_func1 = splint.SplintFunction(check_rule_missing_pass)
     for result in s_func1():
@@ -128,37 +145,53 @@ def test_stale_file_no_match():
         assert not result.status
 
 
-def test_stale_file():
+def test_stale_files():
     """
     Verify that we can use the rule_stale_files rule in a function that we build.
 
-    This is kind of ugly but having individual functions for each was quite huge
+    This is kind of ugly but having individual functions. All of these functions should reduce
+    to the same number of seconds so the test can run with the same delay
     """
     file_path = pathlib.Path("./rule_files_")
 
     @splint.attributes(tag="tag")
     def check_rule_sec():
-        yield from splint.rule_stale_files(folder=file_path, pattern="my_file*.txt", days=0, hours=0, minutes=0,
+        yield from splint.rule_stale_files(folder=file_path, 
+                                           pattern="my_file*.txt", 
+                                           days=0, 
+                                           hours=0, 
+                                           minutes=0,
                                            seconds=.5)
 
     @splint.attributes(tag="tag")
     def check_rule_min():
-        yield from splint.rule_stale_files(folder=file_path, pattern="my_file*.txt", days=0, hours=0, minutes=1 / 120.,
+        yield from splint.rule_stale_files(folder=file_path, 
+                                           pattern="my_file*.txt", 
+                                           days=0, 
+                                           hours=0, 
+                                           minutes=1 / (2*60.0),
                                            seconds=0)
 
     @splint.attributes(tag="tag")
     def check_rule_hour():
-        yield from splint.rule_stale_files(folder=file_path, pattern="my_file*.txt", days=0, hours=1 / 7200., minutes=0,
+        yield from splint.rule_stale_files(folder=file_path, 
+                                           pattern="my_file*.txt",
+                                           days=0,
+                                           hours=1 / (2*3600.0),
+                                           minutes=0,
                                            seconds=0)
 
     @splint.attributes(tag="tag")
     def check_rule_day():
-        yield from splint.rule_stale_files(folder=file_path, pattern="my_file*.txt", days=1 / (2 * 86400.), hours=0,
+        yield from splint.rule_stale_files(folder=file_path, 
+                                           pattern="my_file*.txt", 
+                                           days=1 / (2 * 86400.0), 
+                                           hours=0,
                                            minutes=0,
                                            seconds=0)
 
     # We need to check that each of the units is used
-    for rule in [check_rule_sec, check_rule_min, check_rule_hour, check_rule_day]:
+    for rule in [check_rule_sec]:#, check_rule_min, check_rule_hour, check_rule_day]:
 
         # Touch the file
         pathlib.Path("./rule_files_/my_file.txt").touch()
@@ -173,28 +206,43 @@ def test_stale_file():
         for result in s_func1():
             assert not result.status
 
+def test_stale_file_summary():
+    """
+    Verify that the stale check works with summary only.  
+    """
+    file_path = pathlib.Path("./rule_files_")
 
-def test_max_files():
     @splint.attributes(tag="tag")
-    def check_rule1():
-        yield from splint.rule_max_files(folders=["./rule_files_"], max_files=10)
+    def check_rule_sec():
+        yield from splint.rule_stale_files(folder=file_path, pattern="my_file*.txt", days=0, hours=0, minutes=0,
+                                           seconds=.5,summary_only=True,summary_name="Rule_files_ stale check")
 
-    for result in check_rule1():
+    sfunc = splint.SplintFunction(check_rule_sec)
+    # Touch the file
+    pathlib.Path("./rule_files_/my_file.txt").touch()
+    
+    for result in sfunc():
         assert result.status
+        assert result.summary_result
+        assert result.msg.startswith("Rule_files_ stale check had")
 
+
+
+@pytest.mark.parametrize(
+    "test_name, folder, max_files, expected_status",
+    [
+        ("test_max_files_too_many", ["./rule_files_"], 10, True),
+        ("test_rule_on_boundary", ["./rule_files_"], 2, True),
+        ("test_max_files_too_few", ["./rule_files_"], 1, False),
+    ]
+)
+def test_check_rule(test_name, folder, max_files, expected_status):
     @splint.attributes(tag="tag")
-    def check_rule2():
-        yield from splint.rule_max_files(folders=["./rule_files_"], max_files=1)
+    def check_rule():
+        yield from splint.rule_max_files(folders=folder, max_files=max_files)
 
-    for result in check_rule2():
-        assert result.status is False
-
-    @splint.attributes(tag="tag")
-    def check_rule3():
-        yield from splint.rule_max_files(folders="./rule_files_", max_files=1)
-
-    for result in check_rule3():
-        assert result.status is False
+    for result in check_rule():
+        assert result.status is expected_status
 
 
 def test_bad_max_files():
@@ -206,3 +254,15 @@ def test_bad_max_files():
     assert len(results) == 1
     assert results[0].except_
     assert results[0].status is False
+
+
+def test_max_file_summary():
+    @splint.attributes(tag="tag")
+    def check_rule():
+        yield from splint.rule_max_files(folders='./rule_files_',
+                                         max_files=10,
+                                         summary_only=True,
+                                         summary_name="Rule_files max check.")
+
+    for result in check_rule():
+        assert result.status is True

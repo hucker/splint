@@ -5,6 +5,7 @@ Public API for the Splint project.
 from .rule_files import rule_large_files  # noqa: F401
 from .rule_files import rule_max_files  # noqa: F401
 from .rule_files import rule_path_exists  # noqa: F401
+from .rule_files import rule_paths_exist  # noqa: F401
 from .rule_files import rule_stale_files  # noqa: F401
 from .splint_attribute import attributes  # noqa: F401
 from .splint_attribute import get_attribute  # noqa: F401

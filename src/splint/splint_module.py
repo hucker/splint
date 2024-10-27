@@ -62,8 +62,11 @@ class SplintModule:
         self.env_functions.append(func)
 
     @staticmethod
-    def _add_sys_path(module_file):
-        """Add a module's directory to sys.path if it's not already there."""
+    def _add_sys_path(module_file: str | pathlib.Path) -> list[str]:
+        """
+        Add a module's directory to sys.path.
+        If it is already there do nothing. 
+        """
 
         # Construct a Path object from the provided file path and get its parent directory
         module_dir = pathlib.Path(module_file).parent.resolve()

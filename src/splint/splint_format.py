@@ -11,7 +11,7 @@ In order to accomplish this, the SplintMarkup class allows a very simple formatt
 markup may be rendered in various ways dependent upon the message formatting.  This code provides basic markdown
 that looks similar to HTML.
 
-You can just write the markdown in your messages or you can use the SplintMarkup class to generate
+You can just write the markdown in your messages, or you can use the SplintMarkup class to generate
 the inline text. 
 
 The default formatting is plain text, which effectively just removes all formatting.
@@ -49,7 +49,7 @@ class SplintMarkup:
     Baseline formatter class to be used by splint rules. 
     
     The idea of splint markup is a way to tag all result message with formatting information that
-    may be used to provide the end user with a richer formatting experience tageting multiple
+    may be used to provide the end user with a richer formatting experience targeting multiple
     output environments.  Since I use rich, markdown and streamlit and a bit of HTML I needed it
     to work for those platforms.  
     
@@ -170,7 +170,7 @@ class SplintMarkup:
         return self._tag('warn', msg)
 
     def skip(self, msg):
-        """Create skip tag funciton. """
+        """Create skip tag function. """
         return self._tag('skip', msg)
 
     def red(self, msg):
@@ -206,7 +206,7 @@ class SplintMarkup:
         return self._tag('white', msg)
 
 
-# Create in instance of the mark up class that can easily be used.  This instance
+# Create in instance of the markup class that can easily be used.  This instance
 # is a shorthand that makes writing f-strings more compact and have access to a global
 # markup formatter.  I have no thought that there will be multiple markups running at
 # the same time, though I can image multiple renderers running at the same time, the
@@ -217,7 +217,7 @@ SM = SplintMarkup()
 class SplintAbstractRender(ABC):
     """
     Base class for all splint renderers.  This has a list of all supported tags, the abstract
-    render method and a concrete cleanup that removes all unrendered tags.
+    render method and a concrete cleanup that removes all un-rendered tags.
     """
 
     # List of all known tags.  We need the list of all tags because code will need to run through all
@@ -256,7 +256,7 @@ class SplintRenderText(SplintAbstractRender):
 
 
 class SplintBasicMarkdown(SplintRenderText):
-    "Markdown render class"
+    """Markdown render class"""
 
     def render(self, msg):
         """Basic markdown render method that converts tags to markdown"""

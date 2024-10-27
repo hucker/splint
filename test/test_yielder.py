@@ -131,6 +131,20 @@ def test_yielder_exc():
         assert result.status is False
         assert result.traceback
     
+    
+def test_yielder_result():
+    @splint.attributes(tag="tag", phase="phase", level=1, weight=100, skip=False)
+    def yield_a_result():
+        y = splint.SplintYield()
+        yield from y(splint.SR(status=True,msg="Yield result the 'normal' way."))
+
+    s_func = splint.SplintFunction(yield_a_result)
+
+    results = s_func()
+    for result in results:
+        assert result.status is True
+        assert result.msg.startswith("Yield result the 'normal' way")
+    
 def test_yielder_summary():
     """
     This is tricky meta code again, only this test uses the __call__ method in

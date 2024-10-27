@@ -22,7 +22,8 @@ def rule_sql_table_col_name_schema(engine: Engine,
     Args:
         engine: SQLAlchemy engine object
         table: Name of the table
-        columns: List of expected column names
+        expected_columns: List of expected column names
+        extra_columns_ok: Boolean if extra columns are OK.  False=Exact match required
 
     Returns:
         A generator yielding assertion results for each column
@@ -112,11 +113,13 @@ def rule_sql_table_schema(engine: Engine,
             if unqualified_actual_type == unqualified_expected_type:
                 # pylint: disable=line-too-long
                 yield SR(status=True,
-                         msg=f"Column {SM.expected(expected_column)} of type {SM.expected(expected_type)} is correctly present in table {SM.code(table)}")
+                         msg=f"Column {SM.expected(expected_column)} of type {SM.expected(expected_type)} "
+                             f"is correctly present in table {SM.code(table)}")
             else:
                 # pylint: disable=line-too-long
                 yield SR(status=False,
-                         msg=f"Column {SM.expected(expected_column)}  has incorrect type. Expected: {SM.expected(unqualified_expected_type)} , got: {SM.actual(unqualified_actual_type)}")
+                         msg=f"Column {SM.expected(expected_column)}  has incorrect type. Expected: "
+                             f"{SM.expected(unqualified_expected_type)} , got: {SM.actual(unqualified_actual_type)}")
         else:
             yield SR(status=False, msg=f"Missing column in table {table}: {SM.expected(expected_column)} ")
 

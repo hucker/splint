@@ -131,7 +131,7 @@ class SplintYield:
         pass fail status of the generator.  Using this class allows for a separation of
         concerns so your top level code doesn't end up counting passes and fails.
         
-        When you test is complete you can query the yield object and report that
+        When your test is complete you can query the yield object and report that
         statistics without a bunch of overhead.
         
         If you set summary_only to true, no messages will be yielded, but you 
@@ -141,14 +141,16 @@ class SplintYield:
         generated like this:
         
         y = SplintYield("Generic Test")
-        # yield a bunch of tests perhaps 3 pass and 1 fails
+        y(status=True,msg="Test1")
+        y(status=True,msg="Test2")
+        y(status=False,msg="Test3")
         y.yield_summary()
         
-        SR(status=False,msg="Generic Test had 3 pass and 1 fail results for 66.7%.")
+        SR(status=False,msg="Generic Test had 2 pass and 1 fail results for 66.7%.")
         
         Args:
             summary_only(bool): Defaults to False
-            name: Defaults to ""
+            summary_name: Defaults to ""
         """
         self._count = 0
         self._fail_count = 0
@@ -192,23 +194,25 @@ class SplintYield:
         that returns a list of SplintResults
         Args:
             results: one or list of splint results
-            fail_only: 
-
         Returns:
 
         """
         if isinstance(results, SplintResult):
             results = [results]
-        # elif isinstance(results, list) and isinstance(results[0], SplintResult):
-        #    pass
+               
+        if isinstance(results,Generator) or (isinstance(results, list) and isinstance(results[0], SplintResult)):
+            # At this point we are iterating over a list or a generator.
+            for result in results:
+                if isinstance(result, SplintResult):
+                    self.increment_counter(result)
+                    if not self.summary_only:
+                        yield result
+                else:
+                    raise SplintException(f"Unknown result type {type(results)}")                        
         else:
             raise SplintException(f"Unknown result type {type(results)}")
-        for result in results:
-            self.increment_counter(result)
-            if not self.summary_only:
-                yield result
 
-    def __call__(self, *args, **kwargs) -> Generator[SplintResult, None, None]:
+    def __call__(self, *args_, **kwargs_) -> Generator[SplintResult, None, None]:
         """
         Syntactic sugar to make yielding look just like creating the SR object at each
         invocation of yield.  The code mimics creating a SplintResult manually
@@ -216,8 +220,8 @@ class SplintYield:
         
         y.results(SR(status=True,msg="Did it work?"))
         
-        Overriding call allows this code to work correctly without having to manually
-        instantiate a SplintResult.  This is purely syntactic sugar.
+        The __call_ override allows the following code to work correctly without having to manually
+        instantiate a SplintResult. 
         
         y(status=True,msg="Did it work?")
         
@@ -226,35 +230,66 @@ class SplintYield:
         
                 
         Args:
-            *args: For SplintResult 
-            **kwargs: For SplintResult
+            *args_: For SplintResult 
+            **kwargs_: For SplintResult
         """
 
         @wraps(SplintResult.__init__)
-        def wrapper(*args, **kwargs):
+        def sr_wrapper(*args, **kwargs):
             """
             Make the __call__ method have the same parameter list as the splintResult.__init__
             method.
             
+            You can say:
+            y(status=True,msg="Did it work?")
+            
+            or you can do
+            
+            y(SR(status=True,msg="Did it work?")
+            
             Args:
-                *args: 
-                **kwargs: 
+                *args:   Handle any function args
+                **kwargs: Handle any function kwargs
 
             Returns:
 
             """
             return SplintResult(*args, **kwargs)
+        
+        # If they just hand you a result then just pass it on
+        if len(args_) == 1 and len(kwargs_) == 0 and isinstance(args_[0], SplintResult):
+            results = [args_[0]]
+            
+        # This is when we get a generator
+        elif len(args_) == 1 and len(kwargs_) == 0 and isinstance(args_[0], Generator):
+                results = args_[0]
+        else:
+            # package up the result information
+            results = [sr_wrapper(*args_, **kwargs_)]
+        for result in results:
+            self.increment_counter(result)
+            if not self.summary_only:
+                yield result
 
-        result = wrapper(*args, **kwargs)
-        self.increment_counter(result)
-        if not self.summary_only:
-            yield result
+    def yield_summary(self, name="", msg="") -> Generator[SplintResult, None, None]:
+        """
+        The yield summary should be the name of the summary followed information message
+        about the summary.  The message should give a pass and fail count.  If no name
+        or message is provided the function name is used and a generic message is
+        created. Generally the name should be provided since the function name is only
+        good enough for very simple cases.  In general the message is good enough since
+        it is nice to have all summaries look the same with the pass and fail count.
+        
+        Since this is yielding a summary the summary_result flag is set to enable filtering.
+        Args:
+            name: 
+            msg: 
 
-    def yield_summary(self, msg="") -> Generator[SplintResult, None, None]:
+        Returns:
 
-        if not msg:
-            name = self.summary_name or self.__call__.__name__
-            msg = f"{name} had {self.pass_count} pass and {self.fail_count} fail."
+        """
+        name = name or self.summary_name or self.__call__.__name__
+        msg = msg or f"{name} had {self.pass_count} pass and {self.fail_count} fail."
 
         yield SplintResult(status=self.fail_count == 0, msg=msg, summary_result=True)
 

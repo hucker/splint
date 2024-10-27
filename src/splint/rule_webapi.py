@@ -16,14 +16,14 @@ import requests
 from requests.exceptions import RequestException
 
 from .splint_format import SM
-from .splint_result import SplintYield,SR
+from .splint_result import SR, SplintYield
 
 
-def rule_url_200(urls: str | Sequence[str], 
-                 expected_status=200, 
-                 timeout_sec=5, 
-                 summary_only=False, 
-                 summary_name=None)-> Generator[SR, None, None]:
+def rule_url_200(urls: str | Sequence[str],
+                 expected_status=200,
+                 timeout_sec=5,
+                 summary_only=False,
+                 summary_name=None) -> Generator[SR, None, None]:
     """
     Simple rule check to verify that URL is active.
     
@@ -35,7 +35,7 @@ def rule_url_200(urls: str | Sequence[str],
     timeout_sec(int): Timeout in seconds.
     
     """
-    y = SplintYield(summary_only=summary_only, summary_name="Rule 200 Check")
+    y = SplintYield(summary_only=summary_only, summary_name=summary_name or "Rule 200 Check")
 
     # Allow strings to be passed in
     if isinstance(urls, str):
@@ -59,7 +59,7 @@ def rule_url_200(urls: str | Sequence[str],
             yield from y(status=False, msg=f"URL{SM.code(url)} exception.", except_=ex)
 
     if summary_only:
-        yield from y.yield_summary(summary_only=summary_only,summary_name=summary_name)
+        yield from y.yield_summary()
 
 
 def is_mismatch(dict1, dict2):
@@ -93,7 +93,7 @@ def rule_web_api(url: str,
                  expected_response=200,
                  timeout_expected=False,
                  summary_only=False,
-                 summary_name=None)-> Generator[SR, None, None]:
+                 summary_name=None) -> Generator[SR, None, None]:
     """Simple rule check to verify that URL is active and handles timeouts."""
     y = SplintYield(summary_only=summary_only)
     try:

@@ -97,7 +97,7 @@ def _param_str_list(params: Sequence[str] | str | None,
 
 def _param_int_list(params: list[str] | list[int] | int | str | None) -> list[int]:
     """
-    That's a lot of options there..
+    That's a lot of options there.
     
     Allow user to specify "1 2 3" instead of [1,2,3] or slightly more
     shady 1 instead of [1].  For small numbers this is a wash but for
@@ -120,7 +120,7 @@ def _param_int_list(params: list[str] | list[int] | int | str | None) -> list[in
 
     params = [str(p) for p in params]
 
-    # Make sure everything is an iteger
+    # Make sure everything is an integer
     for param in params:
         if isinstance(param, str) and param.isdigit():
             continue
@@ -535,7 +535,7 @@ class SplintChecker:
 
     def load_environments(self):
         """
-        THis takes the global environment and adds in the results
+        This takes the global environment and adds in the results
         from all the discovered environment functions.  The results
         are all merged into a dictionary of parameter names and their values.
 
