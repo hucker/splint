@@ -115,7 +115,7 @@ def rule_web_api(url: str,
             return
 
         # This handles an expected failure by return true but not checking the json
-        if response != 200:
+        if response.status_code != 200:
             yield from y(status=True,
                          msg=f"URL {SM.code(url)} returned {SM.code(response.status_code)}, no JSON comparison needed.")
             return
