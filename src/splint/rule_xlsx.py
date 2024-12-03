@@ -137,6 +137,6 @@ def rule_xlsx_df_pass_fail(df: pd.DataFrame, desc_col: str, val_col: str, skip_o
         # Very lenient boolean values
         status = str_to_bool(row_dict[val_col])
         if status:
-            yield SR(status=True, msg=f"{description}-Passed")
+            yield SR(status=True, msg=f"{SM.code(description)}-Passed")
         else:
-            yield SR(status=False, msg=f"{description}-Failed")
+            yield SR(status=False, msg=f"{SM.code(description)}-Failed")

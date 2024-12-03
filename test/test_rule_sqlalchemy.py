@@ -77,11 +77,12 @@ def engine_alltypes():
                     splint.SplintResult(status=True, msg="Column <<code>>name<</code>> is present in table <<code>>users<</code>>"),
                     splint.SplintResult(status=True, msg="Column <<code>>email<</code>> is present in table <<code>>users<</code>>"),
                     splint.SplintResult(status=True, msg="Column <<code>>age<</code>> is present in table <<code>>users<</code>>"),
-                    splint.SplintResult(status=False, msg="Column <<code>>unexpected<</code>> is MISSING in table <<code>>users<</code>>")
+                    splint.SplintResult(status=False, msg="Column <<code>>unexpected<</code>> is <<fail>>MISSING<</fail>> in table <<code>>users<</code>>")
                 ]
         ),
     ],
 )
+
 def test_rule_sql_table_schema(engine, expected_columns, expected_results):
     # Call the function with the expected columns list
     results = list(splint.rule_sql_table_col_name_schema(engine, 'users', expected_columns))

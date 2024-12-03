@@ -6,12 +6,11 @@ import datetime as dt
 from abc import ABC, abstractmethod
 from typing import Any, Sequence
 
-import pandas as pd
 
 from .splint_exception import SplintException
 from .splint_format import SplintAbstractRender, SplintRenderText
 from .splint_function import SplintFunction
-from .splint_immutable import SplintEnvDataFrame, SplintEnvDict, SplintEnvList, SplintEnvSet
+from .splint_immutable import SplintEnvDict, SplintEnvList, SplintEnvSet
 from .splint_module import SplintModule
 from .splint_package import SplintPackage
 from .splint_rc import SplintRC
@@ -335,8 +334,6 @@ class SplintChecker:
                 env[key] = SplintEnvList(value)
             elif isinstance(value, dict):
                 env[key] = SplintEnvDict(value)
-            elif isinstance(value, pd.DataFrame):
-                env[key] = SplintEnvDataFrame(value)
             elif isinstance(value, set):
                 env[key] = SplintEnvSet(value)
 

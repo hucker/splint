@@ -15,6 +15,7 @@ from typing import Generator, Sequence
 import requests
 from requests.exceptions import RequestException
 
+from . import SplintException
 from .splint_format import SM
 from .splint_result import SR, SplintYield
 
@@ -97,16 +98,24 @@ def rule_web_api(url: str,
     """Simple rule check to verify that URL is active and handles timeouts."""
     y = SplintYield(summary_only=summary_only)
     try:
-
+        
+        if isinstance(expected_response,int):
+            expected_response = [expected_response]
+        elif isinstance(expected_response,str):
+            expected_response = str.split(expected_response)
+        elif not isinstance(expected_response,list):
+            raise SplintException(f"Expected integer or list of integers for 'expected_response' for {url}")
+            
+        
         response = requests.get(url, timeout=timeout_sec)
 
-        if response.status_code != expected_response:
+        if response.status_code not in expected_response:
             yield from y(status=False,
                          msg=f"URL {SM.code(url)} expected {SM.expected(expected_response)} returned {SM.actual(response.status_code)} ")
             return
 
         # This handles an expected failure by return true but not checking the json
-        if expected_response != 200:
+        if response != 200:
             yield from y(status=True,
                          msg=f"URL {SM.code(url)} returned {SM.code(response.status_code)}, no JSON comparison needed.")
             return

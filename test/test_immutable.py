@@ -45,16 +45,12 @@ These tests are designed to make sure that any attempts to modify instances of t
 and raise the appropriate exception, consistent with the intention of preserving immutability.
 """
 
-import pandas as pd
 import pytest
 
 from src import splint
 from src.splint import SplintException
 
 
-@pytest.fixture
-def env_df():
-    return splint.SplintEnvDataFrame(pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]}))
 
 
 @pytest.fixture(scope="module")
@@ -151,36 +147,6 @@ def test_dict_update(env_dict):
 def test_dict_setdefault(env_dict):
     with pytest.raises(SplintException):
         env_dict.setdefault("d", 4)
-
-
-def test_df_setitem(env_df):
-    with pytest.raises(SplintException):
-        env_df["a"] = [7, 8, 9]
-
-
-def test_df_delitem(env_df):
-    with pytest.raises(SplintException):
-        del env_df["a"]
-
-
-def test_df_append(env_df):
-    with pytest.raises(SplintException):
-        env_df.append({"a": 10, "b": 11}, ignore_index=True)
-
-
-def test_df_pop(env_df):
-    with pytest.raises(SplintException):
-        env_df.pop("a")
-
-
-def test_drop(env_df):
-    with pytest.raises(SplintException):
-        env_df.drop("a", axis=1)
-
-
-def test_df_insert(env_df):
-    with pytest.raises(SplintException):
-        env_df.insert(1, "c", [7, 8, 9])
 
 
 @pytest.fixture

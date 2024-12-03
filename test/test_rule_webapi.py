@@ -1,8 +1,8 @@
+import pytest
 
 from src import splint
 from src.splint.rule_webapi import is_mismatch
 
-import pytest
 
 @pytest.fixture
 def expected_json():
@@ -29,6 +29,7 @@ def expected_json():
         }
     }
 
+
 def test_urls():
     urls = ["https://www.google.com", "https://www.yahoo.com", "https://www.bing.com"]
 
@@ -39,6 +40,7 @@ def test_urls():
     for result in check_rule1():
         assert result.status
 
+
 def test_urls_as_strings():
     urls = "https://www.google.com https://www.yahoo.com https://www.bing.com"
 
@@ -48,18 +50,19 @@ def test_urls_as_strings():
 
     for result in check_rule1():
         assert result.status
-    
-    
+
+
 def test_urls_summary_only():
     urls = "https://www.google.com https://www.yahoo.com https://www.bing.com"
 
     @splint.attributes(tag="tag")
     def check_rule1():
-        yield from splint.rule_url_200(urls=urls,summary_only=True)
+        yield from splint.rule_url_200(urls=urls, summary_only=True)
 
     for result in check_rule1():
         assert result.status
-        
+
+
 def test_bad_urls():
     urls = ["https://www.google.com/doesnotexist", "https://www.yahooXXXXXX"]
 
@@ -71,21 +74,17 @@ def test_bad_urls():
         assert not result.status
 
 
-
 def test_missing_web_api():
-
     # Try to get a non-existent webapi end point
     @splint.attributes(tag="tag")
     def check_rule2():
         yield from splint.rule_web_api(url='https://httpbin.org/json1',
                                        json_d={'name': 'Luke Skywalker'},
-                                       expected_response=404,
-                                       timeout_sec=3)
+                                       expected_response=[404,502],  # WARNING: This used to return 404, not sometimes is 502
+                                       timeout_sec=5)
 
     for result in check_rule2():
         assert result.status
-
-
 
 
 def test_wrong_response(expected_json):
@@ -100,23 +99,22 @@ def test_wrong_response(expected_json):
         assert result.status is False
 
 
-
 def test_web_api(expected_json):
     @splint.attributes(tag="tag")
     def check_rule1():
         yield from splint.rule_web_api(url='https://httpbin.org/json',
                                        json_d=expected_json,
                                        timeout_sec=10)
-    
 
     for result in check_rule1():
         assert result.status
-    
+
     # Now make it fail
     expected_json["slideshow"]["author"] = "Chuck"
     for result in check_rule1():
         assert not result.status
-        
+
+
 def convert_integers_to_strings(d):
     """This takes my integer test dictionaries and turns them into strings for test purposes"""
     if not d:
@@ -128,9 +126,11 @@ def convert_integers_to_strings(d):
             convert_integers_to_strings(value)
     return d
 
+
 def test_mismatch_fail():
-    assert is_mismatch(1,{}) is False
-    assert is_mismatch({},1) is False
+    assert is_mismatch(1, {}) is False
+    assert is_mismatch({}, 1) is False
+
 
 def test_get_difference():
     tests = [

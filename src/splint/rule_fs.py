@@ -12,6 +12,7 @@ from fs.errors import FSError
 from fs.osfs import OSFS
 
 from .splint_result import SR
+from .splint_format import SM
 
 
 def rule_fs_paths_exist(fs_obj: OSFS, paths: Sequence[str]) -> Generator[SR, None, None]:
@@ -37,7 +38,7 @@ def rule_fs_file_within_max_size(filesys: OSFS,
                                  skip_if_missing=False):
     """Check if a file exists and its size is within the given max_file_size limit"""
     if not filesys.isfile(path):
-        yield SR(status=False, msg=f'File "{path}" does not exist in {filesys.root_path}', skipped=skip_if_missing)
+        yield SR(status=False, msg=f'File "{path}" does {SM.bold("NOT")} exist in {filesys.root_path}', skipped=skip_if_missing)
     else:
         file_size = filesys.getsize(path)
         file_size_str = human_readable_size(file_size, binary=binary)

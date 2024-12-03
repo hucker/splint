@@ -57,7 +57,7 @@ def rule_sql_table_col_name_schema(engine: Engine,
         if column in actual_columns:
             yield SR(status=True, msg=f"Column {SM.code(column)} is present in table {SM.code(table)}")
         else:
-            yield SR(status=False, msg=f"Column {SM.code(column)} is MISSING in table {SM.code(table)}")
+            yield SR(status=False, msg=f"Column {SM.code(column)} is {SM.fail('MISSING')} in table {SM.code(table)}")
 
     # If extra columns existing in the database is OK then don't check
     if not extra_columns_ok:

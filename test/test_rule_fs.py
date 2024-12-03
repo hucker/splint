@@ -238,7 +238,7 @@ def test_bad_max_size(temp_fs):
     for result in rule_fs.rule_fs_file_within_max_size(temp_fs, "doesnt_exist.txt", 100):
         assert result.status is False
         assert result.skipped is False
-        assert "does not exist" in result.msg.lower()
+        assert all(s in result.msg.lower() for s in ['not','exist'])
 
     for result in rule_fs.rule_fs_file_within_max_size(temp_fs,
                                                        "doesnt_exist.txt",

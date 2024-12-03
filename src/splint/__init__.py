@@ -61,6 +61,15 @@ from .splint_util import any_to_int_list  # noqa: F401
 from .splint_util import any_to_str_list  # noqa: F401
 from .splint_util import str_to_bool  # noqa: F401
 
+try:
+    import narwhals as nw
+    from .rule_ndf import rule_validate_ndf_schema  # noqa: F401
+    from .rule_ndf import rule_validate_ndf_values_by_col  # noqa: F401
+    from .rule_ndf import rule_ndf_columns_check # noqa: F401
+    from .rule_ndf import extended_bool # noqa: F401
+except ImportError:
+    pass
+
 # webapi using requests
 try:
     import requests
@@ -69,19 +78,11 @@ try:
 except ImportError:
     pass
 
+
 # ping rules
 try:
     import ping3
     from .rule_ping import rule_ping_check  # noqa: F401
-except ImportError:
-    pass
-
-# dataframe rules
-try:
-    import pandas as pd  # noqa: F401
-    from .rule_dataframe import rule_validate_df_schema  # noqa: F401
-    from .rule_dataframe import rule_validate_df_values_by_col  # noqa: F401
-    from .splint_immutable import SplintEnvDataFrame  # noqa: F401
 except ImportError:
     pass
 

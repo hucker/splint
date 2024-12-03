@@ -8,7 +8,6 @@ checking run.
 THERE IS NO ASSURANCE THAT THIS WILL WORK IN ALL CASES. DON'T WRITE TO THE ENV VARIABLES!
 
 """
-import pandas as pd
 
 from .splint_exception import SplintException
 
@@ -95,37 +94,6 @@ class SplintEnvDict(dict):
         raise SplintException("Environment dict is immutable, setdefault is not supported")
 
 
-class SplintEnvDataFrame(pd.DataFrame):
-    """
-    A class for a non-mutable pandas DataFrame. Operations causing modifications raise a
-    SplintException.
-
-    Similar to ImmutableList and ImmutableDict, this class shields large dataframes from
-    unintentional changes due to Python's dynamic nature.  This is not perfect and not
-    intended to be perfect.  I'm just trying to help...
-    """
-
-    def __init__(self, *args, **kwargs):
-        # super(SplintEnvDataFrame, self).__init__(*args, **kwargs)
-        super().__init__(*args, **kwargs)
-
-    def __setitem__(self, key, value):
-        raise SplintException("Environment DataFrame does not support item assignment")
-
-    def __delitem__(self, key):
-        raise SplintException("Environment DataFrame doesn't support column deletion")
-
-    def append(self, other, ignore_index=False, verify_integrity=False, sort=None):
-        raise SplintException("Environment DataFrame is immutable, append is not supported")
-
-    def pop(self, item):
-        raise SplintException("Environment DataFrame is immutable, pop is not supported")
-
-    def drop(self, labels=None, axis=0, index=None, columns=None, level=None, inplace=False, errors='raise'):
-        raise SplintException("Environment DataFrame is immutable, drop is not supported")
-
-    def insert(self, loc, column, value, allow_duplicates=False):
-        raise SplintException("Environment DataFrame is immutable, insert is not supported")
 
 
 class SplintEnvSet(frozenset):
