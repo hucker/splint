@@ -133,11 +133,11 @@ class SplintRC:
         level = str(level)
 
         # This is a bit problematic because levels are ints not strs
-        patterns: list[tuple[list, str]] = [(self.ruids, ruid),
+        patterns: list[tuple[Sequence[str], str]] = [(self.ruids, ruid),
                                             (self.tags, tag),
                                             (self.levels, level),
                                             (self.phases, phase)]
-        ex_patterns: list[tuple[list, str]] = [(self.ex_ruids, ruid),
+        ex_patterns: list[tuple[Sequence[str], str]] = [(self.ex_ruids, ruid),
                                                (self.ex_tags, tag),
                                                (self.ex_levels, level),
                                                (self.ex_phases, phase)]

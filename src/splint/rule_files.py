@@ -23,7 +23,7 @@ def rule_path_exists(path_: str) -> Generator[SR, None, None]:
     except (FileNotFoundError, PermissionError,IOError) as e:
         yield SR(status=False, 
                  msg="Exception occurred while checking for the path {SM.code(path_str)}",
-                 exc_info=e)
+                 except_=e)
 
 def rule_paths_exist(paths:list[str]|str,
                      summary_only=False,
@@ -88,7 +88,7 @@ def rule_stale_file(
     except (FileNotFoundError, PermissionError,IOError) as exc:
         yield SR(status=False, 
                  msg="Exception occurred while checking for the path {SM.code(path_str)}", 
-                 exc_info=exc)
+                 except_=exc)
 
 
 def rule_stale_files(

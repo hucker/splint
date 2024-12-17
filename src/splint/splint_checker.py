@@ -503,17 +503,17 @@ class SplintChecker:
         return self.collected
 
     def include_by_attribute(self,
-                             tags: list | str | None = None,
-                             ruids: list | str | None = None,
-                             levels: list | str | None = None,
-                             phases: list | str | None = None) -> list[SplintFunction]:
+                             tags_: list | str | None = None,
+                             ruids_: list | str | None = None,
+                             levels_: list | str | None = None,
+                             phases_: list | str | None = None) -> list[SplintFunction]:
         """ Run everything that matches these attributes """
 
         # Make everything nice lists
-        tags = _param_str_list(tags)
-        ruids = _param_str_list(ruids)
-        phases = _param_str_list(phases)
-        levels = _param_int_list(levels)
+        tags = _param_str_list(tags_)
+        ruids = _param_str_list(ruids_)
+        phases = _param_str_list(phases_)
+        levels = _param_int_list(levels_)
 
         # This is a special case to make including everything the default
         if not tags and not ruids and not levels and not phases:
@@ -621,7 +621,10 @@ class SplintChecker:
         self.start_time = dt.datetime.now()
 
         try:
-
+            # Magic happens here.  Each module is checked for any functions that start with 
+            # env_ (which is configurable).  Env is a dictionary that has values that may be
+            # used as function parameters to check functions (very similar to pytest).  At this
+            # time environments are global, hence there could be collisions on larger projects.
             env = self.load_environments()
 
             # Shuts up linter
