@@ -74,7 +74,7 @@ def rule_validate_ndf_schema(df: FrameT,
 
 
 @nw.narwhalify()
-def rule_ndf_columns_check(name: str, df: FrameT, expected_cols: str | list[str], exact=False):
+def rule_ndf_columns_check(name: str, df: FrameT, expected_cols_: str | list[str], exact=False):
     """
     A FrameT is a narwhals dataframe.  This supports ANY version of pandas, polars etc. based on what you have
     pip installed into your project.  This allows us to not worry about which version you have installed.
@@ -94,13 +94,13 @@ def rule_ndf_columns_check(name: str, df: FrameT, expected_cols: str | list[str]
     """
 
     if df.is_empty() or not df.columns:
-        if not expected_cols:
+        if not expected_cols_:
             yield SR(status=True, msg=f"The {SM.code(name)} data frame is empty and there are no expected columns.")
         else:
             raise ValueError(f"There are no columns in {SM.code(name)}.")
 
     df_col_names = set(df.columns)
-    expected_cols = set(expected_cols if isinstance(expected_cols, list) else expected_cols.split())
+    expected_cols = set(any_to_str_list(expected_cols_))
 
     missing_columns = expected_cols - df_col_names
     extra_columns = df_col_names - expected_cols
