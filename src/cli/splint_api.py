@@ -64,7 +64,8 @@ async def get_result_header():
 
 
 def prep_rules():
-    """Reload all the rules to makesure we are in a good state. """
+    """Reload all the rules to make sure we are in a good state. If this was used
+       in high bandwidth situation this could be cached."""
     checker_ok()
     __splint_checker.pre_collect()
     __splint_checker.prepare()
