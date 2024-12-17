@@ -392,18 +392,15 @@ class SplintChecker:
         """
 
         self.pre_collected = []
-
+        
+        # Worth noting that += does an 'extend' rather than an 'append'.
         for pkg in self.packages:
-            for module in pkg.modules:
-                for function in module.check_functions:
-                    self.pre_collected.append(function)
+            self.pre_collected += [func for module in pkg.modules for func in module.check_functions]
 
         for module in self.modules:
-            for function in module.check_functions:
-                self.pre_collected.append(function)
+            self.pre_collected += [func for func in module.check_functions]
 
-        for function in self.check_functions:
-            self.pre_collected.append(function)
+        self.pre_collected += [func for func in self.check_functions]
 
         # List of all possible functions that could be run
         return self.pre_collected
