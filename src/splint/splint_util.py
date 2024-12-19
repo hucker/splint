@@ -18,7 +18,7 @@ def str_to_bool(s: str, default=None) -> bool:
     raise ValueError(f'Cannot convert {s} to a boolean.')
 
 
-def any_to_str_list(param: str | list | None, sep=' '):
+def any_to_str_list(param: str | list | None, sep=' ')->list[str]:
     """
     Convert a string to a list of strings or if a list is given make sure it is all strings.
     Args:

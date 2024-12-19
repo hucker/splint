@@ -92,7 +92,7 @@ def rule_ndf_columns_check(name: str, df: FrameT, expected_cols_: str | list[str
     Returns:
         A generator that yields SplintResult object(s) based on the column checks.
     """
-
+    
     if df.is_empty() or not df.columns:
         if not expected_cols_:
             yield SR(status=True, msg=f"The {SM.code(name)} data frame is empty and there are no expected columns.")

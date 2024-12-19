@@ -503,27 +503,27 @@ class SplintChecker:
         return self.collected
 
     def include_by_attribute(self,
-                             tags_: list | str | None = None,
-                             ruids_: list | str | None = None,
-                             levels_: list | str | None = None,
-                             phases_: list | str | None = None) -> list[SplintFunction]:
+                             tags: list | str | None = None,
+                             ruids: list | str | None = None,
+                             levels: list | str | None = None,
+                             phases: list | str | None = None) -> list[SplintFunction]:
         """ Run everything that matches these attributes """
 
         # Make everything nice lists
-        tags = _param_str_list(tags_)
-        ruids = _param_str_list(ruids_)
-        phases = _param_str_list(phases_)
-        levels = _param_int_list(levels_)
+        tags_ = _param_str_list(tags)
+        ruids_ = _param_str_list(ruids)
+        phases_ = _param_str_list(phases)
+        levels_ = _param_int_list(levels)
 
         # This is a special case to make including everything the default
         if not tags and not ruids and not levels and not phases:
             return self.collected
 
         # Only include the attributes that match
-        self.collected = [f for f in self.collected if (f.tag in tags) or
-                          (f.ruid in ruids) or
-                          (f.level in levels) or
-                          (f.phase in phases)]
+        self.collected = [f for f in self.collected if (f.tag in tags_) or
+                          (f.ruid in ruids_) or
+                          (f.level in levels_) or
+                          (f.phase in phases_)]
 
         return self.collected
 

@@ -36,7 +36,7 @@ def test_rule_ndf(dataframe: pd.DataFrame):
     def check_good_narwhals_frame():
         yield from rule_ndf_columns_check(name="ABCD Dataframe",
                                           df=dataframe,
-                                          expected_cols=['A', 'B', 'C', 'D'],
+                                          expected_cols_=['A', 'B', 'C', 'D'],
                                           exact=True)
 
     s_func1 = SplintFunction(check_good_narwhals_frame)
@@ -49,7 +49,7 @@ def test_rule_not_exact(dataframe: pd.DataFrame):
     def check_good_narwhals_frame():
         yield from rule_ndf_columns_check(name="ABCD Dataframe",
                                           df=dataframe,
-                                          expected_cols=['A', 'B', 'C'],
+                                          expected_cols_=['A', 'B', 'C'],
                                           exact=False)
 
     s_func1 = SplintFunction(check_good_narwhals_frame)
@@ -62,7 +62,7 @@ def test_rule_ndf_missing(dataframe: pd.DataFrame):
     def check_good_narwhals_frame():
         yield from rule_ndf_columns_check(name="ABCD Dataframe",
                                           df=dataframe,
-                                          expected_cols=['A', 'B', 'C', 'D', 'E'],
+                                          expected_cols_=['A', 'B', 'C', 'D', 'E'],
                                           exact=False)
 
     s_func1 = SplintFunction(check_good_narwhals_frame)
@@ -76,7 +76,7 @@ def test_rule_ndf_unexpected_null(null_dataframe: pd.DataFrame):
     def check_null_narwhals_frame():
         yield from rule_ndf_columns_check(name="Null Dataframe",
                                           df=null_dataframe,
-                                          expected_cols=['A', 'B', 'C', 'D', 'E'],
+                                          expected_cols_=['A', 'B', 'C', 'D', 'E'],
                                           exact=False)
 
     s_func1 = SplintFunction(check_null_narwhals_frame)
@@ -107,7 +107,7 @@ def test_rule_ndf_expected_null(null_dataframe: pd.DataFrame):
     def check_null_narwhals_frame():
         yield from rule_ndf_columns_check(name="Expected Null Dataframe",
                                           df=null_dataframe,
-                                          expected_cols=[],
+                                          expected_cols_=[],
                                           exact=False)
 
     s_func1 = SplintFunction(check_null_narwhals_frame)
